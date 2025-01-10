@@ -1,0 +1,172 @@
+﻿@using BAL
+@using DAL
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Daily Order Report";
+    string startdate = ViewData["StartDate"].ToString();
+    string enddate = ViewData["EndDate"].ToString();
+    string UniqueReferenceID = ViewData["UniqueReferenceID"] != null ? ViewData["UniqueReferenceID"].ToString() : "";
+}
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Closing Stock Report</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <form id="demo-form" method="post" action="@Url.Action("ClosingStockStore","Report")">
+                        @Html.AntiForgeryToken()                        
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>StoreCode</label>
+                                @Html.ListBox("SelectedStores", (MultiSelectList)ViewBag.Stores, new { size = 4, @class = "form-control" })
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>SKU</label>
+                                @Html.ListBox("SelectedSKUs", (MultiSelectList)ViewBag.Items, new { size = 4, @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <div class="form-group text-right">
+                                    <br />
+                                    <input type="submit" class="btn btn-default btn btn-success" style="margin-bottom:0px;" value="Search" />
+                                    <input type="submit" value="Export to Excel" name="Edit" formaction="@Url.Action("ClosingStockStoreExportExcel")" formmethod="post" class="btn btn-default" style="margin-bottom:0px;" />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <p class="text-muted font-13 m-b-30">
+                        @*<strong id="title"> Name: order Report</strong>*@
+                        <br />
+                        <span id="message" name="Message"> Store Order Date: From: @startdate To: @enddate</span>
+                    </p>
+                    <table id="mydatatable" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Store Code</th>
+                                <th>Store Name</th>
+                                <th>SKU Code</th>
+                                <th>SKU Name</th>
+                                <th>Category</th>
+                                <th>UOM</th>
+                                <th>Stock Quantity</th>
+                                <th>Issue Quantity</th>
+                                <th>Report Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.FinalizedReports != null)
+                            {
+                                int i = 1;
+                                foreach (ClosingStock head in ViewBag.FinalizedReports)
+                                {
+                                    <tr>
+                                        <td>@head.ORG_ID</td>
+                                        <td>@head.StoreName</td>
+                                        <td>@head.ITEM_NUMBER</td>
+                                        <td>@head.SKUName</td>
+                                        <td>@head.Category</td>
+                                        <td>@head.UOM</td>
+                                        <td>@head.STOCK_QUANTITY</td>
+                                        <td>@head.ISSUE_QUANTITY</td>
+                                        <td>@(head.REPORT_DATE != null ? head.REPORT_DATE.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture) : "")</td>
+                                    </tr>
+                                    i++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $(".loader").hide();
+            //t = $('#example').DataTable();
+            var SessionCustomer = window.SessionCustomer != undefined ? window.SessionCustomer : "";
+            /**/
+            var title = 'Name: Daily Order Report';
+            var titleText = 'Store Order Date: From: ' + convertDate($("#FromDate").val()) + ' To: ' + convertDate($("#ToDate").val()) + '';
+            //$("#title").text(title);
+            $("#message").text(titleText);
+            /**/
+            var table;
+            table = $("#mydatatable").DataTable({
+                responsive: true,
+                "paging": false,
+                "scrollY": '100vh',
+                "scrollCollapse": true,
+                dom: 'l<"toolbar">frtip',
+            });
+            $("div.toolbar").html('<b>TOTAL ROW COUNT: ' + table.rows().count() + '</b>');
+
+            $('#SelectedStores').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedSKUs').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+        });
+        function convertDate(dateString) {
+            var p = dateString.split(/\D/g)
+            return [p[2], p[1], p[0]].join("-");
+        }
+        $('#demo-form').submit(function (e) {
+            var FromDate = $("#FromDate").val();
+            var ToDate = $("#ToDate").val();
+            var date1 = new Date(FromDate);
+            var date2 = new Date(ToDate);
+            var datediffmill = date2 - date1;
+            var datediff = datediffmill / (1000 * 60 * 60 * 24)
+            if (datediff > 30) {
+                alert("Search Date Limit Exceeded.\nPlease Select Date Range Between 30 Days");
+                e.preventDefault();
+            }
+            else {
+                return true;
+            }
+        });
+        $('#FromDate').change(function (e) {
+            var FromDate = $("#FromDate").val();
+            var date1 = new Date(FromDate);
+            date1.setDate(date1.getDate() + 30);
+            $("#ToDate").val(FormatDate(date1));
+        })
+        function FormatDate(date) {
+            month = '' + (date.getMonth() + 1),
+                day = '' + date.getDate(),
+                year = date.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+            return [year, month, day].join('-');
+        }
+    </script>
+</div>

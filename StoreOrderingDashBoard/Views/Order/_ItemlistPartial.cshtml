@@ -1,0 +1,267 @@
+﻿@using DAL
+<style>
+    .questions {
+        display: none;
+        background: #144069;
+        position: absolute;
+        z-index: 100;
+        color: #EEE;
+        margin-top: 20px;
+        width: auto;
+        min-height: 112px;
+    }
+    .question {
+        max-width: 500px;
+        min-width: 100px;
+        padding: 28px 10px 10px 10px;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+    }
+    .question p {
+            margin: 0;
+            padding: 0;
+        }
+    .SKUModalclose {
+        font-size: 22px;
+        cursor: pointer;
+        position: absolute;
+        right: 10px;
+        top: 5px;
+    }
+    hr{
+        margin-top: 5px;
+        margin-bottom: 5px;
+        border: 0;
+        border-top: 1px solid #9f9e9e;
+    }
+</style>
+<div class="row">
+    <div class="row">
+        <div class="x_content">
+            <form id="ItemSearchForm" class="collapse">
+                @Html.AntiForgeryToken()
+                <div class="row">
+                    <div class="col-md-4 col-sm-4 col-xs-12">
+                        <label>Item Type</label>
+                        @Html.ListBox("SelectedTypes", (MultiSelectList)ViewBag.ItemTypes, new { size = 4, @class = "form-control" })
+                        <p class="text text-danger" style="margin-top:5px;" id="SelectedTypesError"></p>
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-12">
+                        <label>Item Category</label>
+                        @Html.ListBox("SelectedCategories", (MultiSelectList)ViewBag.ItemCategories, new { size = 4, @class = "form-control" })
+                        <p class="text text-danger" style="margin-top:5px;" id="SelectedCategoriesError"></p>
+                    </div>
+                    <div class="col-md-4 col-sm-4 col-xs-12">
+                        <div class="form-group">
+                            <button class="search btn btn-success btn-sm" id="SearchBtn" onclick="LoadTable()" style="margin-bottom:0px;margin-top:25px;" type="button">Search</button>
+                        </div>
+                    </div>
+                </div>
+            </form>
+            <hr />
+            <table id="example" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Product Id</th>
+                        <th>Item Code</th>
+                        <th>Item Description</th>
+                        @*<th>PackingDescription</th>*@
+                        <th>Category</th>
+                        <th>UOM</th>
+                        <th>Max Order Limit</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+                @*<tbody>
+                    @if(ViewBag.Itemlist != null)
+                    {
+                        int i = 1;
+                        foreach (Item item in ViewBag.Itemlist)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.SKUCode</td>
+                                <td>@item.SKUName</td>
+                                <td>@item.Category.CaseConversion</td>
+                                <td>@item.UOMmaster.UnitofMasureDescription</td>
+                                <td>@item.MaximumOrderLimit</td>
+                                <td><input type="number" onblur="CheckQtys(@item.MaximumOrderLimit,@i)" value="0" min="0" id="@("Qtys"+i)" /></td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                </tbody>*@
+            </table>
+            <div class="loader" id="ModalLoader"></div>
+        </div>
+    </div>
+    <script>
+        var t;
+        var productlist = [];
+        $(document).ready(function () {
+            $('#SelectedCategories').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedTypes').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $(".loader").hide();
+            LoadTable();            
+            $('#example tbody').on('mouseover', '.trends', function () {
+                var cellData = t.row($(this).parents('tr')).data();
+                var SKUCode = cellData.SKUCode;
+                SKUCode = SKUCode.trim();
+                showQuestion($(this), SKUCode);
+            });
+            $('#example tbody').on('mouseout', '.trends', function () {
+                $('.SKUModalclose').trigger("click");
+            });
+            $('.SKUModalclose').click(function (e) {
+                e.stopPropagation();
+                $(this).parent().hide();
+                $('.items').removeClass('no-effect');
+            });
+        });
+        function LoadTable() {
+            var form = $('#ItemSearchForm');
+            var Token = $('input[name="__RequestVerificationToken"]', form).val();            
+            var SelectedTypes = $('#SelectedTypes').val();
+            var SelectedCategories = $('#SelectedCategories').val();
+            if($.fn.dataTable.isDataTable('#example')){
+                t.destroy();
+            }
+            
+            t = $("#example").DataTable({              
+                "searching": true,
+                "ajax": {
+                    "url": '@Url.Action("GetItemslistPartial", "Order")',
+                    "type": "post",
+                    "data": {
+                        "__RequestVerificationToken": Token,
+                        "SelectedTypes": SelectedTypes,
+                        "SelectedCategories": SelectedCategories                        
+                    },
+                    "dataType": "JSON",
+                },                            
+                "columns": [
+                    {
+                        "data": "Product Id", "autoWidth": true,
+                        render: function (data, type, row, meta)
+                        {
+                            return  row.Id ;
+                        }
+                    },
+                    {
+                        "data": "Item Code", "autoWidth": true,
+                        render: function (data, type, row, meta)
+                        {
+                            return '<p class="trends">'+ row.SKUCode+'</p>';
+                        }
+                    },
+                    {
+                        "data": "Item Description", "autoWidth": true,
+                        render: function (data, type, row, meta) {
+                            return row.SKUName;
+                        }
+                    },
+                    {
+                        "data": "Category", "autoWidth": true,
+                        render: function (data, type, row, meta) {
+                            return (row.CaseConversion != null ? row.CaseConversion:"" );
+                        }
+                    },
+                    {
+                        "data": "UOM", "autoWidth": true,
+                        render: function (data, type, row, meta) {
+                            return  row.UnitofMasureDescription;
+                        }
+                    },
+                    {
+                        "data": "MaximumOrderLimit", "autoWidth": true,
+                        render: function (data, type, row, meta) {
+                            return row.MaximumOrderLimit ;
+                        }
+                    },
+                    {
+                        "data": "Quantity", "autoWidth": false,
+                        render: function (data, type, row, meta) {
+                            return '<input type="number" value="' + row.Ordered_Qty + '" value="0" min="0" style="width:80px"  class="form-control" id="Quantity' + row.Id + '" />';
+                        }
+                    }
+                ],
+                "paging": true,
+                "searching": true,                                                                                                                                                        
+            });
+        }
+        function AddNew(e1){
+            $(".loader").show();
+            var tableinfo = t.page.info();
+            total = tableinfo.recordsTotal
+            for (i = 0; i < total; i++) {
+                // var data = t.$('input[id=Qtys' + i + '], select').serialize();
+                var data = t.cell(i, 6).nodes().to$().find('input').val()
+                //  var Qty = data.split("=");
+                if (parseInt(data) > 0) {
+                    var da = t.row(i).data();
+                    var product = {};
+                    product.ProductId = parseInt(da.Id);
+                    product.Qty = data;
+                    product.ItemCode = da.SKUCode;
+                    product.ItemDesc = da.SKUName;
+                    product.OrderheaderId = parseInt(e1);
+                    productlist.push(product);
+                }
+            }
+             $.ajax({
+                    url: "@Url.Action("SaveOrFinaliseOrder", "Order")",
+                    type: "POST",
+                    data: {
+                        "order": productlist,
+                        "issave":"Save"
+                    },
+                    success: function (response) {
+                        if (response) {
+                            productlist = [];
+                            alert("Item is added successfully");
+                            closePartialView();
+                            window.location.reload();
+                        }
+                    }
+                });
+        }
+        function CheckQtys(e, e1) {
+            var id = "#Qtys" + e1;
+            var value = $(id).val();
+            if (parseInt(value) > parseInt(e))
+                alert("Quantity is greater than order limit");
+        }
+        function showQuestion(button, SKUCode) {
+            var offset = button.offset();
+            var imagepath = "/images/SKUCode/" + SKUCode + ".jpg";
+            $("#ItemImage").attr("src", imagepath);
+            $('.questions')
+                .fadeIn()
+                .css({
+                    left: Math.min(offset.left, $(window).innerWidth() - $('.questions').outerWidth()),
+                    top: offset.top + button.innerHeight()
+                });
+        }
+    </script>
+</div>
+<div class="questions">
+    <div class="SKUModalclose">
+        <i class="fa fa-times"></i>
+    </div>
+    <div class="question">
+        <img src="" style="height:100%;width:275px;" id="ItemImage" alt="Image Not Found" />
+    </div>
+</div>

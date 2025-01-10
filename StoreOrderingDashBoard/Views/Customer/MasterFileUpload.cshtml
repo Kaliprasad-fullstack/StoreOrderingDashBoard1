@@ -1,0 +1,117 @@
+﻿
+@{
+    ViewBag.Title = "Master-FileUpload";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    string SuccessMessage = ViewBag.SuccessMessage != null ? ViewBag.SuccessMessage : null;
+}
+<style>
+    .dropdown-item {
+        display: block;
+        clear: both;
+        font-weight: 400;
+        color: #212529;
+        text-align: inherit;
+        white-space: nowrap;
+        background-color: transparent;
+        border: 0;
+    }
+
+    .dropdown-item {
+        width: 100%;
+        padding: 12px 20px;
+    }
+
+    .dropdown-menu {
+        box-shadow: none;
+        display: none;
+        float: left;
+        font-size: 12px;
+        left: 0;
+        list-style: none outside none;
+        padding: 0;
+        position: absolute;
+        text-shadow: none;
+        top: 100%;
+        z-index: 9998;
+        border: 1px solid #D9DEE4;
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+    }
+</style>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Master-File Upload</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">                    
+                    <div class="x_content">
+                        <br />
+                        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left" action="@Url.Action("MasterFileUpload","Customer")" enctype="multipart/form-data" method="post">
+                            @Html.AntiForgeryToken()
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <label for="MasterType">File Type</label>
+                                <select name="MasterType" id="MasterType" class="form-control" required>
+                                    <option id="STORE">STORE</option>
+                                    <option id="ITEM">ITEM</option>
+                                </select>
+                                <p class="text text-danger" id="MasterTypeError"></p>
+                            </div>
+                            <div class="col-md-3 col-sm-4 col-xs-12">
+                                <label for="MasterType">File </label>
+                                <input type="file" id="MasterFile" required name="MasterFile" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" class="form-control" />
+                                <p class="text text-danger" id="MasterTypeError"></p>
+                            </div>
+                            <div class="col-md-3">
+                                
+                                <button id="btnFileUpload" type="submit" class="btn btn-success" style="margin-top:22px;">Submit</button>
+                            </div>
+                            <div class="col-md-3">
+                                <button type="button" class="btn btn-default dropdown-toggle" style="margin-top:22px" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                    download formats
+                                </button>
+                                <div class="dropdown-menu" x-placement="bottom-start" style="position: absolute; will-change: transform; top: 0px; left: 0px; transform: translate3d(0px, 38px, 0px);">
+                                    <a class="dropdown-item" href="~/Uploads/Master/ItemMasterFile.xlsx"><i class="fa fa-download pull-right"></i>Item</a>
+                                    <div class="dropdown-divider"></div>
+                                    <a class="dropdown-item" href="~/Uploads/Master/StoreMasterFile.xlsx"><i class="fa fa-download pull-right"></i>Store</a>
+                                </div>
+
+                            </div>
+                        </form>
+
+                        <br /><br />
+                        @if (SuccessMessage != null)
+                        {
+                            <div class="row">
+                                <div class="col-sm-12 text-success">
+                                    @SuccessMessage
+                                </div>
+                                <a href="@Url.Action("UploadedMasterFiles", "Customer")" class="links">click to file list errors</a>
+                            </div>
+                            <script>
+                                    $(document).ready(function () {
+                                            window.location = '@Url.Action("UploadedMasterFiles", "Customer")';
+                                    });
+                            </script>
+                        }
+                    </div>
+                    @Html.ValidationSummary(true, "Errors:", new { @class = "alert text-danger" })
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $('#MasterType').multiselect({
+            buttonWidth: "100%",
+            enableFiltering: true
+        });
+    });
+</script>

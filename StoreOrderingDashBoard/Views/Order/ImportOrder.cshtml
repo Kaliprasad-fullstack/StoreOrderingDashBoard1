@@ -1,0 +1,310 @@
+﻿@using DAL
+@model Customer
+@{
+    ViewBag.Title = "ImportOrder";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var PreOrder = ViewBag.Preorder != null ? ViewBag.PreOrder : "off";
+    var Error = ViewBag.Error != null ? ViewBag.Error : null;
+    //var ErrorList = ViewBag.ErrorList != null && ViewBag.ErrorList.Count() > 0 ? ViewBag.ErrorList : null;
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="clearfix"></div>
+        <div class="row">
+            @Html.ValidationSummary(true, "Errors:", new { @class = "alert text-error" })
+            @*@if (Error != null)
+            {
+                <div class="col-md-12">
+                    <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                        <strong>Error.</strong> @Error.
+                    </div>
+                </div>
+            }*@
+            @*@if (ErrorList != null)
+            {
+                <div class="col-md-12">
+                    <div class="alert alert-warning alert-dismissible fade in" role="alert">
+                        <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                            <span aria-hidden="true">×</span>
+                        </button>
+                        @foreach (string err in ErrorList)
+                        {
+                            <p>@err</p>
+                        }
+                    </div>
+                </div>
+            }*@
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Finalised Order List</h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a style="color:#5A738E;" href="@Url.Action("DownloadFormat","Order",new { filename="QuickOrderUploadFormat.xlsx" })" title="Vehicle Allocation Template"><i class="fa fa-download"></i> Download Format</a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        @using (Html.BeginForm("ImportExcel", "Order", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                        {
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group form-inline">
+                                        <label class="control-label" for="FileUpload1">
+                                            Select File <span class="required">*</span>
+                                        </label>
+                                        <input type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" id="FileUpload1" name="FileUpload1" class="form-control" required="" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    @if (Model.PlannedOrderFlag)
+                                    {
+                                        <div class="row">
+                                            <label class="control-label" for="PreOrder">
+                                                type <span class="required">*</span>
+                                            </label>
+                                            <label>
+                                                <input type="checkbox" class="js-switch" name="PreOrder" /> <span>Planned Order</span>
+                                            </label>
+                                        </div>
+                                    }
+                                </div>
+                                <div class="col-md-3 pull-right">
+                                    <input class="search btn btn-success btn-sm" type="submit" value="Submit" />
+                                </div>
+                                @if (ViewBag.FinilizeOrder != null)
+                                {
+                                    <div class="loader"></div>
+                                    <table id="example" class="display" cellspacing="0" width="100%">
+                                        <thead>
+                                            <tr>
+                                                @*<th><input name="select_all" value="1" id="example-select-all" type="checkbox" /></th>*@
+                                                <th>Store Code</th>
+                                                <th>Item Code</th>
+                                                <th>Qty</th>
+                                                @*<th>Location</th>*@
+                                                <th>OrderDate</th>
+                                                <th>Error</th>
+                                                <th>Order Reference Id</th>
+                                                <th>Order Placed Date</th>
+                                                <th>OrderType</th>
+                                                <th>City</th>
+                                                <th>LastOrderDate</th>
+                                                <th>LateDeliveryDate</th>
+                                                <th>UniqueReferenceID</th>
+                                                <th>PackSize</th>
+                                                <th>OrderedQty</th>
+                                                <th>CaseSize</th>
+                                                <th>Cases</th>
+                                                <th>State</th>
+                                                <th>From DC</th>
+                                                <th>New_Build</th>
+                                                <th>Focus</th>
+                                                <th>Item_Type</th>
+                                                <th>Item_sub_Type</th>
+                                                <th>TakenDays</th>
+                                                <th>Slab</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (ViewBag.FinilizeOrder != null)
+                                            {
+                                                int i = 0;
+                                                foreach (ImportToExcel header in ViewBag.FinilizeOrder)
+                                                {
+                                                    <tr>
+                                                        @*<td><input type="checkbox" id="@("Check" + i)" value="@header.Id" name="id[]" /></td>*@
+                                                        <td>@header.StoreCode</td>
+                                                        <td>@header.SkuCode</td>
+                                                        <td>@header.Qty</td>
+                                                        <td>@(header.OrderDate.HasValue ? header.OrderDate.Value.ToString("dd/MMM/yyyy") : "")</td>
+                                                        <td>@header.Error</td>
+                                                        <td>@header.OrderReferenceNo</td>
+                                                        <td>@header.OrderPlacedDate</td>
+                                                        <td>@header.OrderType</td>
+                                                        <td>@header.City</td>
+                                                        <td>@header.LastOrderDate</td>
+                                                        <td>@header.LateDeliveryDate</td>
+                                                        <td>@header.UniqueReferenceID</td>
+                                                        <td>@header.PackSize</td>
+                                                        <td>@header.OrderedQty</td>
+                                                        <td>@header.CaseSize</td>
+                                                        <td>@header.Cases</td>
+                                                        <td>@header.State</td>
+                                                        <td>@header.FromDC</td>
+                                                        <td>@header.New_Build</td>
+                                                        <td>@header.Focus</td>
+                                                        <td>@header.Item_Type</td>
+                                                        <td>@header.Item_sub_Type</td>
+                                                        <td>@header.TakenDays</td>
+                                                        <td>@header.Slab</td>
+                                                    </tr>
+                                                    i++;
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="search btn btn-success btn-lg" id="Uploadbtn" onclick="CreateList()" data-toggle="modal" data-target="#myModal">Upload</button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                var table;
+                var PreOrder='@PreOrder';
+                var productlist = [];
+                $(document).ready(function () {
+                    $('.loader').hide();
+                     table = $('#example').DataTable({
+                        'columnDefs': [{
+                            'targets': 0,
+                            'searchable': false,
+                            'orderable': false,
+                            'className': 'dt-body-center'
+                        }],
+                        'order': [1, 'desc']
+                    });
+
+                    // Handle click on "Select all" control
+                    $('#example-select-all').on('click', function () {
+                        // Check/uncheck all checkboxes in the table
+                        var rows = table.rows({ 'search': 'applied' }).nodes();
+                        $('input[type="checkbox"]', rows).prop('checked', this.checked);
+                    });
+
+                    // Handle click on checkbox to set state of "Select all" control
+                    $('#example tbody').on('change', 'input[type="checkbox"]', function () {
+                        // If checkbox is not checked
+                        if (!this.checked) {
+                            var el = $('#example-select-all').get(0);
+                            // If "Select all" control is checked and has 'indeterminate' property
+                            if (el && el.checked && ('indeterminate' in el)) {
+                                // Set visual state of "Select all" control
+                                // as 'indeterminate'
+                                el.indeterminate = true;
+                            }
+                        }
+                    });
+
+                    $('#frm-example').on('submit', function (e) {
+                        var form = this;
+
+                        // Iterate over all checkboxes in the table
+                        table.$('input[type="checkbox"]').each(function () {
+                            // If checkbox doesn't exist in DOM
+                            if (!$.contains(document, this)) {
+                                // If checkbox is checked
+                                if (this.checked) {
+                                    // Create a hidden element
+                                    $(form).append(
+                                        $('<input>')
+                                            .attr('type', 'hidden')
+                                            .attr('name', this.name)
+                                            .val(this.value)
+                                    );
+                                }
+                            }
+                        });
+
+                        // FOR TESTING ONLY
+
+                        // Output form data to a console
+                        $('#example-console').text($(form).serialize());
+                        console.log("Form submission", $(form).serialize());
+
+                        // Prevent actual form submission
+                        e.preventDefault();
+                    });
+                });
+
+
+                function CreateList() {
+                    var tableinfo = table.page.info();
+                    var error = false;
+                    $('.loader').show();
+                    total = tableinfo.recordsTotal
+                    for (i = 0; i < total; i++) {
+                        var data1 = table.cell(i, 0).nodes().to$().find('input').val();
+                        var data = table.$('input[id=Check' + i + '], checked').serialize();
+                        var da = table.row(i).data();
+                        var product = {};
+                        product.StoreCode = da[0];
+                        product.SkuCode = da[1];
+                        product.Qty = parseInt(da[2]);
+                        product.OrderDate = da[3];
+                        product.Error = da[4];
+                        product.OrderReferenceNo = da[5];
+                        product.OrderPlacedDate = da[6];
+                        product.OrderType = da[7];
+                        product.City = da[8];
+                        product.LastOrderDate = da[9];
+                        product.LateDeliveryDate = da[10];
+                        product.UniqueReferenceID = da[11];
+                        product.PackSize = da[12];
+                        product.OrderedQty = da[13];
+                        product.CaseSize = da[14];
+                        product.Cases = da[15];
+                        product.State = da[16];
+                        product.FromDC = da[17];
+                        product.New_Build = da[18];
+                        product.Focus = da[19];
+                        product.Item_Type = da[20];
+                        product.Item_sub_Type = da[21];
+                        product.TakenDays = da[22];
+                        product.Slab = da[23];
+                        if (product.Error != "") {
+                            productlist = [];
+                            error = true;
+                            break;
+                        }
+                        productlist.push(product);
+                    }
+                    if (error == true) {
+                        $('.loader').hide();
+                        alert("please solve the errors first.");
+                    }
+                    else {
+                        if (productlist.length > 0) {
+                            var r = confirm("Are you Sure Want to Upload?");
+                            if (r) {
+                                $('.loader').show();
+                                $('#Uploadbtn').prop('disabled', true);
+                                $.ajax({
+                                    url: "@Url.Action("SaveUploadOrder", "Order")",
+                                    type: "POST",
+                                    data: {
+                                        "order": productlist,
+                                        "PreOrder": PreOrder
+                                    },
+                                    success: function (response) {
+                                        if (response) {
+                                            alert("Order Uploaded Successfully");
+                                            window.location = "@Url.Action("ImportOrder", "Order")"
+                                        }
+                                    },
+                                    Error: function (respo) {
+                                        alert("unable to upload order.");
+                                    }
+                                });
+                            }
+                        }
+                        else {
+                            $('.loader').hide();
+                            alert("Please Select Box")
+                        }
+                    }
+                }
+            </script>
+
+        </div>
+    </div>
+</div>
+

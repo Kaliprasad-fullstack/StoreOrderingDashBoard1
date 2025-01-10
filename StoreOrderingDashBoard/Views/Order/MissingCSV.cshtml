@@ -1,0 +1,153 @@
+﻿@{
+    ViewBag.Title = "MissingCSV";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Missing CSV Files</h3>
+        </div>
+    </div>    
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <table id="example" class="display" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th>Created Date</th>
+                                <th>Created By</th>
+                                <th>Line Items</th>
+                                <th>Download</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    function LoadTable() {
+        table.destroy();
+        var FromDate = $("#FromDate").val();
+        var ToDate = $("#ToDate").val();
+        table = $("#example").DataTable(
+            {
+                "ajax": { "url": '@Url.Action("GetMissingCSVFileDetails", "Order")', "type": "GET", "dataType": "JSON" },
+                "ordering": false,
+                "columns": [                            
+                    {
+                        "data": "Uploaded Date", "autoWidth": false,
+                        render: function (data, type, row, meta) {
+                            return '<p>' + ConvertJSONDate(row.Created_Date) + '</p>';
+                        }
+                    },
+                    {
+                        "data": "Created By", "autoWidth": false,
+                        render: function (data, type, row, meta) {
+                            return '<p id="' + row.Id + '">' + row.Created_By + '</p>';
+                        }
+                    },
+                    {
+                        "data": "Error Log", "autoWidth": false,
+                        render: function (data, type, row, meta) {
+                            if (row.FileExist != 0)
+                                return '<a target="_blank" href="@Url.Action("DownloadCSV","Order")?filename=' + row.FileName + '" ><img src="/images/CSV.png" style="height:20px; width:auto;" title="download csv"></a>';
+                            else
+                                return '';
+                        }
+                    }
+                ],
+                "columnDefs": [{ "width": "40%", "targets": 0 }],
+                "paging": true,
+                "searching": true
+            });
+    }
+    var table;
+    function ConvertJSONDate(date) {
+        var nowDate = new Date(parseInt(date.substr(6)));
+        var dd = nowDate.getDate();
+        var MM = nowDate.getMonth() + 1;
+        var yy = nowDate.getFullYear();
+        if (dd < 10) {
+            dd = '0' + dd;
+        }
+        if (MM < 10) {
+            MM = '0' + MM;
+        }
+        var HH = nowDate.getHours();
+        if (HH < 10) {
+            HH = '0' + HH;
+        }
+        var mm = nowDate.getMinutes();
+        if (mm < 10) {
+            mm = '0' + mm;
+        }
+        var result = dd + "/" + MM + "/" + yy + " " + HH + ":" + mm;
+        return result;
+    }
+     function show_image(src, width, height, alt) {
+        var img = document.createElement("img");
+        img.src = src;
+        img.width = width;
+        img.height = height;
+        img.alt = alt;
+        document.body.appendChild(img);
+    }
+    $(document).ready(function () {
+        var FromDate = $("#FromDate").val();
+        var ToDate = $("#ToDate").val();
+        table = $("#example").DataTable({
+                         "ajax": {
+                            "url": '@Url.Action("GetCSVFileDetails", "Order")',
+                            "type": "POST",
+                            "dataType": "JSON",
+                             "data": {
+                                 "FromDate": FromDate,
+                                 "ToDate": ToDate
+                             },
+                         },
+                        "ordering": false,
+                        "columns": [
+                            {
+                                "data": "File Name", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p id="' + row.Id + '">' + row.FileName+ '</p>';
+                                }
+                            },
+                            {
+                                "data": "Uploaded Date", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p>' + ConvertJSONDate(row.Created_Date) + '</p>';
+                                }
+                            },
+                            {
+                                "data": "created by", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p id="' + row.Id + '">' + row.Created_By  + '</p>';
+                                }
+                            },
+                            {
+                                "data": "Error Log", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                  if (row.FileExist!=0)
+                                      return '<a target="_blank" href="@Url.Action("DownloadCSV","Order")?filename=' + row.FileName + '" ><img src="/images/CSV.png" style="height:20px; width:auto;" title="download csv"></a>';
+                                    else
+                                      return '';
+                                }
+                            }
+                            ],
+                        "columnDefs": [
+                                { "width": "40%", "targets": 0 }
+                          ],
+                        "paging": true,
+                        "searching": true
+                    });
+        $("#SearchCSVBtn").click(function () {
+            LoadTable();
+        });
+    });
+</script>

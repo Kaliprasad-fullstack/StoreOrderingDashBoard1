@@ -1,0 +1,409 @@
+﻿@using StoreOrderingDashBoard.Models;
+@using DAL;
+@model List<CurrentItemInventoryMst>
+@{
+    ViewBag.Title = "CreateOrder";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    int custid = SessionValues.LoggedInCustId.Value;
+}
+
+<!-- /top navigation -->
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<!-- page content -->
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Create Order</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <br />
+                        <form id="_validateXTMkey" action="@Url.Action("CurrentItemInventory","Order")" method="post">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    @Html.AntiForgeryToken()
+                                    <label for="SelectedstoreIds">Stores <span class="required">*</span></label>
+                                    @(Html.DropDownList("SelectedstoreIds", new MultiSelectList(ViewBag.allowedStores, "Id", "StoreCode"), new { @class = "form-control", required = "required", multiple = "multiple" }))
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="Categories">Category <span class="required">*</span></label>
+                                    @(Html.DropDownList("Categories", new MultiSelectList(ViewBag.allowedCategory, "Id", "CaseConversion"), new { @class = "form-control", multiple = "multiple" }))
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="Items">Item <span class="required">*</span></label>
+                                    @(Html.DropDownList("Items", new MultiSelectList(ViewBag.Items, "Id", "SKUName"), new { @class = "form-control", multiple = "multiple" }))
+                                </div>
+                            </div>
+                            <div class="ln_solid"></div>
+                            <div class="form-group">
+                                <div class="col-md-12">
+                                    <button class="btn btn-primary" type="submit">filter</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <table id="datatable12" class="table table-striped table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Store Code</th>
+                                    <th>Item Code</th>
+                                    <th>Item Description</th>
+                                    <th>Last Order Date</th>
+                                    <th>Last Order Quantity</th>
+                                    <th>POS Sale Date</th>
+                                    <th>POS Sale Quantity</th>
+                                    <th>Dispatch Date</th>
+                                    <th>Dispatch Quantity</th>
+                                    <th>POD Date</th>
+                                    <th>POD Qty</th>
+                                    <th>Max Order Limit</th>
+                                    <th>Suggested Quantity</th>
+                                    <th>Quantity</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model != null && Model.Count() > 0)
+                                {
+                                    int i = 1;
+                                    foreach (CurrentItemInventoryMst item in Model)
+                                    {
+                                        <tr>                                            
+                                            <td>@item.Store.StoreCode</td>
+                                            <td>@item.Item.SKUCode</td>
+                                            <td>@item.Item.SKUName</td>
+                                            <td><a onclick="ViewOrderInformation('@(item.OrderHeader!=null? item.OrderHeader.Id.ToString():"-")')">@(item.LastOrderDate != null ? item.LastOrderDate.ToString() : "-")</a></td>
+                                            <td>@(item.OrderQuantity != null ? item.OrderQuantity.ToString() : "-")</td>
+                                            <td>@(item.POSSaleDate != null ? item.POSSaleDate.ToString() : "-")</td>
+                                            <td>@(item.POSSalesQuantity != null ? item.POSSalesQuantity.ToString() : "-")</td>
+                                            <td title="dispatch order: @(item.DispatchedOrderHeader != null ? item.DispatchedOrderHeader.Finilizeorderno+item.DispatchedOrderHeader.Id: "-")"><a onclick="ViewOrderInformation('@(item.DispatchedOrderHeader != null ? item.DispatchedOrderHeader.Id.ToString(): "-")')">@(item.DispatchDate != null ? item.DispatchDate.ToString() : "-")</a></td>
+                                            <td>@(item.DispatchQuantity != null ? item.DispatchQuantity.ToString() : "-")</td>
+                                            <td>@(item.PODDate != null ? item.PODDate.ToString() : "-")</td>
+                                            <td>@(item.PODQuantity != null ? item.PODQuantity.ToString() : "-")</td>
+                                            <td>@item.Item.MaximumOrderLimit</td>
+                                            <td><span>@(item.SuggestedQuantity != null ? item.SuggestedQuantity.ToString() : "-")</span><span onclick="CopyQty(@item.SuggestedQuantity,@("Qty"+i))">Copy Suggested Qty</span></td>
+                                            <td>
+                                                <input type="number" name="Qty" onblur="CheckQty(@item.Item.MaximumOrderLimit,@i)" min="0" value="" id="@("Qty"+i)" />
+                                                <input type="text" value="@item.Item.Id" id="@("No"+i)" style="display:none" />
+                                                <input type="hidden" value="@item.Store.Id" id="@("StoreCode"+i)" style="display:none" />
+                                            </td>
+                                        </tr>
+                                        i++;
+                                    }
+
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="x_content">
+                        <div class="buttons">
+                            <!-- Standard button -->
+                            <button type="button" class="btn btn-success btn-lg" onclick="CreateList()" data-toggle="modal" data-target="#myModal">View Cart</button>
+                            <div class="modal fade" id="myModal" role="dialog">
+                                <div class="modal-dialog modal-lg">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Order Summary</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            @*<div class="row">
+                                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                                <div class="x_panel">
+                                                    <div class="x_content">
+                                                        <label class="" id="selectedstores"></label>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>*@
+                                            <div class="row">
+                                                <div class="col-md-12 col-sm-12 col-xs-12">
+                                                    <div class="x_panel">
+                                                        <div class="x_content">
+                                                            <table id="example" class="table table-striped table-bordered table-responsive">
+                                                                <thead>
+                                                                    <tr>
+                                                                        <th>StoreCode</th>
+                                                                        <th>ItemCode</th>
+                                                                        <th>Item Description</th>
+                                                                        <th>Last Order Date</th>
+                                                                        <th>Last Order Quantity</th>
+                                                                        <th>POS Sale Date</th>
+                                                                        <th>POS Sale Quantity</th>
+                                                                        <th>Dispatch Order Date</th>
+                                                                        <th>Dispatch Quantity</th>
+                                                                        <th>POD Date</th>
+                                                                        <th>POD Qty</th>
+                                                                        <th>Maximum Order Limit</th>
+                                                                        <th>Suggested Quantity</th>
+                                                                        <th>Quantity</th>
+                                                                        <th>Edit</th>
+                                                                        <th>Delete</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody></tbody>
+                                                            </table>
+                                                            <div class="loader"></div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" onclick="SaveToDraftOrFinalise('Save',@custid)" id="Draftbtn" class="btn btn-default">Save As Draft</button>
+                                            <button type="button" onclick="SaveToDraftOrFinalise('Finalize',@custid)" id="Finalisebtn" class="btn btn-default">Finalise</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>
+<script>
+    var t;
+    $(document).ready(function () {
+        $(".loader").hide();
+        t = $('#example').DataTable();
+        dt = $('#datatable12').DataTable().rows().iterator('row', function (context, index) {
+            var node = $(this.row(index).node());
+        });
+        $('#SelectedstoreIds').multiselect({
+            includeSelectAllOption: true
+        });
+        $('#Categories').multiselect({
+            includeSelectAllOption: true
+        });
+        $('#Items').multiselect({
+            includeSelectAllOption: true
+        });
+        $('#SelectedStoreIds').change(function () {
+            alert($(this).val());
+            var prevSelect = $("#MultiSelect_Preview").select2();
+            prevSelect.val($(this).val()).trigger('change');
+        });
+    });
+   var selectedStores = [];
+    var productlist = [];
+    function CreateList() {
+        var oTable = document.getElementById('datatable');
+        var tableinfo = dt.page.info();
+        total = tableinfo.recordsTotal
+        productlist = [];
+        for (i = 0; i < total; i++) {
+            var data = dt.$('input[id=Qty' + (i + 1) + '], select').serialize();
+            var No = dt.$('input[id=No' + (i + 1) + ']').val();
+            var storeid = dt.$('input[id=StoreCode'+ ( i + 1 ) +']').val();
+            var Qty = data.split("=");
+            var da = dt.row(i).data();
+            if (parseInt(Qty[1]) > 0) {
+                var product = {};
+                product.No = No;
+                product.StoreCode = da[0];
+                product.SKUCode = da[1];
+                product.SKUName = da[2];
+                product.LastOrderDate = da[3];
+                product.OrderQuantity= da[4];
+                product.POSSaleDate = da[5];
+                product.POSSalesQuantity = da[6];
+                product.DispatchOrderDate = da[7];
+                product.DispatchQuantity = da[8];
+                product.PODDate = da[9];
+                product.PODQty = da[10];
+                product.MaximumOrderLimit = da[11];
+                product.SuggestedQuantity = da[12];
+                product.StoreId = storeid;
+                product.Qty = parseInt(Qty[1]);
+                productlist.push(product);
+            }
+        }
+        t.clear().draw();
+        for (i = 0; i < productlist.length; i++) {
+            t.row.add([
+                productlist[i].StoreCode,
+                productlist[i].SKUCode ,
+                productlist[i].SKUName ,
+                productlist[i].LastOrderDate ,
+                productlist[i].OrderQuantity ,
+                productlist[i].POSSaleDate ,
+                productlist[i].POSSalesQuantity,
+                productlist[i].DispatchOrderDate,
+                productlist[i].DispatchQuantity,
+                productlist[i].PODDate,
+                productlist[i].PODQty,
+                productlist[i].MaximumOrderLimit,
+                productlist[i].SuggestedQuantity,
+                "<input type='number' id='Qtys" + i + "' onblur='CheckQtys(" + productlist[i].MaximumOrderLimit + "," + i + ")' value='" + productlist[i].Qty + "' disabled /><input type='hidden' id = 'StoreId" + i + "' value='" + productlist[i].StoreId + "' disabled style='display:none;' /><input type='hidden' id='No" + i + "' value='" + productlist[i].No + "' disabled style='display:none;' />",
+                "<button id='Edit" + i +"' onclick='Editbutton("+i+")' type='button'>Edit</button>",
+                "<button id='Delete" + i +"' onclick='Deleterow(this)' type='button'>Delete</button>"
+            ]).draw(false);
+        }
+        selectedStores = [];
+        productlist.forEach(function (item) {
+            if (!selectedStores.includes(item.StoreCode)) {
+                selectedStores.push(item.StoreCode);
+            }
+        });
+        productlist = [];
+    }
+
+    function Editbutton(e) {
+        var qt = "#Qtys" + e;
+        $(qt).attr("disabled", false);
+        var qt = "#Qtys" + (e - 1);
+        $(qt).attr("disabled", true);
+        var qt = "#Qtys" + (e + 1);
+        $(qt).attr("disabled", true);
+    }
+
+    function Deleterow(el) {
+        var row = upTo(el, 'tr')
+        if (row) row.parentNode.removeChild(row);
+    }
+
+    function upTo(el, tagName) {
+        tagName = tagName.toLowerCase();
+        while (el && el.parentNode) {
+            el = el.parentNode;
+            if (el.tagName && el.tagName.toLowerCase() == tagName) {
+                return el;
+            }
+        }
+        return null;
+    }
+
+    function SaveToDraftOrFinalise(e, e1){
+        var form = $('#_validateXTMkey');
+        var token = $('input[name="__RequestVerificationToken"]', form).val();
+        $(".loader").show();
+        $('#Draftbtn').prop('disabled', true);
+        $('#Finalisebtn').prop('disabled', true);
+
+        $(".modal-content").show();
+        var tableinfo = t.page.info();
+        total = tableinfo.recordsTotal
+        productlist = [];
+        for (i = 0; i < total; i++)
+        {
+            var data = t.$('input[id=Qtys' + (i) + ']').val();
+            var StoreId = t.$('input[id=StoreId' + (i) + ']').val();
+            var Id = t.$('input[id=No' + (i) + ']').val();
+            var da = t.row(i).data();
+            var product = {};
+            product.ProductId = parseInt(Id);
+            product.Qty = data;
+            product.storeId = StoreId;
+            productlist.push(product);
+        }
+            if (productlist.length > 0) {
+            if (e != "Save") {
+                var r = confirm("Are You Sure You Want To Finalise?");
+                if (r) {
+                    $.ajax({
+                        url: "@Url.Action("SaveOrFinaliseOrderForStores", "Order")",
+                        type: "POST",
+                        data: {
+                            "order": productlist,
+                            "issave": e,
+                            "selectedStores": selectedStoreValues,
+                            __RequestVerificationToken: token,
+                        },
+                        success: function (response) {
+                            if (response) {
+                                $(".modal-content").hide();
+                                alert("Order Finalised Successfully");
+                                window.location = "@Url.Action("Index", "Home")";
+                            }
+                        }
+                    });
+                }
+                else {
+                    $(".loader").hide();
+                    $('#Draftbtn').prop('disabled', false);
+                    $('#Finalisebtn').prop('disabled', false);
+                }
+
+            }
+            else {
+                $.ajax({
+                    url: "@Url.Action("SaveOrFinaliseOrderForStores", "Order")",
+                    type: "POST",
+                    data: {
+                        order: productlist,
+                        issave: e,
+                        __RequestVerificationToken: token,
+                    },
+                    success: function (response) {
+                        if (response) {
+                            $(".modal-content").hide();
+                            alert("Order Saved as Draft Successfully");
+                            window.location = "@Url.Action("Index", "Home")"
+                        }
+                    }
+                });
+            }
+        } else {
+            alert("Please select Item")
+            $(".loader").hide();
+            $('#Draftbtn').prop('disabled', false);
+            $('#Finalisebtn').prop('disabled', false);
+        }
+    }
+    function CheckQty(e,e1) {
+        var id = "#Qty" + e1;
+        var value = $(id).val();
+        if (parseInt(value) > parseInt(e))
+            alert("Quantity is greater than order limit")
+    }
+
+    function CheckQtys(e, e1) {
+        var id = "#Qtys" + e1;
+        var value = $(id).val();
+        if (parseInt(value) > parseInt(e))
+            alert("Quantity is greater than order limit")
+    }
+    function ViewOrderInformation(orderno)
+    {
+        if (orderno != '-') {
+            $('#orderinformation').modal('show');
+        $(".loader").show();
+        var route = '@Url.Action("OrderInformation", "Order")?orderheaderid=' + orderno;
+        $('#information-block').load(route);
+        }        
+    }
+</script>
+<script>
+    function CopyQty(SuggestedQuantity, id) {
+        if (SuggestedQuantity != null && SuggestedQuantity != "" && SuggestedQuantity != undefined)
+            $(id).val(parseInt(SuggestedQuantity));
+    }
+</script>
+<div class="modal fade" id="orderinformation" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="information-block"></div>
+            </div>
+        </div>
+    </div>
+</div>

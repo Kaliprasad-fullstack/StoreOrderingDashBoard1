@@ -1,0 +1,686 @@
+﻿@using DbLayer.Repository
+@using StoreOrderingDashBoard.Models
+@{
+
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    MenuRepository menu = new MenuRepository();
+    int customerplan = 0;
+    int userid = 0;
+    customerplan = SessionValues.PlanId;
+    userid = SessionValues.UserId;
+    var widget = menu.GetWidget(2, customerplan, userid);
+}
+
+
+<!-- /top navigation -->
+<!-- page content -->
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    @{
+        var finilise = from s in widget
+                       where s.MenuName.Contains("Finilize Order")
+                       select s;
+        var processe = from s in widget
+                       where s.MenuName.Contains("Processed Order")
+                       select s;
+        var Linegraph = from s in widget
+                        where s.MenuName.Contains("Process and Finlised Order Line graph")
+                        select s;
+        var Bargraph1 = from s in widget
+                        where s.MenuName.Contains("Process and Finlised Order Bar graph")
+                        select s;
+        var Topsku = from s in widget
+                     where s.MenuName.Contains("Top 5 SKU Bar graph")
+                     select s;
+        var Topstore = from s in widget
+                       where s.MenuName.Contains("Top 5 Store")
+                       select s;
+        var soapproved = from s in widget
+                         where s.MenuName.Contains("SoApprove Order")
+                         select s;        
+        var invoice = from s in widget
+                      where s.MenuName.Contains("Invoice Order")
+                      select s;
+        var OFR_LFR = from s in widget
+                      where s.MenuName.Contains("OFR_LFR")
+                      select s;
+        var StoresToBePlacedOrders = from s in widget
+                                     where s.MenuName.Contains("Stores To Be Finalize Planned Orders")
+                                     select s;
+    }
+    <div class="row">
+        <div class="row x_title">
+            <div class="col-md-6">
+                
+            </div>
+            <div class="col-md-6">
+                <div class="pull-right">
+                    @Html.ListBox("SelectedDC", (MultiSelectList)ViewBag.DCs, new { size = 4, @class = "btn btn-sm" })
+                </div>
+            </div>
+        </div>
+        <div class="row tile_count">
+            @if (finilise.Count() > 0)
+            {
+                <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                    <span class="count_top"><i class="fa fa-shopping-cart"></i> Finalised Orders</span>
+                    <div class="count green" id="finilisedOrders"><span>(MTD)</span></div>
+                    <span class="count_bottom" ><i class="green" id="finilisedOrdersMonth" > </i> For Today</span>
+                </div>
+            }            
+            @if (soapproved.Count() > 0)
+            {
+                <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                    <span class="count_top"><i class="fa fa-shopping-cart"></i> SO Approved Orders</span>
+
+                    <div class="count green" id="SOApprovedOrders"><span>(MTD)</span></div>
+
+                    <span class="count_bottom" ><i class="green" id="SOApprovedOrdersMonth"> </i> For Today</span>
+
+                </div>
+            }            
+            @if (invoice.Count() > 0)
+            {
+                <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                    <span class="count_top"><i class="fa fa-shopping-cart"></i> Invoice Orders</span>
+
+                    <div class="count green" id="InvoiceOrders"><span>(MTD)</span></div>
+
+                    <span class="count_bottom"><i class="green" id="InvoiceOrdersMonth"> </i>  For Today</span>
+
+                </div>
+            }
+
+            @if (OFR_LFR.Count() > 0)
+            {
+                <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                    <span class="count_top"><i class="fa fa-shopping-cart"></i>OFR</span>
+                    <div class="count green" id="OFR"><span>(MTD)</span></div>
+                </div>
+                <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                    <span class="count_top"><i class="fa fa-shopping-cart"></i>LIFR</span>
+                    <div class="count green"id="LIFR" ><span>(MTD)</span></div>
+                </div>
+            }
+            @*<div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                <span class="count_top"><i class="fa fa-shopping-cart"></i> Case Fill Rate</span>
+                <div class="count green" id="CFR">@CFR <span>(MTD)</span></div>
+            </div>*@
+        </div>
+        @if (StoresToBePlacedOrders.Count() > 0)
+        {
+            <div class="row tile_count">
+                <div class="col-md-2 col-sm-4 col-xs-6 tile_stats_count">
+                    <span class="count_top"><i class="fas fa-store-alt"></i> Stores Yet to be Order</span>
+                    <div class="count red"></div>
+                    @*<span class="count_bottom"><i class="green"><i class="fa fa-sort-asc"></i>34% </i> From last Week</span>*@
+                </div>
+            </div>
+        }
+
+
+        <div class="row">
+            @if (Linegraph.Count() > 0)
+            {
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>Process and Finalised Order</h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li>
+                                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+
+                                <li>
+                                    <a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+                            <input type="hidden" value="" id="line" />
+                            <input type="hidden" value="" id="line1" />
+                            <canvas id="lineChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (Bargraph1.Count() > 0)
+            {
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>Process and Finalised Order</h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li>
+                                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+
+                                <li>
+                                    <a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+                            <input type="hidden" value="" id="dat" />
+                            <input type="hidden" value="" id="dat1" />
+                            <canvas id="mybarChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="row">
+            @if (Topsku.Count() > 0)
+            {
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>Top 5 Items On Demand</h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li>
+                                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+
+                                <li>
+                                    <a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+                            <input type="hidden" value="" id="dat3" />
+                            <canvas id="Top5SKU"></canvas>
+                        </div>
+                    </div>
+                </div>
+            }
+            @if (Topstore.Count() > 0)
+            {
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <div class="x_panel">
+                        <div class="x_title">
+                            <h2>Top 5 Selling Store</h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li>
+                                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+
+                                <li>
+                                    <a class="close-link"><i class="fa fa-close"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>
+                        <div class="x_content">
+                            <input type="hidden" id="dat4" value="" />
+                            <canvas id="Top5Store"></canvas>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        <div class="row">
+            @{
+                Html.RenderAction("TotalSalesValue", "Report");
+                Html.RenderAction("TotalSalesAmount", "Report");
+            }
+        </div>
+        <div class="row">
+            @{
+                Html.RenderAction("Top10SKUByCase", "Report");
+                Html.RenderAction("Top10SKUByAmount", "Report");
+            }
+        </div>
+        <br />
+    </div>
+</div>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<!-- /page content -->
+<!-- footer content -->
+<script id="ScriptTotalSalesValueGraphStoreContainerData">
+        var TotalSalesValueGraph;
+    $(document).ready(function () {
+        LoadTotalSalesValueGraphContainerData();
+    });
+    function LoadTotalSalesValueGraphContainerData()
+    {
+        var DCID = $("#SelectedDC").val();
+            var item;
+            $.ajax({
+                url: "@Url.Action("GetTotalSalesValue", "Report")",
+                type: "POST",
+                data: {
+                    "SelectedDc": DCID
+                },
+                success: function (response) {
+                    if (response) {
+                        item = response;
+                        LoadTotalSalesValueGraph(item);
+                    }
+                },
+                Error: function (respo){
+                    alert("UNABLE TO LOAD GRAPH DATA");
+                }
+            });
+    }
+        function LoadTotalSalesValueGraph(item) {
+        if ($('#TotalSalesValueGraphContainer').length) {
+            var MonthName = [];
+            var Year=''
+            var TotalSalesValue = [];
+            var Month = [];
+            var Years = [];
+            for (var i in item) {
+                TotalSalesValue.push(item[i].TotalSalesValue != null ? item[i].TotalSalesValue : 0);
+                MonthName.push(item[i].MonthName);
+                Month.push(item[i].Month);
+                Years.push(item[i].Year);
+            }
+            var Year = Years[1];
+            TotalSalesValueGraph = echarts.init(document.getElementById('TotalSalesValueGraphContainer'));
+            TotalSalesValueGraph.setOption({
+                color: ["#4992ff", "#7cffb2", "#fddd60", "#ff6e76"],
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['Odered Quantity', 'Fulfilled Quantity', 'Invoice Quantity']
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        magicType: {
+                            show: true,
+                            title: {
+                                bar: 'Bar',
+                                line: 'line'
+                            },
+                            type: ['line', 'bar']
+                        },
+                        restore: {
+                            show: true,
+                            title: "Restore"
+                        },
+                        saveAsImage: {
+                            show: true,
+                            title: "Save Image"
+                        }
+                    }
+                },
+                calculable: true,
+                xAxis: [{
+                    type: 'category',
+                    boundaryGap: true,
+                    data: MonthName,
+                    name: Year,
+                    nameLocation: 'middle',
+                    nameGap: 20,
+                    splitLine: {
+                        show: false,
+                    }
+                }],
+                yAxis: [{
+                    type: 'value',
+                    name: 'QTY'
+                }],
+                series: [{
+                    name: "Total Sales Value",
+                    type: 'bar',
+                    //smooth: false,
+                    data: TotalSalesValue
+                }]
+            });
+        }
+    }
+</script>
+<script id="ScriptTotalSalesAmountGraphStoreContainerData">
+        var TotalSalesAmountGraph;
+    $(document).ready(function () {
+        LoadTotalSalesAmountGraphContainerData();
+    });
+        function LoadTotalSalesAmountGraphContainerData()
+        {
+            var item;
+            var DCID = $("#SelectedDC").val();
+            $.ajax({
+                url: "@Url.Action("GetTotalSalesAmount", "Report")",
+                type: "POST",
+                data: {
+                    "SelectedDc": DCID
+                },
+
+                success: function (response) {
+                    if (response) {
+                        item = response;
+                        LoadTotalSalesAmountGraph(item);
+                    }
+                },
+                Error: function (respo){
+                    alert("UNABLE TO LOAD TOTAL SALES AMOUNT GRAPH DATA");
+                }
+            });
+    }
+    function LoadTotalSalesAmountGraph(item) {
+            if ($('#TotalSalesAmountGraphContainer').length) {
+            var MonthName = [];
+            var Year=''
+            var TotalSalesAmount = [];
+            var Month = [];
+            var Years = [];
+            for (var i in item) {
+                TotalSalesAmount.push(item[i].Amount != null ? item[i].Amount : 0);
+                MonthName.push(item[i].MonthName);
+                Month.push(item[i].Month);
+                Years.push(item[i].Year);
+            }
+            var Year = Years[1];
+                TotalSalesAmountGraph = echarts.init(document.getElementById('TotalSalesAmountGraphContainer'));
+                TotalSalesAmountGraph.setOption({
+                color: ["#4992ff", "#7cffb2", "#fddd60", "#ff6e76"],
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['Odered Quantity', 'Fulfilled Quantity', 'Invoice Quantity']
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        magicType: {
+                            show: true,
+                            title: {
+                                bar: 'Bar',
+                                line: 'line'
+                            },
+                            type: ['line', 'bar']
+                        },
+                        restore: {
+                            show: true,
+                            title: "Restore"
+                        },
+                        saveAsImage: {
+                            show: true,
+                            title: "Save Image"
+                        }
+                    }
+                },
+                calculable: true,
+                xAxis: [{
+                    type: 'category',
+                    boundaryGap: true,
+                    data: MonthName,
+                    name: Year,
+                    nameLocation: 'middle',
+                    nameGap: 20,
+                    splitLine: {
+                        show: false,
+                    }
+                }],
+                yAxis: [{
+                    type: 'value',
+                    name: 'QTY'
+                }],
+                series: [{
+                    name: "Total Sales Amount",
+                    type: 'bar',
+                    //smooth: false,
+                    data: TotalSalesAmount
+                }]
+            });
+        }
+    }
+</script>
+<script id="ScriptTop10SKUByAmountGraphStoreContainerData">
+    var Top10SKUByAmountGraph;
+    $(document).ready(function () {
+        Top10SKUByAmountGraphContainerData();
+    });
+    function Top10SKUByAmountGraphContainerData()
+        {
+        var item;
+        var DCID = $("#SelectedDC").val();
+            $.ajax({
+                url: "@Url.Action("GetTop10SKUByAmount", "Report")",
+                type: "POST",
+                data: {
+                    "SelectedDc": DCID
+                },
+                success: function (response) {
+                    if (response) {
+                        item = response;
+                        LoadTop10SKUByAmountGraph(item);
+                    }
+                },
+                Error: function (respo){
+                    alert("UNABLE TO LOAD TOTAL SALES AMOUNT GRAPH DATA");
+                }
+            });
+    }
+    function LoadTop10SKUByAmountGraph(item) {
+        if ($('#Top10SKUByAmountGraphContainer').length) {
+            var SKUCode = [];
+            var Amount = [];
+            for (var i in item) {
+                Amount.push(item[i].Amount != null ? item[i].Amount : 0);
+                SKUCode.push(item[i].SKUCode);                
+            }            
+            Top10SKUByAmountGraph = echarts.init(document.getElementById('Top10SKUByAmountGraphContainer'));
+            Top10SKUByAmountGraph.setOption({
+                color: ["#4992ff", "#7cffb2", "#fddd60", "#ff6e76"],
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['SKU Amount']
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        magicType: {
+                            show: true,
+                            title: {
+                                bar: 'Bar',
+                                line: 'line'
+                            },
+                            type: ['line', 'bar']
+                        },
+                        restore: {
+                            show: true,
+                            title: "Restore"
+                        },
+                        saveAsImage: {
+                            show: true,
+                            title: "Save Image"
+                        }
+                    }
+                },
+                calculable: true,
+                xAxis: [{
+                    type: 'category',
+                    boundaryGap: true,
+                    data: SKUCode,
+                    nameLocation: 'middle',
+                    axisLabel: {
+                        interval: 0,
+                        rotate: "45"
+                    },
+                    nameGap: 20,
+                    splitLine: {
+                        show: false,
+                    }
+                }],
+                yAxis: [{
+                    type: 'value',
+                    name: 'Amount'
+                }],
+                grid: {
+                    left: "10%",
+                    right: "30px",
+                    bottom: "20%" //
+                },
+                series: [{
+                    name: "Amount",
+                    type: 'bar',
+                    data: Amount
+                }]
+            });
+        }
+    }
+</script>
+<script id="ScriptTop10SKUByCaseGraphStoreContainerData">
+    var Top10SKUByCaseGraph;
+    $(document).ready(function () {
+        Top10SKUByCaseGraphContainerData();
+    });
+    function Top10SKUByCaseGraphContainerData(){
+        var item;
+        var DCID = $("#SelectedDC").val();
+            $.ajax({
+                url: "@Url.Action("GetTop10SKUByCase", "Report")",
+                type: "POST",
+                data: {
+                    "SelectedDc": DCID
+                },
+                success: function (response) {
+                    if (response) {
+                        item = response;
+                        LoadTop10SKUByCaseGraph(item);
+                    }
+                },
+                Error: function (respo){
+                    alert("UNABLE TO LOAD TOTAL SALES AMOUNT GRAPH DATA");
+                }
+            });
+    }
+    
+    function LoadTop10SKUByCaseGraph(item) {
+        if ($('#Top10SKUByAmountGraphContainer').length) {
+            var SKUCode = [];
+            var TotalSalesValue = [];
+            for (var i in item) {
+                TotalSalesValue.push(item[i].Amount != null ? item[i].TotalSalesValue : 0);
+                SKUCode.push(item[i].SKUCode);
+            }
+            Top10SKUByCaseGraph = echarts.init(document.getElementById('Top10SKUByCaseGraphContainer'));
+            Top10SKUByCaseGraph.setOption({
+                color: ["#4992ff", "#7cffb2", "#fddd60", "#ff6e76"],
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['SKU Case']
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        magicType: {
+                            show: true,
+                            title: {
+                                bar: 'Bar',
+                                line: 'line'
+                            },
+                            type: ['line', 'bar']
+                        },
+                        restore: {
+                            show: true,
+                            title: "Restore"
+                        },
+                        saveAsImage: {
+                            show: true,
+                            title: "Save Image"
+                        }
+                    }
+                },
+                calculable: true,
+                xAxis: [{
+                    type: 'category',
+                    boundaryGap: true,
+                    axisLabel: {
+                        interval: 0,
+                        rotate: "45"
+                    },
+                    data: SKUCode,
+                    nameLocation: 'middle',
+                    nameGap: 20,
+                    splitLine: {
+                        show: false,
+                    }
+                }],
+                yAxis: [{
+                    type: 'value',
+                    name: 'Cases'
+                }],
+                grid: {
+                    left: "10%",
+                    right: "30px",
+                    bottom: "20%" //
+                },
+                series: [{
+                    name: "Cases",
+                    type: 'bar',
+                    data: TotalSalesValue
+                }]
+            });
+        }
+    }
+</script>
+<script id="LoadApplicationTiles">
+    function LoadDashboardValues(item) {
+        $("#finilisedOrders").html(item.MTDCls[0].Finalized_order_count +"<span>(MTD)</span>");
+        $("#finilisedOrdersMonth").html(item.MTDCls[1].Finalized_order_count);
+        $("#SOApprovedOrders").html(item.MTDCls[0].SO_Approved_count +"<span>(MTD)</span>");
+        $("#SOApprovedOrdersMonth").html(item.MTDCls[1].SO_Approved_count);
+        $("#InvoiceOrders").html(item.MTDCls[0].Invoiced_count +"<span>(MTD)</span>");                
+        $("#InvoiceOrdersMonth").html(item.MTDCls[1].Invoiced_count);
+
+        $("#LIFR").html(item.OFRLIFR_MTD.LIFRPercentage.toFixed(2) + "%<span>(MTD)</span>");
+        $("#OFR").html(item.OFRLIFR_MTD.OFRPercentage.toFixed(2) + "%<span>(MTD)</span>");
+
+    }
+   function GetDashboardValuesForDC(DCID)
+    {
+        $.ajax({
+            url: "@Url.Action("GetDashboardValuesForDC", "Report")",
+            type: "POST",
+            data: {
+                "SelectedDc": DCID
+            },
+            success: function (response) {
+                if (response.data != undefined) {
+                    item = response.data;
+                    LoadDashboardValues(item);
+                }
+            },
+            Error: function (response) {
+                alert("UNABLE TO LOAD DATA");
+            }
+        });
+    }    
+</script>
+<script>
+    $(document).ready(function () {
+        $('#SelectedDC').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: '100%',
+            maxHeight: 150,
+            dropRight: true
+        });
+        GetDashboardValuesForDC($("#SelectedDC").val());
+        LoadTotalSalesValueGraphContainerData();
+        LoadTotalSalesAmountGraphContainerData();
+        Top10SKUByAmountGraphContainerData();
+        Top10SKUByCaseGraphContainerData();
+        $("#SelectedDC").change(function () {
+            var SelectedDC = $(this).val();
+            GetDashboardValuesForDC(SelectedDC);
+            LoadTotalSalesValueGraphContainerData();
+            LoadTotalSalesAmountGraphContainerData();
+            Top10SKUByAmountGraphContainerData();
+            Top10SKUByCaseGraphContainerData();
+        });
+    });
+
+</script>

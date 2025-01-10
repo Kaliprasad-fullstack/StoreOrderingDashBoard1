@@ -1,0 +1,128 @@
+﻿@model DAL.TicketGenration
+
+
+
+@{
+    /**/
+
+    ViewBag.Title = "AddTicket";
+    if (StoreOrderingDashBoard.Models.SessionValues.RoleId == 2)
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+
+}
+
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Add Ticket</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+
+                        <div class="clearfix"></div>
+                        @*<a class="btn btn-success datatable-btn" href="@Url.Action("EditStore","Store")">Edit</a>*@
+                    </div>
+                    <div class="x_content">
+                        @using (Html.BeginForm("AddTicket", "Ticket", FormMethod.Post, new { @class = "form-horizontal form-label-left", enctype = "multipart/form-data" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                            <div class="form-group">
+                                @Html.Label("Ticket Type", htmlAttributes: new { @class = "control-label col-md-3 col-sm-6 col-xs-12" })
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.DropDownListFor(model => model.TicketTypeId, new SelectList(ViewBag.TicketTypeName, "TicketTypeId", "TicketTypeName"), "Select Ticket Type", new { @class = "form-control  col-md-7 col-xs-12", })
+                                    @Html.ValidationMessageFor(model => model.TicketTypeId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.Label("Order No", htmlAttributes: new { @class = "control-label col-md-3 col-sm-6 col-xs-12" })
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.TextBoxFor(model => model.OrderNo, new { @class = "form-control col-md-7 col-xs-12" })
+                                    @Html.ValidationMessageFor(model => model.OrderNo, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.Label("Contact No", htmlAttributes: new { @class = "control-label col-md-3 col-sm-6 col-xs-12" })
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.TextBoxFor(model => model.ContactNo, new { @class = "form-control col-md-7 col-xs-12" })
+                                    @Html.ValidationMessageFor(model => model.ContactNo, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.Label("Ticket Description", htmlAttributes: new { @class = "control-label col-md-3 col-sm-6 col-xs-12" })
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.TextAreaFor(model => model.Description, new { @class = "form-control  col-md-7 col-xs-12" })
+                                    @Html.ValidationMessageFor(model => model.Description, "", new { @class = "text-danger" })
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.Label("Ticket Raised By", htmlAttributes: new { @class = "control-label col-md-3 col-sm-6 col-xs-12" })
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.TextBoxFor(model => model.TicketRaisedBy, new { @class = "form-control  col-md-7 col-xs-12" })
+                                    @Html.ValidationMessageFor(model => model.TicketRaisedBy, "", new { @class = "text-danger" })
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.Label("Upload Image", htmlAttributes: new { @class = "control-label col-md-3 col-sm-6 col-xs-12" })
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @*@Html.TextBoxFor(model => model.ImageFile, new { type = "file", accept = "image/*", @class = "form-control col-md-7 col-xs-12" })*@
+                                    <input type="file" class="form-control" name="ImageFile" multiple="multiple" accept="image/png, image/gif, image/jpeg" />
+                                    @Html.ValidationMessageFor(model => model.ImageFile, "", new { @class = "text-danger" })
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.HiddenFor(model => model.TicketStatus, htmlAttributes: new { @class = "control-label col-md-3 col-sm-6 col-xs-12" })
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.HiddenFor(model => model.TicketStatus, new { htmlAttributes = new { @class = "form-control  col-md-7 col-xs-12" } })
+                                    @Html.ValidationMessageFor(model => model.TicketStatus, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.HiddenFor(model => model.AdminRemark, htmlAttributes: new { @class = "control-label col-md-3 col-sm-6 col-xs-12" })
+                                <div class="col-md-10">
+                                    @Html.HiddenFor(model => model.AdminRemark, new { htmlAttributes = new { @class = "form-control" } })
+                                    @Html.ValidationMessageFor(model => model.AdminRemark, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <br />
+                                    <input type="submit" value="Create" class="btn btn-success dataTable-btn" />&nbsp; &nbsp;
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    document.getElementById('ticketForm').addEventListener('submit', function (event) {
+        event.preventDefault();     
+    });
+</script>
+
+
+

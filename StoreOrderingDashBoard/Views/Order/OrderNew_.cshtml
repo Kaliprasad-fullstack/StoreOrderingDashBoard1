@@ -1,0 +1,497 @@
+﻿@using DAL
+@{
+    ViewBag.Title = "OrderNew";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int storeId = Convert.ToInt32(Session["StoreId"].ToString());
+    string MkrChkrFlag = Session["MkrChkrFlag"].ToString();
+}
+
+<!-- /top navigation -->
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<!-- page content -->
+<style>
+    .questions {
+        display: none;
+        background: #144069;
+        position: absolute;
+        z-index: 100;
+        color: #EEE;
+        margin-top: 20px;
+        width: auto;
+        min-height: 112px;
+    }
+
+    .question {
+        max-width: 500px;
+        min-width: 100px;
+        padding: 28px 10px 10px 10px;
+        font-size: 18px;
+        font-weight: bold;
+        text-align: center;
+    }
+
+        .question p {
+            margin: 0;
+            padding: 0;
+        }
+
+    .close {
+        font-size: 22px;
+        cursor: pointer;
+        position: absolute;
+        right: 10px;
+        top: 5px;
+    }
+</style>
+<div class="right_col" role="main">
+
+    <div class="">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>Create New Order</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <form id="SearchForm" action="@Url.Action("OrderNew","Order")">
+                        @Html.AntiForgeryToken()
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>Item Type</label>
+                                @Html.ListBox("SelectedTypes", (MultiSelectList)ViewBag.ItemTypes, new { size = 4, @class = "form-control" })
+                                <p class="text text-danger" style="margin-top:5px;" id="SelectedTypesError"></p>
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>Item Category</label>
+                                @Html.ListBox("SelectedCategories", (MultiSelectList)ViewBag.ItemCategories, new { size = 4, @class = "form-control" })
+                                <p class="text text-danger" style="margin-top:5px;" id="SelectedCategoriesError"></p>
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <div class="form-group text-right">
+                                    <label cont></label>
+                                    <button class="search btn btn-success btn-sm" id="SearchBtn" style="margin-bottom:0px;" type="submit">Search</button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                    <div class="bs-example" id="errorlog" style="display:none;">
+                        <div class="alert alert-warning alert-dismissible " role="alert">
+                            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">×</span>
+                            </button>
+                            <h4 class="alert-heading"><i class="fa fa-warning"></i> Error Log</h4>        	<hr>
+                            <ul id="ErrorList">
+                                <li>Error 1</li>
+                            </ul>
+                        </div>
+                    </div>
+
+
+                    <table id="datatable12" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                @*<th></th>*@
+                                <th>Product ID</th>
+                                <th>Item Code</th>
+                                <th>Item Description</th>
+                                @*<th>PackingDescription</th>*@
+                                <th>Category</th>
+                                <th>UOM</th>
+                                <th>Max Order Limit</th>
+                                <th>Quantity</th>
+                                <th style="display:none">Id</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (ViewBag.List != null)
+                            {
+                                int i = 1;
+                                foreach (ItemDetailView item in ViewBag.List)
+                                {
+                                    <tr>
+                                        <td>@item.Id </td>
+                                        <td class="trends">
+                                            @item.SKUCode
+                                        </td>
+                                        <td>
+                                            @item.SKUName
+                                        </td>
+                                        <td>
+                                            @item.CaseConversion
+                                        </td>
+                                        <td>@item.UnitofMasureDescription</td>
+                                        <td>@item.MaximumOrderLimit</td>
+                                        <td>
+                                            <input type="number" name="Qty" onblur="CheckQty(@item.MaximumOrderLimit,@i)" min="0" value="0" id="@("Qty"+i)" />
+                                            <input type="text" value="@item.Id" id="@("No"+i)" style="display:none" />
+                                        </td>
+                                        <td style="display:none">
+                                            @*<input type="text" value="@item.Id" id="@("No"+i)"  />*@
+                                        </td>
+                                    </tr>
+                                    i++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                <div class="x_content">
+                    <div class="buttons">
+                        <!-- Standard button -->
+                        <button type="button" class="btn btn-success btn-lg" onclick="CreateList()">View Cart</button>
+                        <div class="modal fade" id="ViewModal" role="dialog">
+                            <div class="modal-dialog modal-lg">
+                                <!-- Modal content-->
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal" >&times;</button>
+                                        <h4 class="modal-title">Order Summary</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div class="row">
+                                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                                <div class="x_panel">
+                                                    <div class="x_content">
+                                                        <table id="example" class="table table-striped table-bordered table-responsive">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Product ID</th>
+                                                                    <th>Item Code</th>
+                                                                    <th>Item Name</th>
+                                                                    <th>Category</th>
+                                                                    <th>UOM</th>
+                                                                    <th>Max Order Limit</th>
+                                                                    <th>Quantity</th>
+                                                                    <th>Edit</th>
+                                                                    <th>Delete</th>
+                                                                </tr>
+                                                            </thead>
+
+                                                            <tbody></tbody>
+                                                        </table>
+                                                        <div class="loader"></div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        @if (MkrChkrFlag != "Chkr")
+                                        {
+                                            <button type="button" onclick="SaveToDraftOrFinalise('Save',@storeId)" id="Draftbtn" class="btn btn-default">Save As Draft</button>
+                                        }
+                                        @if (MkrChkrFlag != "Mkr")
+                                        {
+                                            <button type="button" onclick="SaveToDraftOrFinalise('Finalize',@storeId)" id="Finalisebtn" class="btn btn-default">Finalise</button>
+                                        }
+                                        @*<button type="button" class="btn btn-default" data-dismiss="modal">Add New</button>*@
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="questions">
+    <div class="close">
+        <i class="fa fa-times"></i>
+    </div>
+    <div class="question">
+        <img src="" style="height:100%;width:275px;" id="ItemImage" alt="Image Not Found" />
+    </div>
+</div>
+<script>
+    var t;
+    $(document).ready(function () {
+        //document.getElementById("Draftbtn").disabled = true;
+      //  $('#Draftbtn').prop('disabled', true);
+        $(".loader").hide();
+        t = $('#example').DataTable();
+
+        dt = $('#datatable12').DataTable().rows().iterator('row', function (context, index) {
+
+            var node = $(this.row(index).node());
+            //node.context is element of tr generated by jQuery DataTables.
+        });
+        //$('#datatable12 tbody').on('click', '.trends', function () {
+        //    var cellData = dt.row($(this).parents('tr')).data();
+        //    var SKUCode = cellData[2];
+        //    SKUCode = SKUCode.trim();
+        //    showQuestion($(this),SKUCode);
+        //});
+        $('#datatable12 tbody').on('mouseover', '.trends', function () {
+            var cellData = dt.row($(this).parents('tr')).data();
+            var SKUCode = cellData[2];
+            SKUCode = SKUCode.trim();
+            showQuestion($(this), SKUCode);
+        });
+        $('#datatable12 tbody').on('mouseout', '.trends', function () {
+            $('.close').trigger("click");
+        });
+        $('#SelectedCategories').multiselect({
+            includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true,
+            buttonWidth: '100%',
+            maxHeight: 150,
+            enableFiltering: true
+        });
+        $('#SelectedTypes').multiselect({
+            includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true,
+            buttonWidth: '100%',
+            maxHeight: 150,
+            enableFiltering: true
+        });
+        $('.close').click(function (e) {
+            e.stopPropagation();
+            $(this).parent().hide();
+            $('.items').removeClass('no-effect');
+        });
+    });
+    var productlist = [];
+
+    function CreateList() {
+        var oTable = document.getElementById('datatable');
+        //var oTable = t.rows().count()
+        //gets rows of table
+       // var rows = oTable.getElementsByTagName("tr");
+        //var rowLength = oTable.rows.length;
+        $('#ViewModal').modal("show");
+        var tableinfo = dt.page.info();
+
+        total = tableinfo.recordsTotal
+
+
+        //console.log(
+        //    "The following data would have been submitted to the server: \n\n" +
+        //   // data.substr(0, 120) + '...'
+        //);
+       // var d = data.substr();
+        //loops through rows
+        productlist = [];
+        for (i = 0; i < total; i++) {
+            //var Qty = "#Qty" + (i+1);
+            //var Qty1 = ($(Qty).val() == "" ? 0 : $(Qty).val());
+            var data = dt.$('input[id=Qty'+(i+1)+'], select').serialize();
+            var Qty = data.split("=");
+            // var data = dt.$('label[id=SKUCode1][0].innerHTML').serialize();
+            var da = dt.row(i).data();
+            if (parseInt(Qty[1]) > 0) {
+                //var data1 = dt.$('input[id=No1], select').serialize();
+               // var No = data1.split("=");
+                var product = {};
+                product.Qty = parseInt(Qty[1]);
+                //var no = "#No" + (i + 1);
+                product.No = parseInt(da[0]);
+                //var SKUCode = "#SKUCode" + (i + 1);
+                product.SKUCode = da[1];
+                //var SKUName = "#SKUName" + (i + 1);
+                product.SKUName = da[2];
+                //var PackingDescription = "#PackingDescription" + (i + 1);
+                //product.PackingDescription = da[3];
+                //var Category = "#Category" + (i + 1);
+                product.Category = da[3];//$(Category)[0].innerHTML;
+                product.UOM = da[4];
+                product.MaxOrder = da[5];
+                productlist.push(product);
+            }
+        }
+
+        t.clear().draw();
+
+        for (i = 0; i < productlist.length; i++) {
+            t.row.add([
+                productlist[i].No,
+                productlist[i].SKUCode,
+                productlist[i].SKUName,
+                productlist[i].Category,
+                productlist[i].UOM,
+                productlist[i].MaxOrder,
+                "<input type='number' id='Qtys" + i +"' onblur='CheckQtys("+productlist[i].MaxOrder+","+i+")' value=" + productlist[i].Qty +" disabled/>",
+                "<button id='Edit" + i +"' onclick='Editbutton("+i+")'>Edit</button>",
+                "<button id='Delete"+i+"' onclick='Deleterow(this)'>Delete</button>"
+            ]).draw(false);
+        }
+        productlist = [];
+    }
+    function CloseModal() {
+        $('#ViewModal').show('hide');
+    }
+    function Editbutton(e) {
+        var qt = "#Qtys" + e;
+        $(qt).attr("disabled", false);
+        var qt = "#Qtys" + (e - 1);
+        $(qt).attr("disabled", true);
+        var qt = "#Qtys" + (e + 1);
+        $(qt).attr("disabled", true);
+
+    }
+
+    function Deleterow(el) {
+        var row = upTo(el, 'tr')
+        if (row) row.parentNode.removeChild(row);
+    }
+
+    function upTo(el, tagName) {
+        tagName = tagName.toLowerCase();
+
+        while (el && el.parentNode) {
+            el = el.parentNode;
+            if (el.tagName && el.tagName.toLowerCase() == tagName) {
+                return el;
+            }
+        }
+        return null;
+    }
+
+    function showQuestion(button, SKUCode) {
+        var offset = button.offset();
+        var imagepath = "/images/SKUCode/" + SKUCode + ".jpg";
+        $("#ItemImage").attr("src", imagepath);
+        $('.questions')
+            .fadeIn()
+            .css({
+                left: Math.min(offset.left, $(window).innerWidth() - $('.questions').outerWidth()),
+                top: offset.top + button.innerHeight()
+            });
+    }
+
+    function SaveToDraftOrFinalise(e, e1) {
+        // var oTable = document.getElementById('example');
+       // debugger;
+        $(".loader").show();
+        $('#Draftbtn').prop('disabled', true);
+        $('#Finalisebtn').prop('disabled', true);
+
+        $(".modal-content").show();
+        var tableinfo = t.page.info();
+        total = tableinfo.recordsTotal
+        productlist = [];
+        for (i = 0; i < total; i++)
+        {
+           // var data = t.$('input[id=Qtys' + i + '], select').serialize();
+            var data = t.cell(i, 6).nodes().to$().find('input').val();
+          //  var Qty = data.split("=");
+            var da = t.row(i).data();
+            var product = {};
+            product.ProductId = parseInt(da[0]);
+            product.Qty = data;
+            product.storeId = parseInt(e1);
+            product.ItemCode = da[1];
+            product.ItemDesc = da[2];
+            productlist.push(product);
+        }
+        if (productlist.length > 0) {
+            if (e != "Save") {
+                var r = confirm("Are You Sure You Want To Finalise?");
+                if (r) {
+                    $.ajax({
+                        url: "@Url.Action("SaveOrFinaliseOrder", "Order")",
+                        type: "POST",
+                        data: {
+                            "order": productlist,
+                            "issave": e
+                        },
+                        success: function (response) {
+                            var $ErrorList = $("#ErrorList");
+                            $ErrorList.empty();
+                            var Errors = [];
+                            if (response) {
+                                var obj = response;
+                                var isfulluploaded = true;
+                                $.each(obj, function (key, value) {
+                                    if (value.Status != 1) {
+                                        console.log(value);
+                                        isfulluploaded = false;
+                                        Errors.push(value);
+                                        $ErrorList.append('<li>' + value.Message + '</li>');
+                                    }
+                                    if (value.Type == "Save") {
+                                        window.location = "@Url.Action("StoreDraftOrder", "Order")";
+                                    }
+                                });
+                                if (isfulluploaded) {
+                                    $("#errorlog").hide();
+
+                                    alert("ORDER UPLOADED SUCCESSFULLY")
+                                    $(".modal-content").hide();
+                                    $('#ViewModal').modal('hide')
+                                    window.location = "@Url.Action("Home", "Store")";
+                                }
+                                else {
+                                    $("#errorlog").show();
+                                    if (response.length != Errors.length)
+                                        alert("ORDER UPLOADED PARTIALLY.\n PLEASE CHECK ERROR LOG");
+                                    else
+                                        alert("UNABLE TO UPLOAD ORDER.\n PLEASE CHECK ERROR LOG");
+                                    $(".modal-content").hide();
+                                    $('#ViewModal').modal('hide')
+                                }
+                                $(".loader").hide();
+                                $('#Draftbtn').prop('disabled', false);
+                                $('#Finalisebtn').prop('disabled', false);
+
+                            }
+                        },
+                        error: function (response) {
+                            console.log(response)
+                            alert("UNABLE TO SAVE ORDER.");
+                        }
+                    });
+                }
+                else {
+                    $(".loader").hide();
+                    $('#Draftbtn').prop('disabled', false);
+                    $('#Finalisebtn').prop('disabled', false);
+                }
+
+            }
+            else {
+                $.ajax({
+                    url: "@Url.Action("SaveOrFinaliseOrder", "Order")",
+                    type: "POST",
+                    data: {
+                        "order": productlist,
+                        "issave": e
+                    },
+                    success: function (response) {
+                        if (response) {
+                            $(".modal-content").hide();
+                            alert("ORDER SAVED AS DRAFT SUCCESSFULLY");
+                            // window.location=@Url.Action("Home", "Store");
+                            window.location = "@Url.Action("Home", "Store")"
+                        }
+                    }
+                });
+            }
+
+        } else {
+            alert("PLEASE SELECT ITEM")
+            $(".loader").hide();
+            $('#Draftbtn').prop('disabled', false);
+            $('#Finalisebtn').prop('disabled', false);
+        }
+
+           // alert("Hi");
+
+        //alert(e+e1);
+    }
+    function CheckQty(e,e1) {
+        var id = "#Qty" + e1;
+        var value = $(id).val();
+        if (parseInt(value) > parseInt(e))
+            alert("QUANTITY IS GREATER THAN ORDER LIMIT");
+    }
+
+    function CheckQtys(e, e1) {
+        var id = "#Qtys" + e1;
+        var value = $(id).val();
+        if (parseInt(value) > parseInt(e))
+            alert("QUANTITY IS GREATER THAN ORDER LIMIT");
+    }
+</script>

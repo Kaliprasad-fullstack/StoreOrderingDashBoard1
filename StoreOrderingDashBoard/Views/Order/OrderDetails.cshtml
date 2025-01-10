@@ -1,0 +1,65 @@
+﻿
+@{
+    ViewBag.Title = "OrderDetails";
+    Layout = null;
+}
+@using DAL
+<style>
+    .btn-link {
+        text-decoration: underline;
+    }
+</style>
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <table id="example" class="table table-striped table-bordered" style="overflow-x:scroll !important;">
+        <thead>
+            <tr>
+                <th>Date</th>
+                <th>PO Number</th>
+                <th>Store Code</th>
+                <th>SKU Code</th>
+                <th>SKU Description</th>
+                <th>UOM</th>
+                <th>Case Size</th>
+                <th>Original Ordered Qty</th>
+                <th>Rfpl Processed Qty</th>
+                <th>Invoiced Qty</th>
+                @*<th>DC</th>*@
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (ViewBag.storeOrderDetailsList != null)
+            {
+                int i = 1;
+                foreach (StoreOrderDetailsVB head in ViewBag.storeOrderDetailsList)
+                {
+                    <tr>
+                        <td>@(head.Store_Order_Date.HasValue ? head.Store_Order_Date.Value.ToString("dd/MM/yyyy") : "")</td>
+                        <td>@head.Po_Number</td>
+                        <td>@head.Store_Code</td>
+                        <td>@head.Item_Code</td>
+                        <td>@head.Item_Desc</td>
+                        <td>@head.UnitofMasureDescription</td>
+                        <td>@head.Case_Size</td>
+                        <td>@head.Original_Ordered_Qty</td>                        
+                        <td>@(head.Rfpl_Ordered_Qty.HasValue ? head.Rfpl_Ordered_Qty.Value.ToString() : "")</td>
+                        <td>@(head.Inv_Quantity.HasValue ? head.Inv_Quantity.Value.ToString() : "")</td>
+                        @*<td>@head.dc_name</td>*@
+                        <td><label class="label @head.Order_Status.Replace(" ","-").Replace("(","_").Replace(")","_") ">@head.Order_Status</label></td>
+                    </tr>
+                    i++;
+                }
+            }
+        </tbody>
+    </table>
+</div>
+<script>
+
+    $(document).ready(function () {
+        $(".loader").hide();
+        $("#example").DataTable({
+            //"order": [[3, "asc"]],
+            responsive: false
+        });
+    });
+</script>

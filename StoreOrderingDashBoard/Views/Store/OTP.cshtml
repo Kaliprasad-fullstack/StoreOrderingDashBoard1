@@ -1,0 +1,69 @@
+﻿@model DAL.OTPViewModel
+@{
+    Layout = null;
+    //int id = Convert.ToInt32(ViewData["Id"].ToString());
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Forgot Password-Quick Order</title>
+    <!-- Bootstrap -->
+    <link href="~/Content/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/Content/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="~/Content/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link href="~/Content/vendors/animate.css/animate.min.css" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="~/Content/build/css/custom.css" rel="stylesheet">
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+</head>
+<body class="login">
+    <div>
+        <div class="login_wrapper">
+            <div class="animate form login_form">
+                <section class="login_content">
+                    <form action="@Url.Action("OTP","Store")" method="post">
+                        @Html.AntiForgeryToken()
+                        <h1>OTP</h1>
+                        <div>
+                            @*<input type="hidden" style="display:none" value="@Model.UserId" name="Id" class="form-control" placeholder="Username" required="" autocomplete="off" />*@
+                            @Html.HiddenFor(x => x.UserId);
+                        </div>
+                        <div>
+                            <input type="text" id="OTP" name="OTP" title="" class="form-control" placeholder="OTP" value="@Model.OTP" required="" autocomplete="off" />
+                            @*@Html.TextBoxFor(x => x.OTP,new { @class = "form-control", required = "required", autocomplete = "off", placeholder = "OTP" });*@
+                        </div>
+                        <div>
+                            @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                        </div>
+                        <div>
+                            <input type="submit" class="btn btn-default submit" value="Confirm OTP" />
+                        </div>
+                        
+                        <div class="clearfix"></div>
+
+                        <div class="separator">
+                            <div class="clearfix"></div>
+                            <br />
+                            <div>
+                                <h1>@*<i class="fa fa-paw"></i>*@Quick Order</h1>
+                                <p>Copyright @(DateTime.Now.Year - 1) - @DateTime.Now.Year © Radhakrishna Foodland Pvt Ltd.<br /> All Rights Reserved.(RFPL IT Team)</p>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+        </div>
+
+    </div>
+</body>
+</html>

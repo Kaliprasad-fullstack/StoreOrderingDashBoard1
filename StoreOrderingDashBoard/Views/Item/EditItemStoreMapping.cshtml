@@ -1,0 +1,321 @@
+﻿@using DAL
+@{
+    ViewBag.Title = "EditItemMapping";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Edit Store Item Mapping </h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <div Id="Alerts-Wrapper"></div>
+                        <h2>List</h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <form>
+                            @Html.AntiForgeryToken()
+                            <div class="row">
+                                @Html.Hidden("CustId", (int)ViewBag.CustId)
+                                <div class="col-md-3 col-sm-6 col-xs-12">
+                                    <label>Store</label>
+                                    @if (ViewBag.MappingType == "DC")
+                                    {
+                                        @Html.ListBox("StoreIds", (MultiSelectList)ViewBag.Stores, new { size = 4, @class = "form-control" })
+                                    }
+                                    else
+                                    {
+                                        @Html.ListBox("StoreIds", (MultiSelectList)ViewBag.Stores, new { size = 4, @class = "form-control",disabled="disabled" })
+                                    }
+
+                                    <p class="text text-danger" style="margin-top:5px;" id="SelectedDcError"></p>
+                                </div>
+                                <div class="col-md-3 col-sm-6 col-xs-12">
+                                    <label>Items</label>
+                                    @if (ViewBag.MappingType == "DC")
+                                    {
+                                        @Html.DropDownList("ItemIds", (MultiSelectList)ViewBag.Items, new { size = 4, @class = "form-control", disabled="disabled" })
+                                    }
+                                    else
+                                    {
+                                        @Html.ListBox("ItemIds", (MultiSelectList)ViewBag.Items, new { size = 4, @class = "form-control" })
+                                    }
+                                    <p class="text text-danger" style="margin-top:5px;" id="SelectedItemsError"></p>
+                                </div>
+                                <div class="col-md-3 col-sm-6 col-xs-12">
+                                    <div class="form-group text-right">
+                                        <button class="search btn btn-success btn-sm" id="SearchBtn" style="margin-bottom:0px;margin-top:25px;" type="button">Search</button>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+                        <div class="bs-example" id="errorlog" style="display:none;">
+                            <div class="alert alert-warning alert-dismissible " role="alert">
+                                <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                                    <span aria-hidden="true">×</span>
+                                </button>
+                                <h4 class="alert-heading"><i class="fa fa-warning"></i> Error Log</h4><hr>
+                                @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <table id="datatable-itemmapping" class="table table-striped table-bordered dataTable no-footer dtr-inline" role="grid" aria-describedby="datatable_info">
+                            <thead>
+                                <tr role="row">
+                                    <th class="sorting_asc">Store</th>
+                                    <th class="sorting">Item Name</th>
+                                    <th class="sorting">Active/Deactive</th>
+                                </tr>
+                            </thead>
+                        </table>
+
+                        <hr />
+                        <div class="form-group text-right">
+                            <input type="checkbox" id="SaveAll" /> Save All &nbsp; <button class="btn btn-primary btn-sm pull-right" id="SaveDcItemMappingBtn" type="button" onclick="SaveAllStoreItemsMappings(this)">Save Mapping</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script id="DropDownInitialization">
+    $(document).ready(function () {
+        $('#StoreIds').multiselect({
+            includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true,
+            buttonWidth: '100%',
+            maxHeight: 150,
+            enableFiltering: true
+        });
+        $('#ItemIds').multiselect({
+            includeSelectAllOption: true,
+            enableCaseInsensitiveFiltering: true,
+            buttonWidth: '100%',
+            maxHeight: 150,
+            enableFiltering: true
+        });
+
+
+        //$("#CustId").change(function () {
+        //    var CustId = $(this).val();
+        //    GetDcForCustId(CustId);
+        //    GetItemForCustId(CustId);
+        //});
+    });
+
+    @*function GetDcForCustId(CustId){
+        $.ajax({
+            url: '@Url.Action("GetDataForCustomer", "Order")',
+            type: 'POST',
+            dataType: "JSON",
+            data:
+            {
+                "CustId": CustId,
+                "data":"DC"
+            },
+            success: function (result) {
+                $("#DcIds").html("");
+                var markup = "";
+                for (var x = 0; x < result.data.length; x++) {
+                    markup += "<option value=" + result.data[x].Id + ">" + result.data[x].Name + "</option>";
+                }
+                $("#DcIds").html(markup);
+                $("#DcIds").multiselect('destroy');
+                $('#DcIds').multiselect({
+                    includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
+                    buttonWidth: '100%',
+                    maxHeight: 150,
+                    enableFiltering: true
+                });
+            },
+            error: function (reponse) {
+                alert("error while fetching Dcs " + reponse)
+            },
+        });
+    }
+    function GetItemForCustId(CustId){
+        $.ajax({
+            url: '@Url.Action("GetDataForCustomer", "Order")',
+            type: 'POST',
+            dataType: "JSON",
+            data:
+            {
+                "CustId": CustId,
+                "data":"Item"
+            },
+            success: function (result) {
+                $("#ItemIds").html("");
+                var markup = "";
+                for (var x = 0; x < result.data.length; x++) {
+                    markup += "<option value=" + result.data[x].Id + ">" + result.data[x].SKUcode+ "</option>";
+                }
+                $("#ItemIds").html(markup);
+                $("#ItemIds").multiselect('destroy');
+                $('#ItemIds').multiselect({
+                    includeSelectAllOption: true,
+                    enableCaseInsensitiveFiltering: true,
+                    buttonWidth: '100%',
+                    maxHeight: 150,
+                    enableFiltering: true
+                });
+            },
+            error: function (reponse) {
+                alert("error while fetching Items " + reponse)
+            },
+        });
+    }*@
+</script>
+<script id="ItemMappingTableFillOutOperation">
+    var ItemForCustomerStoreActivation;
+    $(document).ready(function () {
+        $('#SearchBtn').click(function (e) {
+            if (ItemForCustomerStoreActivation != undefined) {
+                ItemForCustomerStoreActivation.destroy();
+            }
+            ItemForCustomerStoreActivation = $("#datatable-itemmapping").DataTable({
+             "ajax": {
+                 "url": '@Url.Action("GetItemsForStoreActivation", "Item")',
+                 "type": "post",
+                 "dataType": "JSON",
+                 "data": {
+                     "CustId": $("#CustId").val(),
+                     "StoreIds": $("#StoreIds").val(),
+                     "ItemIds": $("#ItemIds").val()
+                 }
+             },
+             "ordering": true,
+             "order": [[1, "asc"]],
+             "columns": [
+                 {
+                     "data": "Store", "autoWidth": true,
+                     render: function (data, type, row, meta) {
+                         return row.StoreCode + ' - ' + row.StoreName;
+                     }
+                 },
+                 {
+                     "data": "Item Name", "autoWidth": true,
+                     render: function (data, type, row, meta) {
+                         return row.SKUCode + " - " + row.SKUName;
+                     }
+                 },
+                 {
+                     "data": "Active", "autoWidth": true,
+                     render: function (data, type, row, meta) {
+                         return "<input type='checkbox' " + (row.Status == 1 ? "checked" : "") + "> <button id='" + row.Id+"' style='display: none;' class='btn btn-sm btn-primary datatable-btn update-btn pull-right'>Update</button>";
+                     }
+                 }
+             ],
+             "paging": true,
+            "searching": true,
+            "initComplete": function (settings, json) {
+                if (json.data.filter(x => x.Status == 1).length == json.data.length) {
+                    $('#SaveAll').prop("checked", true)
+                } else {
+                    $('#SaveAll').prop("checked", false)
+                }
+            }
+        });
+        $('#datatable-itemmapping tbody').on('click', 'input[type="checkbox"]', function (e) {
+            var $row = $(this).closest('tr');
+            var data = ItemForCustomerStoreActivation.row($row).data();
+            ItemForCustomerStoreActivation.row($row).data().Status = $(this).is(':checked')?0:1;
+            $row.find('.update-btn').show();
+            e.stopPropagation();
+        });
+        $('#datatable-itemmapping tbody').on('click', 'td button', function (e) {
+            var $row = $(this).closest('tr');
+            var data = ItemForCustomerStoreActivation.row($row).data();
+            //var inputdata = $(this).closest('input').is(':checked');
+            UpdateDcRecord(data, $row, this);
+            e.stopPropagation();
+        });
+        });
+        $("#SearchBtn").trigger("click");
+    });
+
+    function SaveAllStoreItemsMappings(btn) {
+        LoadingButton(btn, 1);
+        var CustId = $("#CustId").val();
+        var StoreIds = $("#StoreIds").val();
+        var ItemIds = $("#ItemIds").val();
+        var Status=$("#SaveAll").is(':checked') ? 0 : 1;
+     $.ajax({
+            url: '@Url.Action("UpdateAllDcStoreItemMapping", "Item")',
+            type: 'POST',
+            dataType: "JSON",
+            data:
+            {
+                "CustId": CustId,
+                "StoreS": StoreIds,
+                "Items":ItemIds,
+                "IsDeleted": Status,
+                "Opr":"Store"
+            },
+            success: function (result) {
+                LoadingButton(btn, 2)
+                if (result = true) {
+                   // $(btn).hide();
+                    ShowAutocloseSuccessBox("All Item Mapping is Updated.")
+                }
+            },
+         error: function (reponse) {
+             LoadingButton(btn, 2)
+                alert("error while updating Items " + reponse)
+            },
+        });
+    }
+    function UpdateDcRecord(data, $row,btn) {
+        LoadingButton(btn,1)
+     $.ajax({
+            url: '@Url.Action("UpdateDcStoreItemMapping", "Item")',
+            type: 'POST',
+            dataType: "JSON",
+            data:
+            {
+                "Data": data,
+                "Opr":"Store"
+            },
+            success: function (result) {
+                LoadingButton(btn, 2)
+                if (result = true) {
+                    $(btn).hide();
+                    ShowAutocloseSuccessBox(data.StoreName + " - " + data.SKUName + " is Updated.")
+                }
+            },
+         error: function (reponse) {
+             LoadingButton(btn, 2)
+                alert("error while updating Items " + reponse)
+            },
+        });
+    }
+    function LoadingButton(btn,state) {
+        if (state == 1) {
+            $(btn).addClass("disabled");
+        }
+        if (state == 2) {
+            $(btn).removeClass("disabled");
+        }
+    }
+    function ShowAutocloseSuccessBox(obj) {
+        var htmlContent = "<div class='alert alert-success success-alert' id='success-alert'><button type='button' class='close' data-dismiss='alert'>x</button><strong>Saved!</strong>" + obj + "</div>"
+        $("#Alerts-Wrapper").html(htmlContent)
+        $(".success-alert").fadeTo(2000, 500).slideUp(500, function () {
+            $(".success-alert").slideUp(500);
+        });
+    }
+</script>

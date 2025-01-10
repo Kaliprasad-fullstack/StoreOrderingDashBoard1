@@ -1,0 +1,257 @@
+﻿@model DAL.Users
+@using DAL
+@{
+    ViewBag.Title = "AddAdminUser";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    int count = 0;
+    List<SelectListItem> listItems = new List<SelectListItem>();
+    listItems.Add(new SelectListItem
+    {
+        Text = "Store",
+        Value = "Store"
+    });
+    listItems.Add(new SelectListItem
+    {
+        Text = "Dc Manager",
+        Value = "Dc Manager",
+    });    
+}
+
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>AddAdminUser</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <br />
+                        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left" action="@Url.Action("AddAdminUser","DCManager")" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="text" id="Id" name="LocationId" value="@Model.Id" style="display:none" />
+                            <input type="hidden" id="Department" name="Department" value="Dc Manager" style="display:none" />
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="Name">
+                                    Name <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="Name" name="Name" class="form-control" required="required" value="@Model.Name" />
+                                    @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="EmailAddress">
+                                    Email Address <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="email" id="EmailAddress" name="EmailAddress" class="form-control" required="required" value="@Model.EmailAddress" />
+                                    @Html.ValidationMessageFor(model => model.EmailAddress, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="col-md-10">
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="Password">
+                                    Password <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="password" id="Password" name="Password" class="form-control" required="required" value="@Model.Password" />
+                                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="LocationId">
+                                    Location <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.DropDownListFor(model => model.Locations.LocationId, new SelectList(ViewBag.Locations, "Value", "Text"), "Please select Location", new { @class = "form-control", required = "required" })
+                                    @Html.ValidationMessageFor(model => model.LocationId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="CompanyId">
+                                    Company <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.DropDownListFor(model => model.Company.Id, new SelectList(ViewBag.Companies, "Id", "Name"), "Please select Company", new { @class = "form-control", required = "required" })
+                                    @Html.ValidationMessageFor(model => model.Company.Id, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="CompanyId">
+                                    Customer Plan <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.DropDownListFor(model => model.CustomerPlan.Id, new SelectList(ViewBag.Plans, "Id", "PlanName"), "Please select Customer Plan", new { @class = "form-control", required = "required", id = "Plan" })
+                                    @Html.ValidationMessageFor(model => model.CustomerPlan.Id, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="CustomerPlanId">
+                                    Allowed Customer Stores  <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <div class="input-group">
+                                        @*@Html.DropDownList("Customer", new SelectList(ViewBag.Customers , "Value", "Text"), new { @class = "form-control", multiple = "multiple", required = "required", id = "drpCustomers" })*@
+                                        @Html.ListBox("Customer", new MultiSelectList(ViewBag.Customers, "Value", "Text"), new { @class = "form-control", multiple = "multiple", required = "required", id = "drpCustomers" })
+                                        <span class="input-group-btn">
+                                            <button type="button" class="btn btn-primary" id="stores" onclick="CreateStoreModal()">View / Customise</button>
+                                        </span>
+                                    </div>
+                                    @Html.ValidationMessageFor(model => model.Customer, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="modal fade" id="Custom_Plan_Model" role="dialog">
+                                <div class="modal-dialog modal-lg">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Customise Plan</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div id="partial"></div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" onclick="Create()" data-dismiss="modal">Save</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+
+                            <input type="hidden" id="Stored" name="Stored" value="@Model.Stored" />
+                            @if (ViewBag.Questions != null)
+                            {
+                                @*int i = 0;
+            foreach (AllQuestion allQuestion in ViewBag.Questions)
+            {
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">
+                    @Model.AllQuestions[i].ques <span class="required">*</span>
+                </label>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+
+                    <input type="hidden" value="@i" name="Questions.Index" />
+                    @Html.Hidden("Questions[" + @i + "].Id", Model.AllQuestions[i].Id, new { @readonly = "readonly" })
+                    @Html.Hidden("Questions[" + @i + "].ques", Model.AllQuestions[i].ques, new { @readonly = "readonly" })
+                    @Html.TextBox("Questions[" + @i + "].answer", Model.AllQuestions[i].answer, new { @class = "form-control", required = "required" })
+                </div>
+            </div>
+            i++;*@
+                                for (int i = 0; i < Model.AllQuestions.Count; i++)
+                                {
+                                    <div class="form-group">
+                                        <label class="control-label col-md-3 col-sm-3 col-xs-12">
+                                            @Model.AllQuestions[i].ques <span class="required">*</span>
+                                        </label>
+                                        <div class="col-md-6 col-sm-6 col-xs-12">
+                                            <input type="hidden" value="@i" name="Questions.Index" />
+                                            @Html.Hidden("AllQuestions[" + @i + "].Id", Model.AllQuestions[i].Id, new { @readonly = "readonly" })
+                                            @Html.Hidden("AllQuestions[" + @i + "].ques", Model.AllQuestions[i].ques, new { @readonly = "readonly" })
+                                            @Html.TextBox("AllQuestions[" + @i + "].answer", Model.AllQuestions[i].answer, new { @class = "form-control", required = "required" })
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            <div class="modal fade" id="Stores_Model" role="dialog">
+                                <div class="modal-dialog modal-lg">
+                                    <!-- Modal content-->
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                            <h4 class="modal-title">Customise Store</h4>
+                                        </div>
+                                        <div class="modal-body">
+                                            <div id="partial_Stores_Model"></div>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-default" onclick="Processed()" data-dismiss="modal">Save</button>
+                                        </div>
+                                    </div>
+
+                                </div>
+                            </div>
+                            @*@for(int i=0;i<Model.AllQuestions.Count;i++)
+        {
+             <div class="form-group">
+                    <label class="control-label col-md-3 col-sm-3 col-xs-12">
+                        @allQuestion.ques <span class="required">*</span>
+                    </label>
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        <input type="text" id="@i" name="@allQuestion.Id" class="form-control" required="required" value="@allQuestion.answer"/>
+                    </div>
+                </div>
+        }*@
+                            <div class="ln_solid"></div>
+                            <div class="form-group">
+                                <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                    <button class="btn btn-primary" type="reset">Reset</button>
+                                    <button type="submit" class="btn btn-success" onsubmit="">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script>
+    function Question()
+    {
+        alert("Hi")
+    }
+    function CreateList() {
+        // alert("Hi")
+        debugger;
+        var drop = parseInt($("#Plan").val());
+        if (!isNaN(drop)) {
+            $('#partial').load();
+            $("#Custom_Plan_Model").modal('show');
+            var route = '@Url.Action("MenuRights", "DCManager")?custplanid=' + drop;
+            @*var route = '@Url.Action("MenuRights", "DCManager")/' + $.param({ custplanid = drop, stores = columnNames })*@
+            $('#partial').load(route);
+        }
+        else {
+            $("#Custom_Plan_Model").modal('hide');
+            alert("Please select plan")
+        }
+
+    }
+    function CreateStoreModal() {
+        var StoreValues = $.map($("#drpCustomers option:selected"), function (el, i) {
+            return $(el).val();
+        });
+        var Stores = StoreValues.join(",");
+        if (Stores!="") {
+            $("#Stores_Model").modal('show');
+            var route = '@Url.Action("CustomerStores", "DCManager")?CustId=' + Stores;
+            $('#partial_Stores_Model').load(route);
+        }
+        else {
+            $("#partial_Stores_Model").modal('hide');
+            alert("Please select customers");
+        }
+
+    }
+</script>
+<script>
+    $(document).ready(function () {
+        var storelist = [];
+
+        $('#drpCustomers').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: "100%",
+            enableFiltering: true
+        });
+    });
+</script>

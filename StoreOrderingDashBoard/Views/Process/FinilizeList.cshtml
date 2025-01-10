@@ -1,0 +1,328 @@
+﻿@using DAL
+@using StoreOrderingDashBoard.Models
+@{
+                /**/
+
+                ViewBag.Title = "FinilizeList";
+                Layout = "~/Views/Shared/_AdminLayout.cshtml";
+                // StoreContext db = new StoreContext();
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Finalised Order List</h2>
+
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <table id="example" class="display" cellspacing="0" width="100%">
+                            <thead>
+                                <tr>
+                                    <th><input name="select_all" value="1" id="example-select-all" type="checkbox" /></th>
+                                    <th>OrderNo</th>
+                                    <th>Order Date</th>
+                                    <th>Store Name</th>
+                                    <th>Store Code</th>
+                                    <th>DC</th>
+                                    <th>City</th>
+                                    <th>Sum Of Quantity</th>
+                                    <th>DC WareHouse</th>
+
+                                    <th>Open</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.FinilizeOrder != null)
+                                {
+                                    int i = 0;
+
+                                    foreach (ProcessedCls header in ViewBag.FinilizeOrder)
+                                    {
+                                        //var selectQuery = db.Context.SomeTable.Where(x => x.abc == someAbc && x.zyx == someZyx);
+                                        //var item=header.orderDetails.Where(x=>x.Item.MaximumOrderLimit>==)
+                                        //string color = header.IsThreshold ? "color:yellow" : "color:white";
+                                        if (header.IsThreshold)
+                                        {
+                                            <tr style="background-color:yellow">
+                                                <td><input type="checkbox" id="@("Check" + i)" value="@header.Id" name="id[]" /></td>
+                                                <td>@header.FinilizedOrderno</td>
+                                                <td>@header.OrderDate</td>
+                                                <td>@header.StoreName</td>
+                                                <td>@header.StoreCode</td>
+                                                <td>@header.DcName</td>
+                                                <td>@header.LocationName</td>
+                                                <td>@header.Quantity</td>
+                                               
+                                                <td>
+                                                    <select id="@("DC"+i)">
+                                                        @if (ViewBag.WareHouse != null)
+                                                        {
+                                                            foreach (WareHouseDC dc in ViewBag.WareHouse)
+                                                            {
+                                                                if (header.DCID == dc.Id)
+                                                                {
+                                                                    <option value="@dc.Id" selected>@dc.Name</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@dc.Id">@dc.Name</option>
+                                                                }
+                                                            }
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="button" class="btn btn-default" value="Open" data-target="#modelWindow" data-toggle="modal" onclick="OpenSaveAsDraft(@header.Id,@i)" />
+                                                </td>
+                                                <td>
+                                                    <input type="button" class="btn btn-default" value="Delete Order" data-target="#modelWindow" data-toggle="modal" onclick="Delete(@header.Id)" />
+                                                </td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td><input type="checkbox" id="@("Check" + i)" value="@header.Id" name="id[]" /></td>
+                                                <td>@header.FinilizedOrderno</td>
+                                                <td>@header.OrderDate</td>
+                                                <td>@header.StoreName</td>
+                                                <td>@header.StoreCode</td>
+                                                <td>@header.DcName</td>
+                                                <td>@header.LocationName</td>
+                                                <td>@header.Quantity</td>
+                                                <td>
+                                                    <select id="@("DC"+i)">
+                                                        @if (ViewBag.WareHouse != null)
+                                                        {
+                                                            foreach (WareHouseDC dc in ViewBag.WareHouse)
+                                                            {
+                                                                if (header.DCID == dc.Id)
+                                                                {
+                                                                    <option value="@dc.Id" selected>@dc.Name</option>
+                                                                }
+                                                                else
+                                                                {
+                                                                    <option value="@dc.Id">@dc.Name</option>
+                                                                }
+                                                            }
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <td>
+                                                    <input type="button" class="btn btn-default" value="Open" data-target="#modelWindow" data-toggle="modal" onclick="OpenSaveAsDraft(@header.Id,@i)" />
+                                                </td>
+                                                <td>
+                                                    <input type="button" class="btn btn-default" value="Delete Order" onclick="Delete(@header.Id)" />
+                                                </td>
+                                            </tr>
+                                        }
+
+                                        i++;
+                                    }
+                                }
+                            </tbody>
+
+                        </table>
+                        <div class="loader"></div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" id="btnProcess" class="search btn btn-success btn-lg" onclick="CreateList()" data-toggle="modal" data-target="#myModal">Approve & Process</button>
+            </div>
+            <div class="modal fade" id="modelWindow" role="dialog">
+                <div class="modal-dialog modal-lg vertical-align-center">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+
+                        </div>
+                        <div class="modal-body">
+                            <div id="partial" class="row"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <script>
+                var table;
+                var productlist = [];
+                $(document).ready(function () {
+                    $('.loader').hide();
+                    table = $('#example').DataTable({
+                        'columnDefs': [{
+                            'targets': 0,
+                            'searchable': false,
+                            'orderable': false,
+                            'className': 'dt-body-center'
+                        }],
+                        'order': [1, 'desc'],
+                        "aoColumns": [
+                             null,
+                             null,
+                             null,
+                             null,
+                             null,
+                             null,
+                            null,
+                            null,
+                             { "bSearchable": false },
+                             { "bSearchable": false },
+                             { "bSearchable": false }
+                         ]
+                    });
+
+                    // Handle click on "Select all" control
+                    $('#example-select-all').on('click', function () {
+                        // Check/uncheck all checkboxes in the table
+                        var rows = table.rows({ 'search': 'applied' }).nodes();
+                        $('input[type="checkbox"]', rows).prop('checked', this.checked);
+                    });
+
+                    // Handle click on checkbox to set state of "Select all" control
+                    $('#example tbody').on('change', 'input[type="checkbox"]', function () {
+                        // If checkbox is not checked
+                        if (!this.checked) {
+                            var el = $('#example-select-all').get(0);
+                            // If "Select all" control is checked and has 'indeterminate' property
+                            if (el && el.checked && ('indeterminate' in el)) {
+                                // Set visual state of "Select all" control
+                                // as 'indeterminate'
+                                el.indeterminate = true;
+                            }
+                        }
+                    });
+
+                    $('#frm-example').on('submit', function (e) {
+                        var form = this;
+
+                        // Iterate over all checkboxes in the table
+                        table.$('input[type="checkbox"]').each(function () {
+                            // If checkbox doesn't exist in DOM
+                            if (!$.contains(document, this)) {
+                                // If checkbox is checked
+                                if (this.checked) {
+                                    // Create a hidden element
+                                    $(form).append(
+                                        $('<input>')
+                                            .attr('type', 'hidden')
+                                            .attr('name', this.name)
+                                            .val(this.value)
+                                    );
+                                }
+                            }
+                        });
+
+                        // FOR TESTING ONLY
+
+                        // Output form data to a console
+                        $('#example-console').text($(form).serialize());
+                        console.log("Form submission", $(form).serialize());
+
+                        // Prevent actual form submission
+                        e.preventDefault();
+                    });
+                });
+                 function OpenSaveAsDraft(e,e1) {
+                     //$('#modelWindow').modal('show');
+                   //  debugger;
+                     var b = '#DC' + e1;
+                     var a = $(b).val();
+            $(".loader").show();
+                     var route = '@Url.Action("FinaliseItemlist", "Process")?orderheaderid=' + e+'&dcid='+a+'';
+            $('#partial').load(route);
+
+                }
+
+
+                function CreateList() {
+                    var tableinfo = table.page.info();
+                    total = tableinfo.recordsTotal
+                    productlist = [];
+                    for (i = 0; i < total; i++) {
+                        var data1 = table.cell(i, 0).nodes().to$().find('input').val();
+                        var dc = table.cell(i, 8).nodes().to$().find('select').val();
+                        var data = table.$('input[id=Check' + i + '], checked').serialize();
+                        if (data!="") {
+                            var da = table.row(i).data();
+                            var product = {};
+                            product.OrderheaderId = parseInt(data1);
+                            product.DCID = parseInt(dc);
+                            productlist.push(product);
+                        }
+                    }
+
+                    if (productlist.length > 0) {
+                         var r = confirm("Are you Sure Want to Process?");
+                        if (r) {
+                            $('.loader').show();
+                                $.ajax({
+                                    url: "@Url.Action("ProcessedOrder", "Process")",
+                                    type: "POST",
+                                    data: {
+                                        "order": productlist
+                                    },
+                                    success: function (response) {
+                                        if (response) {
+                                            alert("Order Processed Successfully");
+                                            window.location = "@Url.Action("FinilizeList", "Process")"
+                                        }
+                                    }
+                                });
+                            }
+                    }
+                    else {
+                        $('.loader').hide();
+                        alert("Please Select Box")
+                    }
+                }
+
+                function Delete(e) {
+                      var retVal = prompt("Enter reason : ", "please enter reason");
+
+                    //var r = confirm("Are you sure want to delete?")
+                    if (retVal != null) {
+                        if (retVal != "please enter reason" && retVal.trim() != "") {
+                            $(".loader").show();
+                            $("#btnProcess").prop('disabled', true);
+                            $.ajax({
+                                url: "@Url.Action("DeleteOrder", "Process")",
+                                type: "POST",
+                                data: {
+                                    "Id": e,
+                                    "reason": retVal
+                                },
+                                success: function (response) {
+                                    $("#btnProcess").prop('disabled', false);
+                                    if (response) {
+                                        alert("Order deleted Successfully");
+                                        location.reload();
+                                        $(".loader").hide();
+                                    }
+                                },
+                                error: function (response) {
+                                    alert("oops somthing happens.");
+                                    $("#btnProcess").prop('disabled', false);
+                                    $(".loader").hide();
+                                }
+                            });
+                        }
+                        else {
+                            alert("please enter reason");
+                            $("#btnProcess").prop('disabled', false);
+                            $(".loader").hide();
+                        }
+                    }
+                }
+            </script>
+        </div>
+    </div>
+</div>
+<!-- /page content -->

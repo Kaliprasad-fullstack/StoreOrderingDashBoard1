@@ -1,0 +1,77 @@
+﻿
+@using DAL
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_content" style="overflow-x:scroll">
+            <table id="example" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <td>Unique Reference Id</td>
+                        <th>City Name</th>
+                        <th>DC Name</th>
+                        <th>Store Name</th>
+                        <th>Schedule Time</th>
+                        <th>POD Time</th>
+                        <th>POD DateTime</th>
+                        <th>Day</th>
+                        <th>Is OnTime</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.OnTimeDetailReportList != null)
+                    {
+                        int i = 1;
+                        foreach (OnTimeDetailReport item in ViewBag.OnTimeDetailReportList)
+                        {
+                            <tr>
+                                <td>@item.Unique_Reference_Id</td>
+                                <td>@item.CityName</td>
+                                <td>@item.DCName</td>
+                                <td>@item.StoreName</td>
+                                <td>@item.ScheduleTime</td>
+                                <td>@item.PODTime</td>
+                                <td>@item.PODDateTime</td>
+                                <td>@item.ScheduledWeekDay</td>
+                                <td>@item.IsOnTimeDelivery</td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $(".loader").hide();
+            //t = $('#example').DataTable();
+            $("#example").DataTable({
+                dom: "Blfrtip",
+                buttons: [
+                    {
+                        extend: "copy",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "csv",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "excel",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "pdfHtml5",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "print",
+                        className: "btn-sm"
+                    },
+                ],
+                responsive: false
+            });
+        });
+    </script>
+</div>

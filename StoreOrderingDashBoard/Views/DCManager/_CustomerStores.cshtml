@@ -1,0 +1,165 @@
+﻿@using DAL
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>Item List</h2>
+
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <table id="StoreTbl" class="table table-striped table-bordered table-responsive">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>StoreId</th>
+                        <th>StoreCode</th>
+                        <th>StoreName</th>
+                        <th>Region</th>
+                        <th>Customer</th>
+                        <th>CustomerId</th>
+                        <th><input name="select_all" value="1" id="example-select-all" type="checkbox" /></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.AllowedStoreList != null)
+                    {
+                        int i = 0;
+                        foreach (Store store in ViewBag.AllowedStoreList)
+                        {
+                            <tr>
+                                <td>@i</td>
+                                <td>@store.Id</td>
+                                <td>@store.StoreCode</td>
+                                <td>@store.StoreName</td>
+                                <td>@store.Region</td>
+                                <td>@store.Customer.Name</td>
+                                <td>@store.Customer.Id</td>
+                                <td><input type="checkbox" id="@("Check"+i)" value="@store.Id" name="storeid[]" @*onclick="Create(@role.PlanId,@role.Id)"*@ /></td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <th>#</th>
+                        <th>StoreId</th>
+                        <th>StoreCode</th>
+                        <th>StoreName</th>
+                        <th>Region</th>
+                        <th>Customer</th>
+                        <th>CustomerId</th>
+                        <th></th>
+                    </tr>
+                </tfoot>
+
+            </table>
+
+            <div class="loader"></div>
+        </div>
+    </div>
+    <script>
+        var t;
+        var storelist = [];
+        var menu = [];
+        $(document).ready(function () {
+            $(".loader").hide();
+            $('#StoreTbl tfoot th').each(function () {
+                var title = $(this).text();
+                $(this).html('<input type="text" placeholder="Search ' + title + '"  />');
+            });
+            t = $('#StoreTbl').DataTable(
+                {
+                    "columnDefs": [
+                        {
+                            "targets": [6],
+                            "visible": false,
+                            "searchable": false
+                        },
+                        {
+                            "targets": [1],
+                            "visible": false,
+                            "searchable": false
+                        }
+                    ]
+                });
+            // Handle click on "Select all" control
+            $('#example-select-all').on('click', function () {
+                // Check/uncheck all checkboxes in the table
+                var rows = t.rows({ 'search': 'applied' }).nodes();
+                $('input[type="checkbox"]', rows).prop('checked', this.checked);
+            });
+            //footer search value
+            t.columns().every(function () {
+                var that = this;
+                $('input', this.footer()).on('keyup change', function () {
+                    if (that.search() !== this.value) {
+                        that
+                            .search(this.value)
+                            .draw();
+                    }
+                });
+            });
+            // Handle click on checkbox to set state of "Select all" control
+            $('#example tbody').on('change', 'input[type="checkbox"]', function () {
+                // If checkbox is not checked
+                if (!this.checked) {
+                    var el = $('#example-select-all').get(0);
+                    // If "Select all" control is checked and has 'indeterminate' property
+                    if (el && el.checked && ('indeterminate' in el)) {
+                        // Set visual state of "Select all" control
+                        // as 'indeterminate'
+                        el.indeterminate = true;
+                    }
+                }
+            });
+        });
+
+         function Processed() {
+                    debugger;
+                      var tableinfo = t.page.info();
+             total = tableinfo.recordsTotal
+             storelist = [];
+                    for (i = 0; i < total; i++) {
+                       // var data = t.cell(i, 5).nodes().to$().find('input').val()
+                       // var DC = $("#DC").val();
+                        var data = t.$('input[id=Check' + i + '], checked').serialize();
+                        if (data != "") {
+                            var da = t.row(i).data();
+                            var store = {};
+                            var Id = parseInt(da[1]);
+                            store.StoreId = Id;
+                            var CustId = parseInt(da[6]);
+                            store.CustId = CustId;
+                            storelist.push(store);
+                        }
+                    }
+             if (storelist.length > 0) {
+                 var a = JSON.stringify(storelist); //storelist.serialize();
+                 $('#Stored').val(a);
+                     }
+                         @*var r = confirm("Are you Sure Want to Process?");
+                        if (r) {
+                            $('.loader').show();
+                                @*$.ajax({
+                                    url: "@Url.Action("ProcessOrderOneByOne", "Process")",
+                                    type: "POST",
+                                    data: {
+                                        "order": productlist
+                                    },
+                                    success: function (response) {
+                                        if (response) {
+                                            alert("Order Processed Successfully");
+                                            window.location = "@Url.Action("FinilizeList", "Process")"
+                                        }
+                                    }
+                                });
+                            }
+                    }
+                    else {
+                        $('.loader').hide();
+                        alert("Item is not present.")
+                    }*@
+                }
+    </script>
+</div>

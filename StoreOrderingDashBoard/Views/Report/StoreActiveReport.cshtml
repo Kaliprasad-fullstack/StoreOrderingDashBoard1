@@ -1,0 +1,169 @@
+﻿@using BAL
+@using DAL
+@using System.Globalization
+@{
+    ViewBag.Title = "ItemMasterReport";
+    if (StoreOrderingDashBoard.Models.SessionValues.RoleId == 2)
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Item Master Report</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <form id="demo-form" method="post" action="@Url.Action("StoreActiveReport","Report")">
+                        @Html.AntiForgeryToken()
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-12" id="DcBlock">
+                                <label>DC</label>
+                                @Html.ListBox("SelectedDC", (MultiSelectList)ViewBag.DCs, new { size = 4, @class = "form-control" })
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12" id="StoreBlock">
+                                <label>Location</label>
+                                @Html.ListBox("SelectedLocations", (MultiSelectList)ViewBag.Locations, new { size = 4, @class = "form-control" })
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12" id="StoreBlock">
+                                <label>Store Code</label>
+                                @Html.ListBox("SelectedStores", (MultiSelectList)ViewBag.Stores, new { size = 4, @class = "form-control" })
+                            </div>
+                        </div>
+               
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <div class="form-group text-right">
+                                    <br />
+                                    <input type="submit" class="btn btn-default btn btn-success" style="margin-bottom:0px;" value="Search" />
+                                    <input type="submit" value="Export to Excel" name="Edit" formaction="@Url.Action("StoreActiveReportExport")" formmethod="post" class="btn btn-default" style="margin-bottom:0px;" />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <table id="datatable" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Customer</th>
+                                <th>StoreCode</th>
+                                <th>StoreName</th>
+                                <th>Address</th>
+                                <th>Store EmailAddress</th>
+                                <th>PlaceofSupply</th>
+                                <th>Warehouse</th>
+                                <th>Store Login Email</th>
+                                <th>Enterprise Code</th>
+                                <th>Enterprise Name</th>
+                                <th>Last Modified Date</th>
+                                <th>Active</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.Report != null)
+                            {
+                                int i = 1;
+                                foreach (StoreModel head in ViewBag.Report)
+                                {
+                                    <tr>
+                                        <td>@head.CustomerName</td>
+                                        <td>@head.StoreCode</td>
+                                        <td>@head.StoreName</td>
+                                        <td>@head.Address</td>
+                                        <td>@head.StoreEmailId</td>
+                                        <td>@head.PlaceOfSupply</td>
+                                        <td>@head.WareHouseDCName</td>
+                                        <td>@head.UserEmailAddress</td>
+                                        <td>@head.EnterpriseCode</td>
+                                        <td>@head.EnterpriseName</td>
+                                        <td>@(head.ModifiedDate.HasValue?head.ModifiedDate.Value.ToString("yyyy-MM-dd"):"")</td>
+                                        <td>@head.Active</td>
+                                    </tr>
+                                    i++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var table;
+        $(document).ready(function () {
+            $(".loader").hide();
+            table = $("#datatable").DataTable({
+                responsive: true,
+            });
+            $('#SelectedDC').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                enableFiltering: true
+            });
+            $('#SelectedStores').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedLocations').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $("#SelectedDC").change(function () {
+                var SelectedWareHouseDCs = $(this).val()
+                $.ajax({
+                    url: '@Url.Action("GetStoresForWareHouse", "Order")',
+                    type: 'POST',
+                    dataType: "JSON",
+                    data: {
+                        "SelectedWareHouseDCs": SelectedWareHouseDCs,
+                        "OrderReport": "Report"
+                    },
+                    success: function (result) {
+                        $("#SelectedStores").html("");
+                        var markup = "";
+                        for (var x = 0; x < result.data.length; x++) {
+                            markup += "<option value=" + result.data[x].Id + ">" + result.data[x].StoreCode + "</option>";
+                        }
+                        $("#SelectedStores").html(markup);
+                        $("#SelectedStores").multiselect('destroy');
+                        $('#SelectedStores').multiselect({
+                            includeSelectAllOption: true,
+                            enableCaseInsensitiveFiltering: true,
+                            buttonWidth: '100%',
+                            maxHeight: 150,
+                            enableFiltering: true
+                        });
+                    },
+                    error: function (reponse) {
+                        alert("error : " + reponse)
+                    },
+                });
+            });
+        });
+    </script>
+</div>

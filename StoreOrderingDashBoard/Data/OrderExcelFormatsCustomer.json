@@ -1,0 +1,42 @@
+{
+  "rootObject": [
+    {
+      "customerId": 8,
+      "headers": [
+        {
+          "headerName": "StoreCode",
+          "headerValue": "Store Code"
+        },
+        {
+          "headerName": "SkuCode",
+          "headerValue": "Sku Code"
+        },
+        {
+          "headerName": "Qty",
+          "headerValue": "Qty"
+        }
+      ]
+    },
+   {
+      "customerId": 7,
+      "headers": [
+        {
+          "headerName": "StoreCode",
+          "headerValue": "Store Code"
+        },
+        {
+          "headerName": "SkuCode",
+          "headerValue": "Item Code"
+        },
+        {
+          "headerName": "Qty",
+          "headerValue": "Qty"
+        }
+      ]
+    },
+    {
+      "customerId": 7115,
+      "headers": null
+    }
+  ]
+}

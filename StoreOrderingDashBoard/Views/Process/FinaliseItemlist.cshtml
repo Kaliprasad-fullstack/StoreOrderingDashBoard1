@@ -1,0 +1,242 @@
+﻿@using DAL
+@{
+    long headerid = 0;
+    int dcid = 0;
+    if(ViewData["DCID"]!=null)
+    {
+        dcid = Convert.ToInt32(ViewData["DCID"].ToString());
+    }
+}
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>Item List</h2>
+
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            @if (dcid > 0)
+            {
+                <div class="row">
+
+                    
+
+                    <div class="col-md-6 col-sm-6 col-xs-12">
+                        WarHouse DC:
+                        <select id="DC" class="form-control input-sm">
+
+                            @if (ViewBag.WareHouse != null)
+                            {
+                                foreach (WareHouseDC dc in ViewBag.WareHouse)
+                                {
+                                    if (dcid == dc.Id)
+                                    {
+                                        <option value="@dc.Id" selected>@dc.Name</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@dc.Id">@dc.Name</option>
+                                    }
+                                }
+                            }
+                        </select>
+                    </div>
+
+
+                </div>
+            }
+
+            <table id="example1" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Product Id</th>
+                        <th>Item Code</th>
+                        <th>Item Description</th>
+                        @*<th>PackingDescription</th>*@
+                        <th>Category</th>
+                        <th>UOM</th>
+                        <th>Max Order Limit</th>
+                        <th>Quantity</th>
+                        <th>Edit</th>
+                        <th>Delete</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.OrderList != null)
+                    {
+                        int i = 0;
+                        foreach (OrderDetail order in ViewBag.OrderList)
+                        {
+                            headerid = order.OrderHeaderId;
+                            if (order.Item != null)
+                            {
+                                <tr>
+                                    <td>@order.Item.Id</td>
+                                    <td>@order.Item.SKUCode</td>
+                                    <td>@order.Item.SKUName</td>
+                                    <td>@order.Item.Category.CaseConversion</td>
+                                    <td>@order.Item.UOMmaster.UnitofMasureDescription</td>
+                                    <td>@order.Item.MaximumOrderLimit</td>
+                                    <td><input type="number" id="@("Qty"+i)" min="0" onblur="CheckQty(@order.Item.MaximumOrderLimit,@i,@order.Item.Id,@headerid)" value="@order.Quantity" disabled /></td>
+                                    <td><input type="button" id="@("Edit" + i)" onclick="Editbutton(@i)" value="Edit" class="btn-default" /></td>
+                                    <td><input type="button" value="Delete" id="@(" Delete"+i)" onclick="Deleterow(this,@headerid,@order.Item.Id)" @*onclick="DeleteItem(@orderheaderid,@order.Item.Id)"*@ class="btn-default" /></td>
+                                </tr>
+                                i++;
+                            }
+                        }
+                    }
+                </tbody>
+            </table>
+            <div class="modal-footer">
+                <button type="button" data-dismiss="modal" onclick="Processed(@headerid)" class="btn btn-default">Approve & Process</button>
+                <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+            </div>
+            <script>
+                var table1;
+                var productlist=[];
+                $(document).ready(function () {
+                    $(".loader").hide();
+                   
+                     table1 = $("#example1").DataTable();
+                });
+
+                function CheckQty(e, e1, itemid, headerid) {
+                    
+                    var id = "#Qty" + e1;
+                    var value = $(id).val();
+                    if (parseInt(value) > parseInt(e))
+                        alert("Quantity is greater than order limit");
+                     $(".loader").show();
+                              $.ajax({
+                                    url: "@Url.Action("UpdateItemQuantity", "Process")",
+                                    type: "POST",
+                                  data: {
+                                      "orderheaderid":  headerid,
+                                      "itemid": itemid,
+                                        "quantity": value
+                                    },
+                                    success: function (response) {
+                                        if (response) {
+                                            alert("Quantity Updated Successfully");
+                                           
+                                            $(".loader").hide();
+                                         
+                                        }
+                                    }
+                                });
+                }
+
+                function Editbutton(e) {
+                   
+                    var qt = "#Qty" + e;
+                    $(qt).attr("disabled", false);
+                    var qt = "#Qty" + (e - 1);
+                    $(qt).attr("disabled", true);
+                    var qt = "#Qty" + (e + 1);
+                    $(qt).attr("disabled", true);
+
+                }
+
+               
+
+                function upTo(el, tagName) {
+                    tagName = tagName.toLowerCase();
+
+                    while (el && el.parentNode) {
+                        el = el.parentNode;
+                        if (el.tagName && el.tagName.toLowerCase() == tagName) {
+                            return el;
+                        }
+                    }
+                    return null;
+                }
+
+                function Processed(e) {
+                   // debugger;
+                      var tableinfo = table1.page.info();
+                    total = tableinfo.recordsTotal
+                    productlist = [];
+                    for (i = 0; i < total; i++) {
+                        var data = table1.cell(i, 6).nodes().to$().find('input').val()
+                        var DC = $("#DC").val();
+                        if (parseInt(data)) {
+                            var da = table1.row(i).data();
+                            var product = {};
+                            product.ProductId = parseInt(da[0]);
+                            product.Qty = parseInt(data);
+                            product.OrderheaderId = parseInt(e);
+                            product.DCID = parseInt(DC);
+                            productlist.push(product);
+                        }
+                    }
+                    if (productlist.length > 0) {  
+                         var r = confirm("Are you Sure Want to Process?");
+                        if (r) {
+                            $('.loader').show();
+                                $.ajax({
+                                    url: "@Url.Action("ProcessOrderOneByOne", "Process")",
+                                    type: "POST",
+                                    data: {
+                                        "order": productlist
+                                    },
+                                    success: function (response) {
+                                        if (response) {
+                                            alert("Order Processed Successfully");
+                                            window.location = "@Url.Action("FinilizeList", "Process")"
+                                        }
+                                    }
+                                });
+                            }
+                    }
+                    else {
+                        $('.loader').hide();
+                        alert("Item is not present.")
+                    }
+                }
+
+                function Deleterow(el, e, e1) {
+                    //debugger;
+                    var tableinfo = table1.page.info();
+                    if (tableinfo.recordsTotal != 1 && tableinfo.recordsTotal > 0) {
+                        var retVal = prompt("Enter reason : ", "please enter reason");
+
+                        //var r = confirm("Are you sure want to delete?")
+                        if (retVal != null) {
+                            if (retVal != "please enter reason" && retVal.trim() != "") {
+                                $(".loader").show();
+                                $.ajax({
+                                    url: "@Url.Action("DeleteItem", "Process")",
+                                    type: "POST",
+                                    data: {
+                                        "orderheaderid": e,
+                                        "itemid": e1,
+                                        "retVal": retVal
+                                    },
+                                    success: function (response) {
+                                        if (response) {
+                                            alert("Order Deleted Successfully");
+                                            var row = upTo(el, 'tr')
+                                            if (row) row.parentNode.removeChild(row);
+                                            $(".loader").hide();
+
+                                        }
+                                    }
+                                });
+                            }
+
+                        }
+                    }
+                    else {
+                        alert("Minimum one item required for an order!\nIf required, please delete the order from the main(previous) screen.");
+                    }
+
+                }
+            </script>
+            <div class="loader"></div>
+        </div>
+    </div>
+
+</div>
+
+
+

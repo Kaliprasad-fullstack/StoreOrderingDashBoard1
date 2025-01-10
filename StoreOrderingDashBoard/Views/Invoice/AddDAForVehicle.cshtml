@@ -1,0 +1,197 @@
+﻿
+@{
+    ViewBag.Title = "AddDAForVehicle";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var VehicleNo = ViewBag.VehicleNo != null ? ViewBag.VehicleNo : "AXBXC";
+}
+<link href="~/Content/vendors/jquery-ui/jquery-ui.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Content/vendors/jquery-ui/jquery-ui.js"></script>
+<script src="~/Content/vendors/jquery-ui/jquery-ui.min.js"></script>
+<!-- page content -->
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Add DA For Vehicle</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <br />
+                        <form id="_DispatchVehicleDateKey" action="@Url.Action("GetDispatchDate","Invoice")">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <label for="Items">Dispatch Date<span class="required">*</span></label>
+                                    @Html.AntiForgeryToken()
+                                    @(Html.TextBox("DispatchDate", "", new { @class = "form-control", type = "date" }))
+                                </div>
+                            </div>
+                            <div class="ln_solid"></div>
+                            <div class="form-group">
+                                <div class="col-md-12">
+                                    <button class="btn btn-primary" type="button" id="filter">search</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        @*<h2>Default Example <small>Users</small></h2>*@
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="loader"></div>
+                    <div class="x_content">
+                        <form id="_DispatchVehicleDateKey" method="post">
+                            @Html.AntiForgeryToken()
+                            <table id="vehicle_info_tbl" class="table table-striped table-bordered dataTable no-footer dtr-inline" role="grid" aria-describedby="datatable_info">
+                                <thead>
+                                    <tr role="row">
+                                        <th class="sorting_asc" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Name: activate to sort column descending" style="width: 157px;">Vehicle No</th>
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Start date: activate to sort column ascending" style="width: 115px;">Invoice No</th>
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Start date: activate to sort column ascending" style="width: 115px;">DA</th>
+                                    </tr>
+                                </thead>
+                                <tbody></tbody>
+                            </table>
+                        </form>
+                        <div class="form-group">
+                            <div class="col-md-12">
+                                <button class="btn btn-primary" type="button" id="savedata">save</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    var Table;
+    $(document).ready(function () {
+        $(".loader").hide();
+        Table = $('#vehicle_info_tbl').DataTable({
+            "order": [[1, "desc"]]
+        });
+
+    });
+    var selectedStores = [];
+    function Jsondate(string) {
+        if (string == null || string == undefined)
+            return "";
+        else
+            return new Date(string.match(/\d+/)[0] * 1).toLocaleDateString();
+    }
+    function StringIsNull(string) {
+        if (string == null || string == undefined)
+            return "";
+        else
+            return string;
+    }
+    $("#filter").click(function () {
+        var form = $('#_DispatchVehicleDateKey');
+        var token = $('input[name="__RequestVerificationToken"]', form).val();
+        var DispatchDate = $("#DispatchDate").val();
+        if (DispatchDate != "" && DispatchDate != undefined && DispatchDate != null) {
+            Table.destroy();
+            Table = $("#vehicle_info_tbl").DataTable({
+                "ajax": {
+                    "url": '@Url.Action("LoadDispatchVehicleData", "Invoice")',
+                    "dataType": "JSON",
+                    "type": "post",
+                    "data": { __RequestVerificationToken: token, DispatchDate: DispatchDate }
+                },
+                "columns": [
+                    {
+                        "data": "Vehicle No", "autoWidth": true,
+                        render: function (data, type, row, meta) {
+                            return '<p id="' + row.Id + '">' + row.VehicleNo + '</p>';
+                        }
+                    },
+                    {
+                        "data": "Invoice No", "autoWidth": true,
+                        render: function (data, type, row, meta) {
+                            return '<p id="' + row.Id + '">' + row.InvoiceNo + '</p>';
+                        }
+                    },
+                    {
+                        "data": "DA", "autoWidth": true,
+                        render: function (data, type, row, meta) {
+                            return '<input type="text"  class="form-control" class="form-control" id="DA' + row.Id + '"/>';
+                        }
+                    }
+                ],
+            });
+        }
+    });
+    $("#savedata").click(function () {
+        var form = $('#_DispatchVehicleDateKey');
+        var token = $('input[name="__RequestVerificationToken"]', form).val();
+        var tableinfo = Table.page.info();
+        var error = false;
+        var total = tableinfo.recordsTotal
+        var vehicleDisbursementlist = [];
+        for (i = 0; i < total; i++) {
+            var da = Table.row(i).data();
+            var DA = Table.$('input[id=DA' + da.Id + ']').val();
+            var vehicleDisbursement = {};
+            vehicleDisbursement.VehicleNo = da.VehicleNo;
+            vehicleDisbursement.DA = DA;
+            vehicleDisbursement.DocNo = da.InvoiceNo;
+            //vehicleDisbursement.TransDate = new Date(da.DispatchDate.match(/\d+/)[0] * 1);
+            vehicleDisbursement.Error = "";
+                        if (vehicleDisbursement.Error != "") {
+                            vehicleDisbursementlist = [];
+                            error = true;
+                            break;
+                        }
+                        vehicleDisbursementlist.push(vehicleDisbursement);
+                    }
+        if (error == true) {
+                        alert("please solve the errors first.");
+                    }
+                    else {
+                        if (vehicleDisbursementlist.length > 0) {
+                            var r = confirm("Are you Sure Want to Upload?");
+                            if (r) {
+                                $('.loader').show();
+                                $('#Uploadbtn').prop('disabled', true);
+                                $.ajax({
+                                    url: "@Url.Action("SaveDAForVehicle", "invoice")",
+                                    type: "POST",
+                                    data: {
+                                        "vehicleDisbursementList": vehicleDisbursementlist
+                                    },
+                                    success: function (response) {
+                                        if (response) {
+                                            alert("List Uploaded Successfully");
+                                            window.location = "@Url.Action("UploadVehicleDisbursement", "Order")"
+                                        }
+                                    },
+                                    Error: function (respo) {
+                                        alert("unable to upload.");
+                                    }
+                                });
+                            }
+                        }
+                        else {
+                            $('.loader').hide();
+                            alert("Please Select Box")
+                        }
+                    }
+
+    });
+</script>

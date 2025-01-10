@@ -1,0 +1,507 @@
+﻿@using DAL
+@{
+                /**/
+
+                ViewBag.Title = "OrderCount";
+                Layout = "~/Views/Shared/_AdminLayout.cshtml";
+                string startdate = ViewData["StartDate"].ToString();
+                string enddate = ViewData["EndDate"].ToString();
+                string Regions = ViewData["Regions"].ToString();
+                string States = ViewData["States"].ToString();
+                string Dcs = ViewData["Dcs"].ToString();
+                string Stores = ViewData["Stores"].ToString();
+                string Categorys = ViewData["Categorys"].ToString();
+}
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3> Store Order Placed Summary </h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+
+                <div class="x_content">
+
+                    <form action="@Url.Action("OrderCount","Report")" method="get">
+                        <div class="row">
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label for="Year">Year</label>
+                                <select id="Year" name="Year" class="form-control">
+                                    <option value="">Select Year</option>
+
+                                    @if (ViewBag.Year != null)
+                                    {
+                                        foreach (string dropDown in ViewBag.Year)
+                                        {
+                                            <option value="@dropDown">@dropDown</option>
+                                        }
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label for="Quarter">Quarter</label>
+                                <select id="Quarter" name="Quarter" class="form-control">
+                                    <option value="">Select Quarter</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label for="Month">Month</label>
+                                <select id="Month" name="Month" class="form-control">
+                                    <option value="">Select Month</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label for="Week">Week</label>
+                                <select id="Week" name="Week" class="form-control">
+                                    <option value="">Select Week</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label for="FromDate">From Date</label>
+                                <input type="date" value="@startdate" id="FromDate" name="FromDate" class="form-control" />
+                            </div>
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label for="ToDate">To Date</label>
+                                <input type="date" value="@enddate" id="ToDate" name="ToDate" class="form-control" />
+                            </div>
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label>Region</label>
+                                <input list="browsers3" placeholder="All" value="@Regions" id="Region" name="Region" class="form-control">
+                                <datalist id="browsers3">
+
+                                    @if (ViewBag.Region != null)
+                                    {
+                                        foreach (Region dropDown in ViewBag.Region)
+                                        {
+                                            <option value="@dropDown.Name" />
+                                        }
+                                    }
+                                </datalist>
+
+                            </div>
+
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label for="FromDate">State</label>
+
+                                <input list="browsers2" value="@States" placeholder="All" id="State" name="State" class="form-control">
+                                <datalist id="browsers2">
+
+                                    @if (ViewBag.State != null)
+                                    {
+                                        foreach (StateMst dropDown in ViewBag.State)
+                                        {
+                                            <option value="@dropDown.StateName" />
+                                        }
+                                    }
+                                </datalist>
+                            </div>
+
+                        </div>
+                        <div class="row">
+
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label for="ToDate">DC</label>
+                                <input list="browsers1" value="@Dcs" name="Dc" id="Dc" placeholder="All" class="form-control">
+                                <datalist id="browsers1">
+
+                                    @if (ViewBag.WareHouse != null)
+                                    {
+                                        foreach (string dropDown in ViewBag.WareHouse)
+                                        {
+                                            <option value="@dropDown" />
+                                        }
+                                    }
+                                </datalist>
+                            </div>
+
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label>Store</label>
+                                <input list="browsers" value="@Stores" name="Store" id="Store" placeholder="All" class="form-control">
+                                <datalist id="browsers">
+
+                                    @if (ViewBag.Store != null)
+                                    {
+                                        foreach (Store dropDown in ViewBag.Store)
+                                        {
+                                            <option value="@dropDown.StoreCode" />
+                                        }
+                                    }
+                                </datalist>
+
+                            </div>
+
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label for="ToDate">Category</label>
+
+                                <input id="Category" list="browsers5" value="@Categorys"  name="Category"  placeholder="All" class="form-control">
+                                <datalist id="browsers5">
+
+                                    @if (ViewBag.Category != null)
+                                    {
+                                        foreach (Category dropDown in ViewBag.Category)
+                                        {
+                                            <option value="@dropDown.CategoryDescription" />
+                                        }
+                                    }
+                                </datalist>
+
+                            </div>
+                            
+                            <div class="col-md-3 col-sm-3 col-xs-12">
+                                <label for="FromDate">Item</label>
+
+                                <select id="Sku" name="Sku" class="form-control" multiple="multiple">
+
+                                </select>
+                            </div>
+
+
+                        </div>
+                        
+                        <br />
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12 col-xs-12 text-right">
+                                <input type="submit" value="Submit" class="btn" />
+                                <input type="button" onclick="Clear()" value="Clear" class="btn" />
+                            </div>
+                        </div>
+
+                    </form>
+
+                    <table id="datatable12" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">Sr No</th>
+                                <th scope="col">DC</th>
+                                <th scope="col">Number Of Stores</th>
+                                <th scope="col">Number of Orders</th>
+                                <th scope="col">Order Placed (Before Cut-Off)</th>
+                                <th scope="col">Order Placed (After Cut-Off)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.OrderCount != null)
+                            {
+                                int i = 1;
+                                foreach (ReportCount drop in ViewBag.OrderCount)
+                                {
+                                    <tr>
+                                        <th scope="row">@i</th>
+                                        <td>@drop.Name</td>
+                                        <td>@drop.Total_Store_Count</td>
+                                        <td>@drop.Total_order_count</td>
+                                        <td>@drop.Orders_with_in_time_frame</td>
+                                        <td>@drop.Orders_with_out_time_frame</td>
+                                    </tr>
+                                    i++;
+                                }
+                            }
+
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function OpenSaveAsDraft(e) {
+            //$('#modelWindow').modal('show');
+            $(".loader").show();
+            var route = '@Url.Action("DraftItemsPartial", "Report")?orderheaderid=' +e;
+             //var route = '@Url.Action("ItemlistPartial", "Order")?orderheaderid='+e;
+            $('#partial').load(route);
+
+        }
+        function formatDate(date) {
+            var d = new Date(date),
+                month = '' + (d.getMonth() + 1),
+                day = '' + d.getDate(),
+                year = d.getFullYear();
+
+            if (month.length < 2) month = '0' + month;
+            if (day.length < 2) day = '0' + day;
+
+            return [year, month, day].join('-');
+        }
+        function Clear() {
+            $("#Region").val('');
+            $("#State").val('');
+            $("#Dc").val('');
+            $("#Store").val('');
+            $("#Category").val('');
+            
+
+
+        }
+        //function Category() {
+        //    var a = $('#Category').val();
+        //    alert(a);
+        //}
+        $(document).ready(function () {
+            $(".loader").hide();
+            //t = $('#example').DataTable();
+            $("#datatable12").DataTable({
+                dom: "Blfrtip",
+                buttons: [
+                    {
+                        extend: "copy",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "csv",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "excel",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "pdfHtml5",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "print",
+                        className: "btn-sm"
+                    },
+                ],
+                responsive: true
+            });
+
+            $("#Year").change(function () {
+
+                debugger;
+                var year = $(this).val();
+                $("#Quarter").html("");
+                var markup = "";
+                markup += "<option  value=''>Select Quarter</option>";
+                markup += "<option  value='1'>Jan-Mar</option>";
+                markup += "<option  value='2'>Apr-Jun</option>";
+                markup += "<option  value='3'>Jul-Sep</option>";
+                markup += "<option  value='4'>Oct-Dec</option>";
+                $("#Quarter").html(markup);
+                $("#Month").html("");
+                var markup1 = "";
+                markup1 += "<option  value=''>Select Month</option>";
+                markup1 += "<option  value='1'>Jan</option>";
+                markup1 += "<option  value='2'>Feb</option>";
+                markup1 += "<option  value='3'>Mar</option>";
+                markup1 += "<option  value='4'>Apr</option>";
+                markup1 += "<option  value='5'>May</option>";
+                markup1 += "<option  value='6'>Jun</option>";
+                markup1 += "<option  value='7'>Jul</option>";
+                markup1 += "<option  value='8'>Aug</option>";
+                markup1 += "<option  value='9'>Sep</option>";
+                markup1 += "<option  value='10'>Oct</option>";
+                markup1 += "<option  value='11'>Nov</option>";
+                markup1 += "<option  value='12'>Dec</option>";
+                $("#Month").html(markup1);
+
+                   $.ajax({
+                        type: "POST",
+                       url: '@Url.Action("GetWeek", "Report")',
+                       data: { 'Year': year },
+                        datatype: "json",
+                       success: function (data) {
+                           debugger;
+                         $("#Week").html("");
+                           var markup2 = "<option selected value=''>Select Week</option>";
+                         for (var x = 0; x < data.length; x++) {
+                             markup2 += "<option value=" + data[x] + ">" + data[x] + "</option>";
+                         }
+                         $("#Week").html(markup2);
+                        }
+                });
+
+                debugger;
+                //
+
+                var firstDay = formatDate(new Date(year, 0, 1));
+                var lastDay = formatDate(new Date(year, 11 + 1, 0));
+                $('#FromDate').val(firstDay);
+                $('#ToDate').val(lastDay);
+            });
+
+            $("#Quarter").change(function () {
+                debugger;
+                $("#Month").html("");
+                var markup = "";
+                var quarter = $(this).val();
+                var year = $("#Year").val();
+                if (quarter == "1") {
+                    markup += "<option  value=''>Select Month</option>";
+                    markup += "<option  value='1'>Jan</option>";
+                    markup += "<option  value='2'>Feb</option>";
+                    markup += "<option  value='3'>Mar</option>";
+                    var firstDay = formatDate(new Date(year, 0, 1));
+                    var lastDay = formatDate(new Date(year, 2 + 1, 0));
+                    $('#FromDate').val(firstDay);
+                    $('#ToDate').val(lastDay);
+                }
+                else if (quarter == "2") {
+                    markup += "<option  value=''>Select Month</option>";
+                    markup += "<option  value='4'>Apr</option>";
+                    markup += "<option  value='5'>May</option>";
+                    markup += "<option  value='6'>Jun</option>";
+                    var firstDay = formatDate(new Date(year, 3, 1));
+                    var lastDay = formatDate(new Date(year, 5 + 1, 0));
+                    $('#FromDate').val(firstDay);
+                    $('#ToDate').val(lastDay);
+                }
+                else if (quarter == "3") {
+                    markup += "<option  value=''>Select Month</option>";
+                    markup += "<option  value='7'>Jul</option>";
+                    markup += "<option  value='8'>Aug</option>";
+                    markup += "<option  value='9'>Sep</option>";
+                    var firstDay = formatDate(new Date(year, 6, 1));
+                    var lastDay = formatDate(new Date(year, 8 + 1, 0));
+                    $('#FromDate').val(firstDay);
+                    $('#ToDate').val(lastDay);
+                }
+                else if (quarter == "4"){
+                    markup += "<option  value=''>Select Month</option>";
+                    markup += "<option  value='10'>Oct</option>";
+                    markup += "<option  value='11'>Nov</option>";
+                    markup += "<option  value='12'>Dec</option>";
+                      var firstDay = formatDate(new Date(year, 9, 1));
+                    var lastDay = formatDate(new Date(year, 11 + 1, 0));
+                    $('#FromDate').val(firstDay);
+                    $('#ToDate').val(lastDay);
+                }
+
+
+                $("#Month").html(markup);
+
+                  $.ajax({
+                        type: "POST",
+                      url: '@Url.Action("GetWeekByQuarter", "Report")',
+                      data: { 'Year': year, 'Quarter': quarter },
+                        datatype: "json",
+                       success: function (data) {
+                           debugger;
+                         $("#Week").html("");
+                           var markup2 = "<option selected value=''>Select Week</option>";
+                         for (var x = 0; x < data.length; x++) {
+                             markup2 += "<option value=" + data[x] + ">" + data[x] + "</option>";
+                         }
+                         $("#Week").html(markup2);
+                        }
+
+                });
+
+
+            });
+
+            $("#Month").change(function () {
+                var month = $(this).val();
+                var year = $("#Year").val();
+
+                  $.ajax({
+                        type: "POST",
+                      url: '@Url.Action("GetWeekByMonth", "Report")',
+                      data: { 'Year': year, 'Month': month },
+                        datatype: "json",
+                       success: function (data) {
+
+                         $("#Week").html("");
+                           var markup2 = "<option selected value=''>Select Week</option>";
+                         for (var x = 0; x < data.length; x++) {
+                             markup2 += "<option value=" + data[x] + ">" + data[x] + "</option>";
+                         }
+                         $("#Week").html(markup2);
+                        }
+                });
+                debugger;
+                var months = (parseInt(month) - 1);
+                var firstDay = formatDate(new Date(year, months, 1));
+                var lastDay = formatDate(new Date(year, months+1, 0));
+                $('#FromDate').val(firstDay);
+                $('#ToDate').val(lastDay);
+            });
+
+            $("#Week").change(function () {
+                var week = $(this).val();
+                var year = $("#Year").val();
+
+                $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("GetWeekFirstLastDay", "Report")',
+                        data: { 'Year': year, 'Week': week },
+                        datatype: "json",
+                    success: function (data) {
+                        debugger;
+                        $('#FromDate').val(data[0].first_day_in_week);
+                        $('#ToDate').val(data[0].last_day_in_week);
+                        }
+                });
+            });
+            $("#Category").change(function () {
+
+                var a = $(this).val();
+                 $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("GetItem", "Report")',
+                     data: { 'Item': a },
+                        datatype: "json",
+                     success: function (data) {
+                         $("#Sku").html("");
+                         var markup = "";
+                         for (var x = 0; x < data.length; x++) {
+                             markup += "<option selected value=" + data[x].Id + ">" + data[x].SKUName + "</option>";
+                         }
+                         $("#Sku").html(markup);
+                         $("#Sku").multiselect('destroy');
+                         $('#Sku').multiselect({
+                             includeSelectAllOption: true,
+                             buttonWidth: 250,
+                             enableFiltering: true
+                         });
+                        }
+                        });
+
+            });
+            var category = $("#Category").val();
+            if (category != "") {
+                  $.ajax({
+                        type: "POST",
+                        url: '@Url.Action("GetItem", "Report")',
+                      data: { 'Item': category },
+                        datatype: "json",
+                     success: function (data) {
+                         $("#Sku").html("");
+                         var markup = "";
+                         for (var x = 0; x < data.length; x++) {
+                             markup += "<option selected value=" + data[x].Id + ">" + data[x].SKUName + "</option>";
+                         }
+                         $("#Sku").html(markup);
+                         $("#Sku").multiselect('destroy');
+                         $('#Sku').multiselect({
+                             includeSelectAllOption: true,
+                             buttonWidth: 250,
+                             enableFiltering: true
+                         });
+                        }
+                        });
+            }
+            $('#Sku').multiselect({
+                includeSelectAllOption: true,
+                buttonWidth: 250,
+                enableFiltering: true
+            });
+        });
+    </script>
+</div>
+

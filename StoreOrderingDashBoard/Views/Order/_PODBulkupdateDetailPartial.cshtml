@@ -1,0 +1,289 @@
+﻿
+@using DAL
+
+<style>
+    .dtHorizontalVerticalExampleWrapper {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .dataTables_filter {
+        width: auto;
+        float: right;
+    }
+
+    .dataTables_length {
+        width: auto;
+        float: left;
+    }
+
+    #datatable12 th, td {
+        white-space: nowrap;
+    }
+
+    table.dataTable thead .sorting:after,
+    table.dataTable thead .sorting:before,
+    table.dataTable thead .sorting_asc:after,
+    table.dataTable thead .sorting_asc:before,
+    table.dataTable thead .sorting_asc_disabled:after,
+    table.dataTable thead .sorting_asc_disabled:before,
+    table.dataTable thead .sorting_desc:after,
+    table.dataTable thead .sorting_desc:before,
+    table.dataTable thead .sorting_desc_disabled:after,
+    table.dataTable thead .sorting_desc_disabled:before {
+        bottom: .5em;
+    }
+</style>
+<style>
+    .checkbox input[type=checkbox] {
+        margin-left: 0px;
+    }
+    /* -- quantity box -- */
+
+    .quantity {
+        display: inline-block;
+    }
+
+        .quantity .input-text.qty {
+            width: 35px;
+            height: 39px;
+            padding: 0 5px;
+            text-align: center;
+            background-color: transparent;
+            border: 1px solid #efefef;
+        }
+
+        .quantity.buttons_added {
+            text-align: left;
+            position: relative;
+            white-space: nowrap;
+            vertical-align: top;
+        }
+
+            .quantity.buttons_added input {
+                display: inline-block;
+                margin: 0;
+                vertical-align: top;
+                box-shadow: none;
+            }
+
+            .quantity.buttons_added .minus,
+            .quantity.buttons_added .plus {
+                padding: 7px 10px 8px;
+                height: 41px;
+                background-color: #ece6e6;
+                border: 1px solid #efefef;
+                cursor: pointer;
+            }
+
+            .quantity.buttons_added .minus {
+                border-right: 0;
+            }
+
+            .quantity.buttons_added .plus {
+                border-left: 0;
+            }
+
+                .quantity.buttons_added .minus:hover,
+                .quantity.buttons_added .plus:hover {
+                    background: #eeeeee;
+                }
+
+        .quantity input::-webkit-outer-spin-button,
+        .quantity input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            margin: 0;
+        }
+
+        .quantity.buttons_added .minus:focus,
+        .quantity.buttons_added .plus:focus {
+            outline: none;
+        }
+</style>
+<script>
+    function wcqib_refresh_quantity_increments() {
+        jQuery("div.quantity:not(.buttons_added), td.quantity:not(.buttons_added)").each(function (a, b) {
+            var c = jQuery(b);
+            c.addClass("buttons_added"), c.children().first().before('<input type="button" value="-" class="minus" />'), c.children().last().after('<input type="button" value="+" class="plus" />')
+        })
+    }
+    String.prototype.getDecimals || (String.prototype.getDecimals = function () {
+        var a = this,
+            b = ("" + a).match(/(?:\.(\d+))?(?:[eE]([+-]?\d+))?$/);
+        return b ? Math.max(0, (b[1] ? b[1].length : 0) - (b[2] ? +b[2] : 0)) : 0
+    }), jQuery(document).ready(function () {
+        wcqib_refresh_quantity_increments()
+    }), jQuery(document).on("updated_wc_div", function () {
+        wcqib_refresh_quantity_increments()
+    }), jQuery(document).on("click", ".plus, .minus", function () {
+
+        var a = jQuery(this).closest(".quantity").find(".qty"),
+            b = parseFloat(a.val()),
+            c = parseFloat(a.attr("max")),
+            d = parseFloat(a.attr("min")),
+            e = a.attr("step");
+        b && "" !== b && "NaN" !== b || (b = 0), "" !== c && "NaN" !== c || (c = ""), "" !== d && "NaN" !== d || (d = 0), "any" !== e && "" !== e && void 0 !== e && "NaN" !== parseFloat(e) || (e = 1), jQuery(this).is(".plus") ? c && b >= c ? a.val(c) : a.val((b + parseFloat(e)).toFixed(e.getDecimals())) : d && b <= d ? a.val(d) : b > 0 && a.val((b - parseFloat(e)).toFixed(e.getDecimals())), a.trigger("change")
+        x.stopPropagation();
+        x.preventDefault();
+        return false;
+    });
+</script>
+<script>
+    var dt;
+    
+    function readURL(input) {
+        if (input.files && input.files[0]) {
+            var reader = new FileReader();
+
+            reader.onload = function (e) {
+                $('#blah').attr('src', e.target.result);
+            }
+
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+    function CheckQty(e, e1) {
+        var id = "#Qty" + e1;
+        var value = $(id).val();
+        if (parseInt(value) > parseInt(e)) {
+            alert("Quantity is greater than order limit");
+            $(id).val(e);
+        }
+    }
+
+    $(document).ready(function () {
+        $(".loader").hide();
+        var DeliveryStatus = "@ViewBag.DeliveryStatus";
+        if (DeliveryStatus == 3) {
+            $('#TblInvoiceSKUDetails').find('.qty').prop("disabled", false);
+            $('#TblInvoiceSKUDetails').find('.minus').prop("disabled", false);
+            $('#TblInvoiceSKUDetails').find('.plus').prop("disabled", false);
+            $('#TblInvoiceSKUDetails').find('.innerReason').prop("disabled", false);
+        }
+        $('#TblInvoiceSKUDetails').DataTable({
+           "scrollX": formWidth,
+           "scrollY": true,
+        });
+        $('.dataTables_length').addClass('bs-select');
+        dt = $('#TblInvoiceSKUDetails').DataTable().rows().iterator('row', function (context, index) {
+            var node = $(this.row(index).node());
+        });
+
+        (function ($) {
+            $.fn.inputFilter = function (inputFilter) {
+                return this.on("input keydown keyup mousedown mouseup select contextmenu drop", function () {
+                    if (inputFilter(this.value, this.max)) {
+                        this.oldValue = this.value;
+                        this.oldSelectionStart = this.selectionStart;
+                        this.oldSelectionEnd = this.selectionEnd;
+                    } else if (this.hasOwnProperty("oldValue")) {
+                        this.value = this.oldValue;
+                        this.setSelectionRange(this.oldSelectionStart, this.oldSelectionEnd);
+                    }
+                });
+            };
+        }(jQuery));
+        $(".integer").inputFilter(function (value, maxvalue) {
+            return /^\d*$/.test(value) && (value === "" || parseInt(value) <= maxvalue);
+        });
+    });
+    var DeliveryStatus = "@ViewBag.DeliveryStatus";
+    if (DeliveryStatus == 3) {
+        $('#TblInvoiceSKUDetails').find('.qty').prop("disabled", false);
+        $('#TblInvoiceSKUDetails').find('.minus').prop("disabled", false);
+        $('#TblInvoiceSKUDetails').find('.plus').prop("disabled", false);
+        $('#TblInvoiceSKUDetails').find('.innerReason').prop("disabled", false);
+    }
+    </script>
+
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <input type="text" value="@ViewBag.InvoiceNumber" id="InvoiceNumber" style="display:none" />
+        <input type="text" value="@ViewBag.InvoiceDispatchId" id="InvoiceDispatchId" style="display:none" />
+        <div class="x_content">
+
+            <table id="TblInvoiceSKUDetails" class="table table-striped table-bordered table-sm TblInvoiceSKUDetails displayInner" cellspacing="0">
+                <thead>
+                    <tr>
+                        <th>Item Code</th>
+                        <th>Item Description</th>
+                        <th>Quantity</th>
+                        <th>Delivered Quantity</th>
+                        <th>Reasons</th>
+                    </tr>
+                </thead>
+                <tbody class="tbody">
+
+                    @if (ViewBag.BulkPODResponse != null)
+                    {
+
+                        int j = 0;
+                        foreach (BulkPODResponse itemInner in ViewBag.BulkPODResponse)
+                        {
+
+                            <tr>
+                                <td>@itemInner.ItemCode</td>
+                                <td>@itemInner.Description</td>
+                                <td>@itemInner.InvoiceQty</td>
+                                <td>
+                                    <div class="quantity buttons_added">
+                                        <input type="button" value="-" class="minus" disabled>
+                                        <input type="number" step="1" id="@("Qty" + j)" onblur="CheckQty(@itemInner.InvoiceQty,@j)" min="0" max="@itemInner.InvoiceQty" name="quantity" value="@(itemInner.DeliveredQty != 0 ? itemInner.DeliveredQty.ToString() : itemInner.InvoiceQty.ToString())" title="Qty" class="input-text qty text" size="6" pattern="" inputmode="" disabled>
+                                        <input type="button" value="+" class="plus" disabled>
+                                    </div>
+                                    <input type="text" value="@itemInner.ItemId" id="@("No" + j)" style="display:none" />
+                                    <input type="text" value="@itemInner.ItemCode" id="@("ItemCode" + j)" style="display:none" />
+                                    <input type="text" value="@itemInner.Description" id="@("Description" + j)" style="display:none" />
+                                    <input type="text" value="@itemInner.InvoiceQty" id="@("InvoiceQty" + j)" style="display:none" />
+                                </td>
+                                <td>
+                                    @Html.DropDownList("Reason" + j, new SelectList(ViewBag.Reasons, "Value", "Text", itemInner.Reason), "Select", new { @class = "form-control innerReason", @disabled = "disabled" })
+
+                                </td>
+                            </tr>
+                            j++;
+                        }
+                    }
+
+                </tbody>
+            </table>
+
+
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $(".loader").hide();
+
+            $("#TblInvoiceSKUDetails").DataTable({
+                dom: "Blfrtip",
+                buttons: [
+                    {
+                        extend: "copy",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "csv",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "excel",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "pdfHtml5",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "print",
+                        className: "btn-sm"
+                    },
+                ],
+                responsive: true
+            });
+        });
+</script>
+</div>
+
+

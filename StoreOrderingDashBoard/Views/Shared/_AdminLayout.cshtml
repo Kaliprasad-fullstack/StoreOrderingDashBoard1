@@ -1,0 +1,403 @@
+﻿@using StoreOrderingDashBoard.Models;
+@using DbLayer.Repository
+@using DAL
+@{
+    MenuRepository menu = new MenuRepository();
+    CustomerRepository customerRepository = new CustomerRepository();
+    string username = "";
+    int customerplan = 0;
+    int userid = 0;
+    int custid = 0;
+    Customer SessionCustomer = new Customer();
+    if (SessionValues.Name != null)
+    {
+        custid = SessionValues.LoggedInCustId.Value;
+        username = SessionValues.Name;
+        customerplan = SessionValues.PlanId;
+        userid = SessionValues.UserId;
+        SessionCustomer = customerRepository.GetCustomerContextById(custid);
+    }
+    var menus = MenuManagement.ParentMenu;
+}
+@functions {
+//public int PopupShowDelay
+//{
+//    get
+//    {
+//        return 1000 * (Convert.ToInt32(Convert.ToInt32(SessionValues.SessionTimeOutStore)*60) - 130);
+//    }
+//}
+}
+<!DOCTYPE html>
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>@ViewBag.Title-OrderXpro</title>
+    <!-- Bootstrap -->
+    @Styles.Render("~/Content/Bootstrap")
+
+    <!--Data Table-->
+    @Styles.Render("~/Content/DataTable")
+    <!-- bootstrap-progressbar -->
+    @Styles.Render("~/Content/ProgressBar")
+    <!-- JQVMap -->
+    @Styles.Render("~/Content/JQVMap")
+
+    <!-- bootstrap-daterangepicker -->
+    @Styles.Render("~/Content/DateRangePicker")
+    <!--Boostrap multiselect-->
+    @Styles.Render("~/Content/MultiSelect")
+    <!-- Custom Theme Style -->
+    <link href="~/Content/build/css/custom.css" rel="stylesheet">
+    @*<link href="~/Content/build/css/custom_dark.css" rel="stylesheet">*@
+    <style>
+        .datatable-btn {
+            padding: 2px 12px !important;
+            margin: 0px;
+        }
+
+        /*.logo {
+            height: 70%;
+            border: 1px solid rgba(52, 73, 94, 0.44);
+            border-radius: 50%;
+            padding: 2px;
+        }*/
+
+        li .LoggedInCustomer {
+            background-color: #1ABB9C !important;
+        }
+
+        .loading {
+            margin: 0;
+            position: absolute;
+            z-index: 9;
+            flex-flow: row nowrap;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 90vh;
+        }
+
+        .nav-md .smallLogo {
+            display: none !important;
+        }
+
+        .nav-sm .bigLogo {
+            display: none !important;
+        }
+    </style>
+</head>
+<body class="nav-sm footer_fixed">
+    <div id="load" class="loading" style="display:none"><img src="~/images/ajaxloading.gif" /></div>
+    <div class="container body">
+        <div class="main_container">
+            <div class="col-md-3 left_col">
+                <div class="left_col scroll-view">
+                    <div class="navbar nav_title" style="border: 0;background: #ededed;border-bottom: 1px solid #ededed;">
+                        <a href="@Url.Action("Index","Home")" class="site_title">
+                            <img class="smallLogo logo" src="/images/OrderXPro-3.png" style="margin-left:auto;display:block;margin-right:auto;height: 44px;width:auto;margin-top: 10px;">
+                            <img class="bigLogo logo" src="/images/OrderXPro-2.png" style="margin-left:auto;display:block;margin-right:auto;height: 44px;width:auto;margin-top: 10px;">
+                        </a>
+                    </div>
+                    <div class="clearfix"></div>
+                    <!-- menu profile quick info -->
+                    <div class="profile clearfix">
+                        <div class="profile_pic">
+                            <img src="data:image/jpeg;base64,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" alt="..." class="img-circle profile_img">
+                        </div>
+                        <div class="profile_info">
+                            <span>Welcome,</span>
+                            <h2>
+                                @*@(GlobalValues.UserName)*@
+                                @username
+                            </h2>
+                        </div>
+                    </div>
+                    <!-- /menu profile quick info -->
+                    <br />
+                    <!-- sidebar menu -->
+                    <div id="sidebar-menu" class="main_menu_side hidden-print main_menu">
+                        <div class="menu_section">
+                            <h3>General</h3>
+                            <ul class="nav side-menu">
+                                @if (menus.Count() > 0)
+                                {
+                                    foreach (Menu item in menus)
+                                    {
+                                        <li>
+                                            <a><i class="@item.Fa"></i> @item.MenuName <span class="fa fa-chevron-down"></span></a>
+                                            @{
+                                                //var submenu = menu.ChildItem(item.Id, 2, userid, customerplan);
+                                                var submenu = MenuManagement.SubMenu(item.Id, 2);
+                                            }
+                                            @if (submenu.Count() > 0)
+                                            {
+                                                <ul class="nav child_menu">
+                                                    @foreach (Menu item1 in submenu)
+                                                    {
+
+                                                        <li>
+                                                            @if (item1.ControllerName != null && item1.ActionName != null)
+                                                            {
+                                                                <a href="@Url.Action(item1.ActionName,item1.ControllerName)">@item1.MenuName</a>
+                                                            }
+                                                            else
+                                                            {
+                                                                <a href="#">@item1.MenuName</a>
+                                                            }
+                                                            @{
+                                                                var submenuchild = menu.ChildItem(item1.Id, 2, userid, customerplan);
+                                                            }
+                                                            @if (submenuchild.Count() > 0)
+                                                            {
+                                                                <ul class="nav child_menu">
+                                                                    @foreach (Menu item2 in submenuchild)
+                                                                    {
+                                                                        <li>
+                                                                            <a href="@Url.Action(item2.ActionName,item2.ControllerName)">@item2.MenuName</a>
+                                                                        </li>
+                                                                    }
+                                                                </ul>
+                                                            }
+                                                        </li>
+
+                                                    }
+
+
+                                                </ul>
+                                            }
+
+                                        </li>
+                                    }
+                                }
+                            </ul>
+                        </div>
+                    </div>
+                    <!-- /sidebar menu -->
+                    <!-- /menu footer buttons -->
+                    <div class="sidebar-footer hidden-small">
+                        <a data-toggle="tooltip" data-placement="top" title="Logout" onclick="LogOut()">
+                            <span class="glyphicon glyphicon-off" aria-hidden="true"></span>
+                        </a>
+                    </div>
+                    <!-- /menu footer buttons -->
+                </div>
+            </div>
+            <!-- top navigation -->
+            <!-- top navigation -->
+            <div class="top_nav">
+                <div class="nav_menu">
+                    <nav>
+                        <div class="nav toggle">
+                            <a id="menu_toggle" style="padding-top:0px;">
+                                @*<img src="~/images/OrderXPro-2.png" style="height:36px; width:auto;" />*@
+                                <i class="fa fa-bars"></i>
+                            </a>
+                        </div>
+                        <ul class="nav navbar-nav navbar-right">
+                            <li class="">
+                                <a href="javascript:;" class="user-profile dropdown-toggle" data-toggle="dropdown" aria-expanded="false">
+                                    @*<img src="~/images/img.jpg" alt="">*@
+                                    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBw8ODhASDxAPEBAQDxIQFQ8PDRAPDw0OFRIWFhUSExUYHSggGBolGxUTITEhJSkrLi4uFx8zODMsNygtLisBCgoKBQUFDgUFDisZExkrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrKysrK//AABEIAOEA4QMBIgACEQEDEQH/xAAbAAEAAgMBAQAAAAAAAAAAAAAABAYBAwUCB//EADUQAQACAQEGAwUHAwUAAAAAAAABAgMRBAUhMUFRYXGREjKBobEGEyJCUsHhYnLRFCMzo/D/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8A+4gAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAADFrRHNovtHaPjIJDxbLWOsIlrzPOXkEqdor4sf6mO3zRgEn/AFPh82Y2iPFFATIzVnr68GyJc9mLTHKdATxFptE9eP1SKZInkD0AAAAAAAAAAAAAAAA05c+nCOM/KGvNm14Ry792kGbWmebAAAAAAAAAAESAJGLaP1eqREue2Yss18gTBis68mQAAAAAAAAAAEXPl14Ry+rZtGTSNI5z8oRQAAAAHjLlrSNbWisd5nRE3lvGMMaRxvMcI6R4yrufPbJOt5mZ+UeUdAdzPvvHHuRa/j7sIl9+5OlKR56y5IDq035k61pPrH7pOHftJ9+lq+MT7UOCAuGDaKZI1paLfWPOG1TceS1Z1rMxMdYnR3t170+80pfhfpPKL/4kHUAAABsw5PZnwS4lAb9mydJ+AJIAAAAAAADFp0jVlH2q3KPiDRa2s6sAAAA0bbtEYsc2npwiO9uje4X2iza2pTpEe1PnPCP/AHiDlZMk2tNrTrMzrM+LwAAAAADMSwAtO6tr++x6z71eFvHtKYre4s3s5tOl40+McY/f1WQAAAAE3Ff2oe0TZraTp3+qWAAAAAAAg5ba2lMyTpEz4IIAAAACr74trnv4aR6QtCrb2/58n937AhgAAAAAAA3bHbTLSe14+q3yp2z+/T+6PquMgAAAARKfWdYiUBL2afw+Ug2gAAAAA1bTP4URK2r3Y80UAAAABWt+U0z28YifksG1V1x3jvS30VDXUGAAAAAAAASd209rNjj+qJ9OK2KXEzHLhPeOErTurX7imszMzEzrM6zzkEsAAABI2SeaO37LznyBJAAAAABp2rlHmipe0x+H0RAAAAAebxrWY7xMfJTF1cHfewxT/crytbSY6RM9YByAAAAAAAAFt2CumHHH9Ffo4e6NgjNMzbX2azHD9U9lkAAAAAb9l5z5NCRskc/gCQAAAAADzkjWJ8kF0EHJXSZB5AAAAatpwxkpas/mj0npLaApmSk1tNZ4TEzE+cPLtb/2Tlkjwi3n0n9nFAAAAAZYdPceye3k9qY/DT526A7O79m+6xVr15z/AHSkgAAAAAl7NH4fOUSE+saREAyAAAAAAj7VXlPwSGLV1jQEAZtGk6MAAAAA85McWrNbcYmNJ8lQz4/Yvav6bTHpK4qlvCdc2T++31BHAAABmtdZiI5zOnxW7Y9njFSKx05z3t1lU8M6XrPa0T81ykAAAAAAG3Z6628kt4w09mPF7AAAAAAAABo2jHrxjnH0RnQRc+LTjHL6A0gADxly1pGtrRWPGdHL2rflY4Y6+1P6rcK+nMHR2vaIxUm09OUd7dIhUbTrMzPOZ1+LbtG03yTre0z9I8oaQAAAAFr3btUZccT+aI0tHWJ7qo9UvNZ1rMxPeJ0BcxXdm31krwvpePHhb1dTZt64snDX2J7W4fME4ABu2fHrxnp9XjFj9qfBMiNAZAAAAAAAAAAJAHP3hb7ms30tasdKxrMfwr20b6yW9yIpHfnb1XGXB3ruCLa2w6VtzmnKs+XYFayZJtOtpm095nV5e8uK1LTW0TWY6TGkvAAAAAAAAAAMxGs6Rxmekc5Bv2bbMmP3LTEdp419Fh3PtV9o11ppEc8kT+GZ7aT1RN1/Z+1tLZvw1/R+a3n2WXHjisRWsRERwiIjSIgGa1iI0hkAAAAAAAAAAAAAAAaNr2PHmjTJWLdp5THlPRX9t+zd444be1H6bcLevKfks4D5/n2bJjnS9LV844T5T1an0S1YmNJiJjtMawgZ9zbPfnjiJ70ma/KOAKULTk+zOKfdvkjz9m37NE/Zjtm9cf8AIK6LFH2Xnrm/6/5bcf2Zp+bJefKK1/yCsPePHa86VrNp7ViZlb8O4tnr+SbT/XaZ+XJ0MWKtI0rWKx2rERAKtsf2ey345NMcePG3pDv7DuzFg92utv1242/j4JoAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD//2Q==" alt="...">
+                                    @username
+                                    <span class=" fa fa-angle-down"></span>
+                                </a>
+                                <ul class="dropdown-menu dropdown-usermenu pull-right">
+                                    <li><a href="@Url.Action("LogOut","Home")"><i class="fa fa-sign-out pull-right"></i> Log Out</a></li>
+                                </ul>
+                            </li>
+                            <li class="">
+                                <a href="javascript:;" class="user-profile info-number dropdown-toggle" data-toggle="dropdown" aria-expanded="false" style="padding: 2px;">
+                                    <img src="@("/images/Customer/"+(SessionCustomer != null ? SessionCustomer.Name+".jpg" : "Default"))" style="height: 52px;width: auto; border-radius: 2px;" onerror="this.src='/images/Customer/no-image.png'; ">@(SessionCustomer != null ? SessionCustomer.Name : "")
+                                </a>
+                                <ul id="menu1" class="dropdown-menu list-unstyled msg_list" role="menu">
+                                    <li>
+                                        <div class="text-center">
+                                            <a href="@Url.Action("Customers","Home")">
+                                                <strong>Change Customer</strong>
+                                                <i class="fa fa-angle-right"></i>
+                                            </a>
+                                        </div>
+                                    </li>
+                                </ul>
+                                <form id="_CutomerListMenu">
+                                    @Html.AntiForgeryToken()
+                                </form>
+                            </li>
+                        </ul>
+                    </nav>
+                </div>
+            </div>
+            <!-- /top navigation -->
+            <!-- page content -->
+            @RenderBody()
+            <!-- /page content -->
+            <!-- footer content -->
+            <footer>
+                <div class="text-center">
+                    Copyright @(DateTime.Now.Year - 1) - @DateTime.Now.Year © Radhakrishna Foodland Pvt Ltd.
+                    @*<img src="/images/foodland transparent logo v1.png" class="pull-right" style="margin-left:auto;margin-right:auto;display:block; height:10px;">*@
+                </div>
+                <div class="clearfix"></div>
+            </footer>
+            <!-- /footer content -->
+        </div>
+    </div>
+
+    <!-- jQuery -->
+    @Scripts.Render("~/Scripts/BoostrapJs")
+    <!-- Chart.js -->
+    @Scripts.Render("~/Scripts/ChartJs")
+    <!-- gauge.js -->
+    @Scripts.Render("~/Scripts/GaugeJs")
+    <!-- bootstrap-progressbar -->
+    @Scripts.Render("~/Scripts/ProgressBarJs")
+    <!-- iCheck -->
+    @Scripts.Render("~/Scripts/ICheckJs")
+    <!-- Skycons -->
+    @Scripts.Render("~/Scripts/SkyconsJs")
+    <!-- Flot -->
+    @Scripts.Render("~/Scripts/FlotJs")
+    <!-- Flot plugins -->
+    @Scripts.Render("~/Scripts/FlotPlugins")
+    <!-- DateJS -->
+    @Scripts.Render("~/Scripts/DateJs")
+    <!--Data Table-->
+    @Scripts.Render("~/Scripts/dataTablesJs")
+
+    @Scripts.Render("~/Scripts/PdfMakeJs")
+
+    @Scripts.Render("~/Scripts/dataTablesButtonsJs")
+    <!-- JQVMap -->
+    @Scripts.Render("~/Scripts/JQVMapJs")
+    <!-- bootstrap-daterangepicker -->
+    @Scripts.Render("~/Scripts/DateRangePickerJs")
+    <!-- ECharts -->
+    @Scripts.Render("~/Scripts/EChartsJs")
+    <!-- Boostrap Multiselect-->
+    @Scripts.Render("~/Scripts/MultiSelectJs")
+    <!-- Custom Theme Scripts -->
+    <script src="~/Content/build/js/custom.js"></script>
+
+    <script type="text/javascript">
+
+        if (self == top) { vartheBody = document.getElementsByTagName('body')[0]; vartheBody.style.display = "block"; }
+        else { top.location = self.location; }
+
+        window.onunload = function () { null };
+
+        // A $( document ).ready() block.
+        $(document).ready(function (){
+            $("form").attr('autocomplete', 'off');
+            var list = "";
+            window.SessionCustomer='@SessionCustomer.Name';
+            var allowed_cust_menu = $("#menu1");
+            var form = $('#_CutomerListMenu');
+            var token = $('input[name="__RequestVerificationToken"]', form).val();
+            $.ajax({
+                url: "@Url.Action("GetAllowedCustomers", "Customer")",
+                type: "post",
+                data: { "__RequestVerificationToken": token },
+                success: function (response) {
+                    if (response != null && response != undefined) {
+                        if (response.data != null) {
+                            for (var i = 0; i < response.data.length;i++) {
+                                //list = list + "<li><div class='text-center'><a onclick='ChangeCustomer(" + response.data[i].Id + ")'><img src='../images/Customer/" + (response.data[i].Name != null ? response.data[i].Name + '.jpg' : 'Default') + "' alt='" + (response.data[i].Name != null ? response.data[i].Name : '')+"' style='height: 12px;width: auto; border-radius: 2px;'></a></div></li>";
+                                var myclass = "";
+                                myclass = response.data[i].Id ==@custid ? "LoggedInCustomer" : "";
+                                list = list + "<li class='" + myclass+ "'><a onclick='ChangeCustomer(" + response.data[i].Id + ")'><span class='image'><img src='/images/Customer/" + (response.data[i].Name != null ? response.data[i].Name + '.jpg' : 'Default') + "' style='width:25%; '></span><span>" + (response.data[i].Name != null ? response.data[i].Name : '') + "</span></span></a></li>";
+                            }
+                            allowed_cust_menu.html(list);
+                        }
+                    }
+                },
+                error: function (response) {
+                }
+            });
+            $("input").attr('autocomplete', 'off');
+        });
+        LogOut = function () {
+            localStorage.clear();
+            window.location = "@Url.Action("LogOut","Home")"
+        }
+        ChangeCustomer = function (CustId) {
+            var form = $('#_CutomerListMenu');
+            var token = $('input[name="__RequestVerificationToken"]', form).val();
+            localStorage.clear();
+            $.ajax({
+                url: "@Url.Action("ChangeCustomer", "Customer")",
+                type: "Post",
+                data:{
+                    "CustId": CustId,
+                    "__RequestVerificationToken": token
+                },
+                success: function (response) {
+                    if (response != null && response != undefined && response == true) {
+                        window.location.reload();
+                    }
+                    else {
+                        alert("Error Occured.");
+                    }
+                },
+
+                error: function (response) {
+                    alert("error Occured.");
+                }
+            });
+
+        }
+    </script>
+</body>
+</html>
+
+<div id="divCahngeStoreCustomer" style="display:none; text-align: left; margin-top:15px; width:280px !important; position:fixed; top:40px; right:0px; z-index:9999; height:165px;" class="panel">
+    <div class="row" style="margin-top:10px; margin-left:10px;">
+        <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="pills-home-tab" data-toggle="pill" href="#pills-home" role="tab" aria-controls="pills-home" aria-selected="true">Home</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="pills-profile-tab" data-toggle="pill" href="#pills-profile" role="tab" aria-controls="pills-profile" aria-selected="false">Profile</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="pills-contact-tab" data-toggle="pill" href="#pills-contact" role="tab" aria-controls="pills-contact" aria-selected="false">Contact</a>
+            </li>
+        </ul>
+        <div class="tab-content" id="pills-tabContent">
+            <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">...</div>
+            <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">...</div>
+            <div class="tab-pane fade" id="pills-contact" role="tabpanel" aria-labelledby="pills-contact-tab">...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+    var loginUrl='@Url.Action("LogIn", "Home", new { IsSessionExpired = 'Y' })';
+    $(function () {
+        $("body").on('click keypress', function () {
+            ResetThisSession();
+        });
+    });
+    var timeInSecondsAfterSessionOut = 1800; // change this to change session time out (in seconds).
+    var secondTick = 0;
+    function ResetThisSession() {
+        secondTick = 0;
+    }
+    function StartThisSessionTimer() {
+        secondTick++;
+        var timeLeft = ((timeInSecondsAfterSessionOut - secondTick) / 60).toFixed(0); // in minutes
+        timeLeft = timeInSecondsAfterSessionOut - secondTick; // override, we have 30 secs only
+        $("#spanTimeLeft").html(timeLeft);
+        if (secondTick > timeInSecondsAfterSessionOut) {
+            clearTimeout(tick);
+           // window.location = "/Logout.aspx";
+            document.location = loginUrl;
+            return;
+        }
+        tick = setTimeout("StartThisSessionTimer()", 1000);
+    }
+    StartThisSessionTimer();
+   
+</script>

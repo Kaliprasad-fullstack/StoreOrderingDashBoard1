@@ -1,0 +1,73 @@
+﻿
+@{
+    ViewBag.Title = "Export";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    string startdate= ViewData["StartDate"].ToString();
+    string enddate= ViewData["EndDate"].ToString();
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Export To Excel @*<small>Some examples to get you started</small>*@</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <div class="row">
+                        <div class="col-md-3 col-sm-3 col-xs-12">
+                            <label>From Date</label>
+                        </div>
+                        <div class="col-md-3 col-sm-3 col-xs-12">
+                            <input type="date" id="startdate" value="@startdate" name="FromDate" />
+                        </div>
+                        <div class="col-md-3 col-sm-3 col-xs-12">
+                            <label>To Date</label>
+                        </div>
+                        <div class="col-md-3 col-sm-3 col-xs-12">
+                            <input type="date" id="enddate" value="@enddate" name="ToDate" />
+                        </div>
+
+                    </div>
+                    <div class="col-md-6 center-block">
+                        @*<button id="singlebutton" name="singlebutton" class="btn btn-primary center-block">Next Step!</button>*@
+                        <input type="button" value="Export To CSV" onclick="Excel()" class="btn center-block" />
+                        
+                    </div>  
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modelWindow" role="dialog">
+        <div class="modal-dialog modal-lg vertical-align-center">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Item List</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="partial" class="row">
+                        <div class="loader col-sm-12"></div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+  
+</div>
+<script>
+    function Excel() {
+        var startdate1 = $("#startdate").val();
+        var enddate1 = $("#enddate").val();
+        location.href = '@Url.Action("ExportToExcel", "Process")?FromDate=' + startdate1 + '&ToDate=' + enddate1;
+    }
+</script>
+

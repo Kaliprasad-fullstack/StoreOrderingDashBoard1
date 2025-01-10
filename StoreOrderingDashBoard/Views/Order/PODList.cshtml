@@ -1,0 +1,815 @@
+﻿@*@model List<DAL.InvoiceHeader>*@
+@using StoreOrderingDashBoard.Models;
+@{
+    ViewBag.Title = "PODList";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var VehicleNo = ViewBag.VehicleNo != null ? ViewBag.VehicleNo : "AXBXC";
+}
+<link href="~/Content/vendors/jquery-ui/jquery-ui.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Content/vendors/jquery-ui/jquery-ui.js"></script>
+<script src="~/Content/vendors/jquery-ui/jquery-ui.min.js"></script>
+<script src="~/Content/build/js/loader.js"></script>
+<script src="~/Content/vendors/Camera/jquery-1.10.0.min.js"></script>
+<link href="~/Content/vendors/Camera/jquery-ui.css" rel="stylesheet" />
+<script src="~/Content/vendors/Camera/jquery-ui.min.js"></script>
+<script src="~/Scripts/signature_pad.min.js"></script>
+<div class="right_col" role="main">
+    <div class="">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>E-POD</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <br />
+                        <form id="_PODListkey">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <div class="col-md-4">
+                                        <label for="Items">Vehicle No <span class="required">*</span></label>
+                                        <input id="VehicleNo" class="form-control" type="text" />
+                                    </div>
+                                    <div class="col-md-2">
+                                        <button style="margin-top: 23px;" class="btn btn-primary" type="button" onclick="Search()">Search</button>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="Items">Invoice No</label>
+                                        <div>
+                                            <select class="form-control" id="ddlinv" onchange="getdata()"></select>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="col-md-6">
+                                        <label for="Items">Store Code</label>
+                                        <input id="txtSC" class="form-control" type="text" readonly />
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="Items">Store Name</label>
+                                        <input id="txtSNM" class="form-control" type="text" readonly />
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="col-md-6">
+
+                                        <label for="Items">Status</label>
+                                        <select class="form-control" id="ddlstatus" onchange="reasonhide()">
+                                            <option value="1">Delivered</option>
+                                            <option value="2">Not Delivered</option>
+                                            <option value="3">Partially Delivered</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label for="Items">Date</label>
+                                        <div class="form-group">
+                                            <div>
+                                                <input type="text" class="form-control" id="date">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-12">
+                                    <div class="col-md-6" id="reasonlist">
+                                        <label for="Items">Reason</label>
+                                        <div>
+                                            <select class="form-control" id="ddlreason"></select>
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6" id="chkReattempt">
+                                        <label></label>
+                                        <div>
+                                            <input type="checkbox" id="chkflag" /> PLAN DELIVERY RE-ATTEMPT
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <br />
+                            <div class="col-md-12 col-sm-12 col-xs-12 webcam-div">
+                                <label>Upload Image</label>
+                                <button type="button" onclick="ShowWebcamon()" id="btnon">Webcam On</button>
+                                <button type="button" onclick="ShowWebcamoff()" id="btnoff">Webcam Off</button>
+                                <div id="webcam">
+                                    <div class="form-group cam" style="border:2px solid">
+                                        <div id="my_camera" style="margin:auto;"></div>
+                                    </div>
+                                    <div id="pre_take_buttons">
+                                        <input type=button value="Take Snapshot" class="btn btn-primary btn-block" onClick="preview_snapshot()">
+                                    </div>
+                                    <div id="post_take_buttons1" style="display:none">
+                                        <input type=button value="Take Another" class="btn btn-black btn-block" onClick="cancel_preview()">
+                                    </div>&nbsp;&nbsp;
+                                </div>
+                            </div>&nbsp;
+                            <br />
+                            <div id="signaturepadTop" class="col-md-12 col-sm-12 col-xs-12">
+                                <label>Capture Signature</label>
+                                <div id="signaturepad" style="width:100%" class="sigPad'">
+                                    <canvas id="signature" class="form-group" style="border:2px solid black;"></canvas><br>
+                                    <button type="button" class="btn btn-primary" id="accept">Capture</button>
+                                    <button type="button" class="btn btn-primary" id="clear-signature">Clear</button>
+                                </div>&nbsp;&nbsp;
+                            </div>&nbsp;&nbsp;
+                            <div class="clearfix"></div>
+                            <div class="col-md-6">
+                                <button class="btn btn-primary" id="DAbtn" type="button" onclick="AddData()">Submit</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+                <div id="itemlist">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $('#VehicleNo').val("");
+    $('#itemlist').hide();
+    $('#DAbtn').hide();
+    $('#chkReattempt').hide();
+    var vno = $('#VehicleNo').val();
+    $('#reasonlist').hide();
+
+    function FormatTheDate() {
+        var today = new Date( $('#date').val());
+        var dd = today.getDate();
+        var mm = today.getMonth() + 1;
+        var yyyy = today.getFullYear();
+        if (dd < 10) {
+            dd = '0' + dd;
+        }
+        if (mm < 10) {
+            mm = '0' + mm;
+        }
+        var minute = today.getMinutes();
+        if (today.getMinutes() < 10) {
+            minute = '0' + today.getMinutes();
+        }
+        var Hours = today.getHours();
+        if (today.getHours() < 10) {
+            Hours = '0' + today.getHours();
+        }
+        var time = Hours + ":" + minute;
+        var today = dd + '/' + mm + '/' + yyyy + ' ' + time;
+        $('#date').val(today);
+    }
+    $('#signature').mousedown()
+    {
+        if ($('#chkflag').is(':checked') == true) {
+
+            pad.clear();
+
+        }
+    }
+
+    function reasonhide() {
+       //  document.getElementById('signaturepadTop').style.display = '';
+      //  $('#accept').show();
+        $("#signaturepad").children().attr("disabled", false);
+        if ($("#ddlstatus option:selected").val() == 1)
+        {
+            $('#chkReattempt').hide();
+            $("#chkflag").prop('checked', false);
+            $('#reasonlist').hide();
+          //  $('#itemlist').show();
+            $('#pod_submit').hide();
+            $('#ddlreason').val(0);
+            var today = new Date();
+             var dd = today.getDate();
+             var mm = today.getMonth() + 1;
+             var yyyy = today.getFullYear();
+            if (dd < 10) {
+              dd = '0' + dd;
+             }
+            if (mm < 10) {
+              mm = '0' + mm;
+            }
+             var minute = today.getMinutes();
+               if (today.getMinutes() < 10) {
+                   minute = '0' + today.getMinutes();
+            }
+            var Hours = today.getHours();
+               if (today.getHours() < 10) {
+                   Hours = '0' + today.getHours();
+               }
+        var time = Hours + ":" + minute;
+        var today = dd + '/' + mm + '/' + yyyy + ' ' + time;
+        $('#date').val(today);
+            $('#date').datetimepicker({
+                format:'DD/MM/YYYY HH:mm'
+            });
+        }
+        else {
+           if ($("#ddlstatus option:selected").val() == 2) {
+               $('#chkReattempt').show();
+               $("#chkflag").prop('checked', false);
+            //   $('#itemlist').show();
+                $('#pod_submit').hide();
+           }
+           else {
+               $('#chkReattempt').hide();
+               $("#chkflag").prop('checked', false);
+              // $('#itemlist').show();
+                $('#ddlreason').val(0);
+               $('#pod_submit').hide();
+               var today = new Date();
+                 var dd = today.getDate();
+                 var mm = today.getMonth() + 1;
+                 var yyyy = today.getFullYear();
+                    if (dd < 10) {
+                      dd = '0' + dd;
+                     }
+                    if (mm < 10) {
+                      mm = '0' + mm;
+               }
+               var minute = today.getMinutes();
+               if (today.getMinutes() < 10) {
+                   minute = '0' + today.getMinutes();
+               }
+                var Hours = today.getHours();
+               if (today.getHours() < 10) {
+                   Hours = '0' + today.getHours();
+               }
+                var time = Hours + ":" + minute;
+                var today = dd + '/' + mm + '/' + yyyy + ' ' + time;
+                $('#date').val(today);
+                    $('#date').datetimepicker({
+                        format:'DD/MM/YYYY HH:mm'
+                    });
+           }
+            $('#reasonlist').show();
+                 $('#load').show();
+              $.ajax({
+                  url: "@Url.Action("GetReasonList","Order")",
+                  type: "POST",
+                  sync: false,
+                  data: { categoryid:'BO' },
+             success: function (response) {
+                 if (response.data != 0) {
+                     var list = JSON.parse(JSON.stringify(response.data));
+                     $('#ddlreason').append($('<option/>').attr("value", 0).text("Select"));
+                     $.each(list, function (i, option) {
+                         $('#ddlreason').append($('<option/>').attr("value", option.Id).text(option.Reason));
+                     });
+                       $('#load').hide();
+                 }
+                 else {
+                     alert("InvoiceNo not exit");
+                       $('#load').hide();
+                 }
+                       },
+               Error: function (response) {
+                   alert("unable to load list.");
+                      $('#load').hide();
+                        }
+               });
+       }
+    }
+
+    $('#chkReattempt').change(function () {
+
+        if ($('#chkflag').is(':checked') == true) {
+            $('#itemlist').hide();
+            pad.clear();
+           // $('#accept').hide();
+            $("#signaturepad").children().attr("disabled", true);
+          //  document.getElementById('signaturepadTop').style.display = 'none';
+        }
+        else {
+            //  $('#accept').show();
+            $("#signaturepad").children().attr("disabled", false);
+           // document.getElementById('signaturepadTop').style.display = '';
+            $('#itemlist').show();
+            $('#pod_submit').hide();
+        }
+
+    });
+
+    $(document).ready(function () {
+        SetDeliveryTime();
+        });
+    function SetDeliveryTime() {
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth() + 1;
+        var yyyy = today.getFullYear();
+        if (dd < 10) {
+            dd = '0' + dd;
+        }
+        if (mm < 10) {
+            mm = '0' + mm;
+        }
+        var minute = today.getMinutes();
+        if (today.getMinutes() < 10) {
+            minute = '0' + today.getMinutes();
+        }
+        var Hours = today.getHours();
+        if (today.getHours() < 10) {
+            Hours = '0' + today.getHours();
+        }
+        var time = Hours + ":" + minute;
+        var today = dd + '/' + mm + '/' + yyyy + ' ' + time;
+        $('#date').val(today);
+        //$('#date').datetimepicker({
+        //    format: 'DD/MM/YYYY HH:mm'
+        //});
+    }
+    $("#VehicleNo").keyup(function () {
+        $(this).val($(this).val().toUpperCase());
+    });
+    $('#VehicleNo').autocomplete({
+        //serviceUrl: '@Url.Action("AutoVehicleNo","Order")
+        source: function (request, response) {
+            $('#load').show();
+            $.ajax({
+                url: '@Url.Action("AutoVehicleNo", "Order")',
+                data: "{ 'search': '" + request.term + "'}",
+                dataType: "json",
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                    response($.map(data, function (item) {
+                                return item;
+                    }))
+                    $('#load').hide();
+                },
+                error: function (response) {
+                    alert(response.responseText);
+                         $('#load').hide();
+                },
+                failure: function (response) {
+                    alert(response.responseText);
+                         $('#load').hide();
+                }
+            });
+        },
+        minLength: 2,
+        select: function (event, ui) {
+        },
+        });
+    function ClearAllControls() {
+        $('#clear-signature').trigger("click");
+        $('#ddlstatus').val(1);
+        $('#ddlreason').val(0);
+        $("#chkflag").prop('checked', false);
+        $('#txtSC').val('');
+        $('#txtSNM').val('');
+        $('#reasonlist').hide();
+        $('#ddlstatus').val(1);
+        $('#itemlist').hide();
+        $('#VehicleNo option').remove();
+
+        SetDeliveryTime();
+    }
+
+    function Search() {
+        ClearAllControls();
+        $("#signaturepad").children().attr("disabled", false);
+        $('#clear-signature').trigger("click");
+        $('#ddlstatus').prop('disabled', false);
+        $('#ddlreason').prop('disabled', false);
+        $('#chkReattempt').hide();
+        $("#chkflag").prop('checked', false);
+        $('#txtSC').val('');
+        $('#txtSNM').val('');
+        $('#reasonlist').hide();
+        $('#ddlstatus').val(1);
+        $('#itemlist').hide();
+        $('#itemlist').html('');
+        $('#DAbtn').hide();
+        $('#date').attr('readonly', false);
+       //------------DatePicker Setting
+        var custid =@SessionValues.LoggedInCustId; ;
+        $('#ddlinv').html("");
+        var vno = $('#VehicleNo').val();
+        if (vno != "") {
+          $('#load').show();
+            $.ajax({
+                  url: "@Url.Action("GetInvoiceList","Order")",
+                  type: "POST",
+                  sync: false,
+                  data: { vehicleNo:vno ,custid:custid},
+             success: function (response) {
+                 if (response.data != 0) {
+                     var list = JSON.parse(JSON.stringify(response.data));
+                     $('#ddlinv').append($('<option/>').attr("value", 0).text("Select"));
+                     $.each(list, function (i, option) {
+                         $('#ddlinv').append($('<option/>').attr("value", option.Id).text(option.Invoice_Number));
+                     });
+                     $('#load').hide();
+                 }
+                 else {
+                     alert("InvoiceNo not exit");
+                     $('#load').hide();
+                 }
+                       },
+               Error: function (response) {
+                   alert("unable to load list.");
+                  $('#load').hide();
+                        }
+               });
+        }
+        else {
+            alert("Please Insert Vehicle Number")
+        }
+
+    }
+
+    function ConvertJSONDatetoDate(date)
+    {
+        var nowDate = new Date(parseInt(date.substr(6)));
+                    var dd = nowDate.getDate();
+                    var mm = nowDate.getMonth()+1;
+                    var yy = nowDate.getFullYear();
+                    var minute = nowDate.getMinutes();
+                           if (nowDate.getMinutes() < 10) {
+                               minute = '0' + nowDate.getMinutes();
+                           }
+                    var time = nowDate.getHours() + ":"+ minute;
+
+                    if (dd < 10) {
+                        dd = '0' + dd;
+                    }
+                    if (mm < 10) {
+                        mm = '0' + mm;
+        }
+        var result = dd + "/" + mm + "/" + yy + " " + time;
+                    return result;
+    }
+
+    function getdata() {
+        var invoiceVal = $("#ddlinv option:selected").text();
+        var invoiceDId = $("#ddlinv option:selected").val();
+        if (invoiceDId > 0) {
+            $('#load').show();
+            $.ajax({
+                url: "@Url.Action("GetStoreName","Order")",
+                type: "POST",
+                sync: false,
+                data: { invoiceVal: invoiceVal },
+                success: function (response) {
+                    var DId = @SessionValues.UserId;
+                    if (response.data[0].PODHeaderId != "" && response.data[0].PODHeaderId != null) {
+
+                        var canvas = document.querySelector('#signature');
+                        var pad = new SignaturePad(canvas);
+                        pad.clear();
+
+                        if (response.data[0].DeliveryStatus == 1) {
+                            $('#reasonlist').hide();
+                        } else {
+                            $('#reasonlist').show();
+                        }
+                        if (response.data[0].DeliveryStatus == 2) {
+                            $('#ddlstatus').prop('disabled', false);
+                            $('#chkReattempt').show();
+                            if (response.data[0].Delivery_Re_Attempt == 1) {
+                                $("#chkflag").prop('checked', true);
+                            }
+                            else {
+                                $("#chkflag").prop('checked', false);
+                            }
+                            $('#DAbtn').show();
+                            $('#date').attr('readonly', false);
+
+                            $('#ddlreason').prop('disabled', false);
+                        }
+                        else {
+                            $('#ddlstatus').prop('disabled', true);
+                            $('#chkReattempt').hide();
+                            $('#DAbtn').hide();
+                            $('#date').attr('readonly', true);
+                            $('#ddlreason').prop('disabled', true);
+                        }
+                        $('#txtSC').val(response.data[0].StoreCode);
+                        $('#txtSNM').val(response.data[0].StoreName);
+                        $('#ddlstatus').val(response.data[0].DeliveryStatus);
+                       $('#date').val(ConvertJSONDatetoDate(response.data[0].DeliveryDate));
+                      //  $('#date').val(response.data[0].DeliveryDate);
+                      //  FormatTheDate();
+                        $('#txtSC').attr('readonly', true);
+                        $('#txtSNM').attr('readonly', true);
+                        var reasontxt = response.data[0].Reason;
+                        $.ajax({
+                            url: "@Url.Action("GetReasonList","Order")",
+                            type: "POST",
+                            sync: false,
+                            data: { categoryid: 'BO' },
+                            success: function (response) {
+                                if (response.data != 0) {
+
+                                    var list = JSON.parse(JSON.stringify(response.data));
+                                    $('#ddlreason').append($('<option/>').attr("value", 0).text("Select"));
+                                    $.each(list, function (i, option) {
+                                        $('#ddlreason').append($('<option/>').attr("value", option.Id).text(option.Reason));
+                                    });
+                                    $('#ddlreason').val(reasontxt);
+                                }
+                                else {
+                                    alert("InvoiceNo not exit");
+                                }
+                            },
+                            Error: function (response) {
+                                alert("unable to load list.");
+                            }
+                        });
+                                             
+                        if (response.data[0].DeliveryStatus == 3 || response.data[0].DeliveryStatus == 2 || response.data[0].DeliveryStatus == 1) {
+                          
+                                $.ajax({
+                                    url: "@Url.Action("GetPODImages", "Order")",
+                                    type: "POST",
+                                    sync: false,
+                                    data: { InvoiceNo: invoiceVal },
+                                    success: function (response) {
+                                        if (response.data != null && response.data != '') {
+                                            var canvas = document.querySelector('#signature');
+                                            var pad = new SignaturePad(canvas);
+                                            pad.fromDataURL('data:image/jpeg;base64,' + response.data);
+
+                                            $("#signaturepad").children().attr("disabled", true);
+
+                                        }
+                                    },
+                                    Error: function (response) {
+                                        alert("unable to get the images.");
+                                    }
+                                });
+                        }
+
+                    } else {
+                        SetDeliveryTime();
+                        $("#signaturepad").children().attr("disabled", false);
+                        $('#clear-signature').trigger("click");
+                        $('#txtSC').attr('readonly', true);
+                        $('#txtSNM').attr('readonly', true);
+                        $('#ddlstatus').prop('disabled', false);
+                        $('#date').attr('readonly', false);
+                        $('#txtSC').val(response.data[0].StoreCode);
+                        $('#txtSNM').val(response.data[0].StoreName)
+                        $('#ddlstatus').prop('disabled', false);
+                        $('#ddlreason').prop('disabled', false);
+                        $('#ddlstatus').val(1);
+                        $('#chkReattempt').hide();
+                        if ($('#ddlstatus').val() == 1) {
+                            $('#reasonlist').hide();
+                        } else {
+                            $('#reasonlist').show();
+                        }
+                        $('#DAbtn').show();
+                    }
+                    if (DId != '' && DId != undefined) {
+                        var PODHeaderId;
+                        if (response.data[0].PODHeaderId != null) {
+                            PODHeaderId = response.data[0].PODHeaderId;
+                            $('#itemlist').show();
+                            $('#itemlist').load('@Url.Action("POD","Order")?InvoiceNo=' + invoiceVal + '&VehicleNo=' + $('#VehicleNo').val() + '&invoiceDId=' + invoiceDId + '&PODHeaderId=' + PODHeaderId);
+                        }
+                        else {
+                            $('#itemlist').hide();
+                        }
+                    }
+                    else {
+                        $('#itemlist').hide();
+                    }
+                    if (response.data[0].PODHeaderId != null && response.data[0].Delivery_Re_Attempt == 1) {
+                        $('#itemlist').hide();
+                    }
+                     $('#load').hide();
+                },
+                Error: function (response) {
+                    alert("unable to load list.");
+                    $('#load').hide();
+                }
+            });
+        }
+        else {
+            $('#itemlist').hide();
+            $('#itemlist').html('');
+            $('#txtSC').val('');
+            $('#txtSNM').val('');
+            $('#ddlstatus').prop('disabled', false);
+            $('#date').attr('readonly', false);
+        }
+
+
+    }
+
+    function AddData() {
+          if ($('#VehicleNo').val() == "") {
+            alert("Please enter vehicle no");
+            return false;
+        }
+          if ($("#ddlinv option:selected").val() == 0 || $("#ddlinv option:selected").val() == undefined) {
+            alert("Please select invoice no");
+            return false;
+        }
+          if ($("#ddlstatus option:selected").val() > 1) {
+            if ($("#ddlreason option:selected").val() == 0)
+            {
+            alert("Please select reason");
+            return false;
+             }
+        }
+
+        if( (SignatureDataUrl == "" || SignatureDataUrl == null || SignatureDataUrl == undefined) && ($('#chkflag').is(':checked') != true) ) {
+            alert("Signature is required");
+            return false;
+        }
+          if ($('#chkflag').is(':checked') == true) {
+                var flag = 1;
+            }
+          else {
+                var flag = 0;
+        }
+          var dt1 = $("#date").val();
+          var pODheaderBO = {
+              Invoice_Number: $("#ddlinv option:selected").text(),
+              DeliveryStatus: $("#ddlstatus option:selected").val(),
+              InvoiceDispatchId: $("#ddlinv option:selected").val(),
+              DeliveryDate: dt1,
+              Reason: $("#ddlreason option:selected").val(),
+              Reattempte: flag
+        }
+
+
+
+           $('#load').show();
+          $.ajax({
+                    url: "@Url.Action("AddUpdatePODHeader", "Order")",
+                    type: "POST",
+                      data: {
+                          pODheaderBO: pODheaderBO,
+                    },
+              success: function (response) {
+                  if (response.data != 0 && response.data != undefined) {
+                      var PODHeaderId;
+                      PODHeaderId = JSON.stringify(response.data);
+                      $('#PODHeaderId').val(PODHeaderId);
+                      SavePODImages(PODHeaderId);
+                     // alert("SAVED SUCCESSFULLY");
+                         $('#load').hide();
+                    var DId = @SessionValues.UserId;//'@Session["DId"]';
+                      var invoiceVal = $("#ddlinv option:selected").text();
+                      var invoiceDId = $("#ddlinv option:selected").val();
+                      var delstatus= $('#ddlstatus').val();
+                      if (DId != '' && DId != undefined && delstatus != 2) {
+                          $('#DAbtn').hide();
+                             $('#pod_submit').show();
+                            $('#itemlist').show();
+                            $('#itemlist').load('@Url.Action("POD","Order")?InvoiceNo=' + invoiceVal + '&VehicleNo=' + $('#VehicleNo').val() + '&invoiceDId=' + invoiceDId + '&PODHeaderId=' + PODHeaderId);
+
+                     }
+                    else {
+                          $('#itemlist').hide();
+                          window.location = "@Url.Action("PODList", "Order")";
+                      }
+
+                  }
+                  else {
+                      alert("UNABLE TO SAVE");
+                         $('#load').hide();
+                  }
+              },
+              error: function (response) {
+                            console.log(response)
+                  alert("UNABLE TO SAVE");
+                  $('#load').hide();
+                        }
+                });
+    }
+    function SavePODImages(PODHeaderId) {
+        var fileData = new FormData();
+        if (SignatureDataUrl != null && SignatureDataUrl != undefined) {
+
+            PODImageLists = [];
+            fileData.append("InvoiceNo", $("#ddlinv option:selected").text());
+            fileData.append("PODHeaderId", PODHeaderId);
+            for (var i = 0; i < UploadImageList.length; i++) {
+                fileData.append("PODImageLists[" + i + "].ImgName", UploadImageList[i]);
+            }
+            fileData.append('SignatureDataUrl', SignatureDataUrl);
+
+            $.ajax({
+                url: "@Url.Action("SavePODImages", "Order")",
+                type: "POST",
+                data: fileData,
+                dataType: 'json',
+                contentType: false,
+                processData: false,
+                error: function (error) {
+                    console.log(error);
+                    alert("unable to save.");
+                },
+                success: function (response) {
+                    alert("SAVED SUCCESSFULLY");
+                    //  window.location = "@Url.Action("PODList", "Order")";
+
+                }
+            });
+        }
+    }
+</script>
+
+// Camera Code
+<script src="~/Scripts/webcam.min.js"></script>
+<script language="JavaScript">
+    $('#webcam').hide();
+    $('#btnoff').hide();
+    function ShowWebcamon() {
+        $('#webcam').show();
+        $('#btnon').hide();
+        $('#btnoff').show();
+
+    }
+    function ShowWebcamoff() {
+        $('#webcam').hide();
+        $('#btnon').show();
+        $('#btnoff').hide();
+    }
+    $(document).ready(function () {
+        var RIGHT_COL_Width = $('.webcam-div').width();
+        RIGHT_COL_Width = RIGHT_COL_Width - 4 < 320 && RIGHT_COL_Width - 4 > 100 ? RIGHT_COL_Width - 4 : 320;
+        if (/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)) {
+
+            Webcam.set({
+                height: 240,
+                width: RIGHT_COL_Width,
+                image_format: 'jpeg',
+                jpeg_quality: 100,
+            });
+            Webcam.set('constraints', { facingMode: 'environment' });
+        }
+        else {
+            Webcam.set({
+                height: 240,
+                width: RIGHT_COL_Width,
+                image_format: 'jpeg',
+                jpeg_quality: 100,
+                flip_horiz: true,
+            });
+        }
+        Webcam.attach('#my_camera');
+    });
+
+    $(document).ready(function () {
+        $('.real').hide();
+        $('.error').hide();
+    });
+
+
+</script>
+<script language="JavaScript">
+    var UploadImageList = [];
+    function preview_snapshot() {
+        Webcam.snap(function (data_uri) {
+            var str = data_uri;
+            var imgnm = $('#imgname').val();
+            UploadImageList.push(str);
+        });
+        Webcam.freeze();
+        document.getElementById('pre_take_buttons').style.display = 'none';
+        document.getElementById('post_take_buttons1').style.display = '';
+    }
+    function cancel_preview() {
+        $('.real').hide();
+        $('.cam').show();
+        Webcam.unfreeze();
+        document.getElementById('pre_take_buttons').style.display = '';
+        document.getElementById('post_take_buttons1').style.display = 'none'; s
+    }
+</script>
+<script>
+    var SignatureDataUrl;
+    $('#btnoff1').hide();
+    $('#accept').click(function () {
+
+        var data = pad.toDataURL();
+        SignatureDataUrl = data;
+        pad.off();
+        $('#accept').attr("disabled", true);
+        // $('#signature').attr("readonly", true);
+        //var c = document.getElementById("signature");
+        //var ctx = c.getContext("2d");
+        //ctx.attr("disabled", true);
+
+    });
+
+    var canvas = document.querySelector('#signature');
+    var pad = new SignaturePad(canvas);
+    $('#clear-signature').on('click', function () {
+        pad.clear();
+        pad.on();
+        $('#accept').attr("disabled", false);
+        SignatureDataUrl = "";
+
+    });
+</script>
+
+

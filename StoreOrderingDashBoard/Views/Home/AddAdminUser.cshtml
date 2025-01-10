@@ -1,0 +1,120 @@
+﻿@model DAL.Users
+
+@{
+    ViewBag.Title = "AddAdminUser";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>AddAdminUser</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    @*<div class="x_title">
+                            <h2>AdminUser<small> Form</small></h2>
+                            <ul class="nav navbar-right panel_toolbox">
+                                <li>
+                                    <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                                </li>
+                            </ul>
+                            <div class="clearfix"></div>
+                        </div>*@
+                    <div class="x_content">
+                        <br />
+                        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left" action="@Url.Action("AddAdminUser","Home")" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="text" id="Id" name="LocationId" value="@Model.Id" style="display:none" />
+                            <input type="hidden" id="Department" name="Department" value="Dc Manager" style="display:none" />
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="Name">
+                                    Name <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="Name" name="Name" class="form-control" required="required" value="@Model.Name" />
+                                    @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="EmailAddress">
+                                    Email Address <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">                                    
+                                    <input type="email" id="EmailAddress" name="EmailAddress" class = "form-control" required="required" value="@Model.EmailAddress" />
+                                    @Html.ValidationMessageFor(model => model.EmailAddress, "", new { @class = "text-danger" })
+                                </div>
+                                <div class="col-md-10">
+
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="Password" >
+                                    Password <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">                                   
+                                    <input type="password" id="Password" name="Password" class = "form-control" required = "required" value="@Model.Password" />
+                                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="LocationId">
+                                    Location <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.DropDownListFor(model=>model.Locations.LocationId, new SelectList(ViewBag.Locations, "Value", "Text"), "Please select Location", new { @class = "form-control", required = "required" })
+                                    @* @Html.EditorFor(model => model.LocationId, new { htmlAttributes = new { @class = "form-control" } })*@
+                                    @Html.ValidationMessageFor(model => model.LocationId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="CompanyId">
+                                    Company <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.DropDownListFor(model => model.Company.Id, new SelectList(ViewBag.Companies, "Id", "Name"), "Please select Company", new { @class = "form-control", required = "required" })
+                                    @* @Html.EditorFor(model => model.LocationId, new { htmlAttributes = new { @class = "form-control" } })*@
+                                    @Html.ValidationMessageFor(model => model.Company.Id, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="CustomerPlanId">
+                                    Customer Plan <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.DropDownListFor(model => model.CustomerPlan.Id, new SelectList(ViewBag.Plans, "Id", "PlanName"), "Please select Customer Plan", new { @class = "form-control", required="required" })
+                                    @* @Html.EditorFor(model => model.LocationId, new { htmlAttributes = new { @class = "form-control" } })*@
+                                    @Html.ValidationMessageFor(model => model.CustomerPlan.Id, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            @*<div class="form-group">
+                                    @Html.LabelFor(model => model.Department, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-10">
+                                        @Html.DropDownListFor(model => model.Department, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.DropDownListFor(model => model.Department, new SelectList(ViewBag.Departments, "Department", "Department"), "Please select Department")
+                                        @Html.ValidationMessageFor(model => model.Department, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>*@
+
+                            <div class="ln_solid"></div>
+                            <div class="form-group">
+                                <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                    <button class="btn btn-primary" type="reset">Reset</button>
+                                    <button type="submit" class="btn btn-success">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

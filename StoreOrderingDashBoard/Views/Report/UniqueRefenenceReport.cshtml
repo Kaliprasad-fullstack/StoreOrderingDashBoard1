@@ -1,0 +1,236 @@
+﻿@using BAL
+@using DAL
+@{
+    ViewBag.Title = "FinalReport";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    string startdate = ViewData["StartDate"].ToString();
+    string enddate = ViewData["EndDate"].ToString();
+    string UniqueReferenceID = ViewData["UniqueReferenceID"] != null ? ViewData["UniqueReferenceID"].ToString() : "";
+}
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Daily Sales Report</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <form id="demo-form" method="post" action="@Url.Action("UniqueRefenenceReport","Report")">
+                        @Html.AntiForgeryToken()
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label for="FromDate">Order From Date</label>
+                                <input type="date" value="@startdate" class="form-control" name="FromDate" id="FromDate" />
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label for="enddate">Order To Date</label>
+                                <input type="date" value="@enddate" class="form-control" name="ToDate" id="ToDate" />
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label for="UniqueReferenceID">Unique Reference ID</label>
+                                <input type="text" value="@UniqueReferenceID" class="form-control" name="UniqueReferenceID" id="UniqueReferenceID" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>DC</label>
+                                @* @Html.DropDownList("SelectedDC", new SelectList(ViewBag.DCs, "Value", "Id", ViewBag.SelectedDCs), "Please select", new { @class = "form-control" })*@
+                                @Html.ListBox("SelectedDC", (MultiSelectList)ViewBag.DCs, new { size = 4, @class = "form-control" })
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>StoreCode</label>
+                                @Html.ListBox("SelectedStores", (MultiSelectList)ViewBag.Stores, new { size = 4, @class = "form-control" })
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>SKU</label>
+                                @Html.ListBox("SelectedSKUs", (MultiSelectList)ViewBag.Items, new { size = 4, @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <div class="form-group text-right">
+                                    <br />
+                                    <input type="submit" class="btn btn-default btn btn-success" style="margin-bottom:0px;" value="Search" />
+                                    <input type="submit" value="Export to Excel" name="Edit" formaction="@Url.Action("UniqueRefenenceExportExcel")" formmethod="post" class="btn btn-default" style="margin-bottom:0px;" />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <p class="text-muted font-13 m-b-30">
+                        @*<strong id="title"> Name: Daily Sales Report</strong>*@
+                        <br />
+                        <span id="message" name="Message"> Store Order Date: From: @startdate To: @enddate</span>
+                    </p>
+                    <table id="datatable" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Unique Reference ID</th>
+                                <th>Date of Order</th>
+                                <th>Order Placed Date</th>
+                                <th>Order Type</th>
+                                <th>Kitchen ID</th>
+                                <th>City</th>
+                                <th>State</th>
+                                <th>Focus</th>
+                                <th>Last Order Date</th>
+                                <th>Last Delivery Date</th>
+                                <th>EX Code</th>
+                                @*<th>Item Name</th>
+                                    <th>Item Type</th>*@
+                                @*<th>Item Sub Type</th>
+                                    <th>Order Qty</th>
+                                    <th>Pack Size</th>
+                                    <th>Case Size</th>
+                                    <th># of Cases</th>
+                                    <th>New_Build</th>
+                                    <th>Order Status</th>
+                                    <th>Invoice Status</th>
+                                    <th>From DC</th>
+                                    <th>Plan Date</th>
+                                    <th>PO Number</th>
+                                    <th>SO Number</th>
+                                    <th>Invoiced Date</th>
+                                    <th>Invoice No.</th>
+                                    <th>Invoiced Qty</th>
+                                    <th>Delivery Date</th>
+                                    <th>Taken Days</th>
+                                    <th>Slab</th>
+                                    <th>Vehicle No.</th>
+                                    <th>Driver Name</th>
+                                    <th>Driver Contact No.</th>
+                                    <th>DocDate</th>
+                                    <th>Remarks</th>
+                                    <th>Order Reference ID</th>
+                                    <th>Return Authorization</th>*@
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.FinalizedReports != null)
+                            {
+                                int i = 1;
+                                foreach (UniqueRefenenceReport head in ViewBag.FinalizedReports)
+                                {
+                                    <tr>
+                                        <td>@head.UniqueReferenceID</td>
+                                        <td>@(head.OrderDate != null ? head.OrderDate.Value.ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture) : "")</td>
+                                        <td>@(head.OrderPlacedDate != "" && head.OrderPlacedDate != null ? HelperCls.FromExcelStringDate(head.OrderPlacedDate).ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture) : "")</td>
+                                        <td>@head.OrderType</td>
+                                        <td>@head.StoreCode</td>
+                                        <td>@head.City</td>
+                                        <td>@head.State</td>
+                                        <td>@head.Focus</td>
+                                        <td>@(head.LastOrderDate != "" && head.LastOrderDate != null ? HelperCls.FromExcelStringDate(head.LastOrderDate).ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture) : "")</td>
+                                        <td>@(head.LastDeliveryDate != "" && head.LastDeliveryDate != null ? HelperCls.FromExcelStringDate(head.LastDeliveryDate).ToString("dd/MM/yyyy", System.Globalization.CultureInfo.InvariantCulture) : "")</td>
+                                        <td>@head.SKUCode</td>
+                                        @*<td>@head.SKUName</td>
+                                            <td>@head.Item_Type</td>*@
+                                        @*<td>@head.Item_sub_Type</td>
+                                            <td>@head.requested_Quantity</td>
+                                            <td>@head.PackSize</td>
+                                            <td>@head.CaseSize</td>
+                                            <td>@head.Cases</td>
+                                            <td>@head.New_Build</td>
+                                            <td>@head.order_status</td>
+                                            <td>@head.invoice_status</td>
+                                            <td>@head.FromDC</td>
+                                            <td>@(head.PlanDate != null ? head.PlanDate.Replace("/", "-") : "")</td>
+                                            <td>@head.ord_no</td>
+                                            <td>@head.SoNumber</td>
+                                            <td>@(head.InvoiceDate != null ? head.InvoiceDate.Replace("/", "-") : "")</td>
+                                            <td>@head.Invoice_Number</td>
+                                            <td>@head.inv_Quantity</td>
+                                            <td>@(head.DeliveryDate != null ? head.DeliveryDate.Replace("/", "-") : "")</td>
+                                            <td>@head.TakenDays</td>
+                                            <td>@head.Slab</td>
+                                            <td>@head.VehicleNo</td>
+                                            <td>@head.DriverName</td>
+                                            <td>@head.DriverContactNo</td>
+                                            <td>@(head.DocDate != null ? head.DocDate.Replace("/", "-") : "")</td>
+                                            <td>@head.Remarks</td>
+                                            <td>@head.OrderReferenceId</td>
+                                            <td>@head.Return_Authorization</td>*@
+                                    </tr>
+                                    i++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modelWindow" role="dialog">
+        <div class="modal-dialog modal-lg vertical-align-center">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Item List</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="partial" class="row">
+                        <div class="loader col-sm-12"></div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $(".loader").hide();
+            //t = $('#example').DataTable();
+            var SessionCustomer = window.SessionCustomer != undefined ? window.SessionCustomer : "OYO";
+            /**/
+            var title = 'Name: Daily Sales Report';
+            var titleText = 'Store Order Date: From: ' + convertDate($("#FromDate").val()) + ' To: ' + convertDate($("#ToDate").val()) + '';
+            //$("#title").text(title);
+            $("#message").text(titleText);
+            /**/
+            $("#datatable").DataTable({
+                responsive: true
+            });
+            $('#SelectedDC').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                enableFiltering: true
+            });
+            $('#SelectedStores').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedSKUs').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+        });
+        function convertDate(dateString) {
+            var p = dateString.split(/\D/g)
+            return [p[2], p[1], p[0]].join("-");
+        }
+    </script>
+</div>

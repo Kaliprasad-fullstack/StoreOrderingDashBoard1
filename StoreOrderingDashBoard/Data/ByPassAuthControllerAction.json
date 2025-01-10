@@ -1,0 +1,58 @@
+[
+  {
+    "Controller": "Store",
+    "Action": "AutoStoreCode"
+  },
+  {
+    "Controller": "DCManager",
+    "Action": "MenuRights"
+  },
+  {
+    "Controller": "DCManager",
+    "Action": "CustomerStores"
+  },
+  {
+    "Controller": "DCManager",
+    "Action": "MenuRightsForUser"
+  },
+  {
+    "Controller": "DCManager",
+    "Action": "SaveMenuManagement"
+  },
+  {
+    "Controller": "DCManager",
+    "Action": "WidgetsForUser"
+  },
+  {
+    "Controller": "DCManager",
+    "Action": "SaveWidgetForUser"
+  },
+  {
+    "Controller": "Home",
+    "Action": "ForgotAnswer"
+  },
+  {
+    "Controller": "Order",
+    "Action": "ImportExcel"
+  },
+  {
+    "Controller": "Order",
+    "Action": "ItemlistPartial"
+  },
+  {
+    "Controller": "Order",
+    "Action": "MakeACopy"
+  },
+  {
+    "Controller": "Process",
+    "Action": "ExportToExcel"
+  },
+  {
+    "Controller": "Process",
+    "Action": "FinaliseItemlist"
+  },
+  {
+    "Controller": "Store",
+    "Action": "GetStoreUserForStoreId"
+  }
+]

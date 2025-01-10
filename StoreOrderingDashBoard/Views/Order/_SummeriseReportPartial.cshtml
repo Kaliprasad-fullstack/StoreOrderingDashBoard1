@@ -1,0 +1,104 @@
+﻿@using DAL
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>Item List</h2>
+
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+
+            <table id="example" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Product Id</th>
+                        <th>Item Code</th>
+                        <th>Item Description</th>
+                        @*<th>PackingDescription</th>*@
+                        <th>Category</th>
+                        <th>UOM</th>
+                        <th>Max Order Limit</th>
+                        <th>Quantity</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    @if (ViewBag.Itemlist != null)
+                    {
+                        int i = 1;
+                        foreach (Item item in ViewBag.Itemlist)
+                        {
+                            <tr>
+                                <td>@item.Id</td>
+                                <td>@item.SKUCode</td>
+                                <td>@item.SKUName</td>
+                                <td>@item.Category.CaseConversion</td>
+                                <td>@item.UOMmaster.UnitofMasureDescription</td>
+                                <td>@item.MaximumOrderLimit</td>
+                                <td><input type="number" onblur="CheckQtys(@item.MaximumOrderLimit,@i)" min="0" id="@("Qtys"+i)" /></td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                </tbody>
+            </table>
+            <div class="loader"></div>
+        </div>
+    </div>
+    <script>
+        var t;
+        var productlist = [];
+        $(document).ready(function () {
+            $(".loader").hide();
+            t = $('#example').DataTable();
+        });
+        function AddNew(e1,e) {
+
+           // debugger;
+            $(".loader").show();
+            var tableinfo = t.page.info();
+            total = tableinfo.recordsTotal
+            for (i = 0; i < total; i++) {
+                // var data = t.$('input[id=Qtys' + i + '], select').serialize();
+                var data = t.cell(i, 6).nodes().to$().find('input').val()
+                //  var Qty = data.split("=");
+                if (parseInt(data) > 0) {
+                    var da = t.row(i).data();
+                    var product = {};
+                    product.ProductId = parseInt(da[0]);
+                    product.ItemCode = da[1];
+                    product.Skudescription = da[2];
+                    product.Category = da[3];
+                    product.UOM = da[4];
+                    product.MaxorderLimit = parseFloat(da[5]);
+                    product.Quantity = parseInt(data);
+                    product.headerid = parseInt(e1);
+                    productlist.push(product);
+                }
+
+            }          
+             $.ajax({
+                    url: "@Url.Action("InsertInTemp", "Order")",
+                    type: "POST",
+                    data: {
+                        "tempTbls": productlist
+                    },
+                    success: function (response) {
+                        if (response) {
+                            productlist = [];
+                            alert("Item is added successfully");
+                            window.location = "@Url.Action("MakeACopy", "Order")?headerid="+e1;
+                        }
+                    }
+                });
+        }
+
+        function CheckQtys(e, e1) {
+            var id = "#Qtys" + e1;
+            var value = $(id).val();
+            if (parseInt(value) > parseInt(e))
+                alert("Quantity is greater than order limit");
+        }
+    </script>
+</div>
+

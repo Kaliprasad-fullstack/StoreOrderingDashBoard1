@@ -1,0 +1,106 @@
+﻿@using DAL
+@{ 
+    int admin=Convert.ToInt32(ViewData["AdminID"].ToString());
+    int custplanid = Convert.ToInt32(ViewData["CustPlanId"].ToString());
+}
+
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_title">
+            <h2>Item List</h2>
+
+            <div class="clearfix"></div>
+        </div>
+        <div class="x_content">
+            <table id="example" class="table table-striped table-bordered table-responsive">
+                <thead>
+                    <tr>
+                        <td>#</td>
+                        <td>MenuId</td>
+                        <th>Menu</th>
+                        <th>Show</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.Menu != null)
+                    {
+                        int i = 1;
+                        foreach (Menu role in ViewBag.Menu)
+                        {
+                            <tr>
+                                <td>@i</td>
+                                <td>@role.Id</td>
+                                <td>@role.MenuName</td>
+                                @if (role.PlanId > 0)
+                                {
+                                    <td><input type="checkbox" id="@("Check"+i)" value="@role.PlanId" name="id[]" @*onclick="Create(@role.PlanId,@role.Id)"*@ checked /></td>
+                                }
+                                else
+                                {
+                                    <td><input type="checkbox" id="@("Check"+i)" value="@role.PlanId" name="id[]" @*onclick="Create(@role.PlanId,@role.Id)"*@ /></td>
+                                }
+
+                            </tr>
+                            i++;
+                        }
+                    }
+
+                </tbody>
+
+            </table>
+
+            <div class="loader"></div>
+        </div>
+    </div>
+    <script>
+        var t;
+        var productlist = [];
+        var menu = [];
+        $(document).ready(function () {
+            $(".loader").hide();
+            t = $('#example').DataTable();
+        });
+function Create() {
+        debugger;
+        $(".loader").show();
+        var tableinfo = t.page.info();
+        total = tableinfo.recordsTotal
+    var storeid =@admin;
+    var custplanid=@custplanid;
+        for (i = 0; i < total; i++) {
+            var data = t.$('input[id=Check' + (i+1) + '], checked').serialize();
+            var data1 = t.cell(i, 3).nodes().to$().find('input').val()
+                var da = t.row(i).data();
+                var product = {};
+                product.PlanId =data!=""?parseInt(data1):null;
+            product.Id = parseInt(da[1]);
+            product.IsShow = data != "" ? true : false;
+            menu.push(product);
+        }
+
+         var r = confirm("Are you Sure Want to Save?");
+        if (r) {
+            $.ajax({
+                url: "@Url.Action("SavemenuManagementForStore", "Store")",
+                type: "POST",
+                data: {
+                    "menus": menu,
+                    "storeid": storeid,
+                    "CustPlanId": custplanid
+                },
+                success: function (response) {
+                    if (response) {
+                        $(".loader").hide();
+                        alert("Menu Management Saved Successfully");
+                        window.location.reload();
+                        location.reload();
+                    }
+                }
+            });
+        }
+        else {
+            $(".loader").hide();
+        }
+    }
+    </script>
+</div>

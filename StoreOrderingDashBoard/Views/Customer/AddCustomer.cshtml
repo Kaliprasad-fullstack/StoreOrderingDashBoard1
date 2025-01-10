@@ -1,0 +1,158 @@
+﻿@using DAL
+@{
+    ViewBag.Title = "AddCustomer";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Add Customer</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Customer<small> Form</small></h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <br />
+                        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left" action="@Url.Action("AddCustomer","Customer")" method="post">
+                            @Html.AntiForgeryToken()
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                                    Customer Name <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="first-name" required="required" name="Name" class="form-control col-md-7 col-xs-12" value="">
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                                    Company Name <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+
+                                    <select required="required" name="Company.Id" class="form-control col-md-7 col-xs-12">
+                                        <option value="">Select Company Name</option>
+                                        @if (ViewBag.Companies != null)
+                                        {
+                                            foreach (Company com in ViewBag.Companies)
+                                            {
+                                                <option value="@com.Id">@com.Name</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                                    Customer Plan <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+
+                                    <select required="required" name="CustomerPlan.Id" class="form-control col-md-7 col-xs-12">
+                                        <option value="">Select Customer Plan</option>
+                                        @if (ViewBag.CustomerPlan != null)
+                                        {
+                                            foreach (CustomerPlan plan in ViewBag.CustomerPlan)
+                                            {
+                                                <option value="@plan.Id">@plan.PlanName</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                                    Customer Order Auto Delete by
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="number" min="0" id=" OrderDays" name="OrderDays" class="form-control col-md-7 col-xs-12" value="">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                                    Customer Deleted Order Status <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id=" CustomerDeletedOrderStatus" required="required" name="StatusRemark" class="form-control col-md-7 col-xs-12" value="">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                                    Planned Order
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @*@Html.EditorFor(x => x.PlannedOrderFlag)*@
+                                    @Html.CheckBox("PlannedOrderFlag")
+                                    @*<input type="checkbox" name="PlannedOrderFlag" />*@
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                                    Escalation Matrix
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @*@Html.EditorFor(x => x.HasEscalationMatrix)*@
+                                    @Html.CheckBox("HasEscalationMatrix")
+                                    @*<input type="checkbox" name="HasEscalationMatrix" />*@
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                                    Escalation Matrix
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @*@Html.EditorFor(x => x.HasEscalationMatrix)*@
+                                    @Html.CheckBox("HasEscalationMatrix")
+                                    @*<input type="checkbox" name="HasEscalationMatrix" />*@
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                                    Item Type DC Flag
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @*@Html.EditorFor(x => x.HasEscalationMatrix)*@
+                                    @Html.CheckBox("ItemTypeDCFlag")
+                                    @*<input type="checkbox" name="HasEscalationMatrix" />*@
+                                </div>
+                            </div>
+                            <div class="ln_solid"></div>
+                            <div class="form-group">
+                                <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                    <button class="btn btn-primary" type="reset">Reset</button>
+                                    <button type="submit" class="btn btn-success">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script>
+    $(document).ready(function () {
+        $('#EmailTypes').multiselect({
+            includeSelectAllOption: true,
+            buttonWidth: "100%",
+            enableFiltering: true
+        });
+    });
+</script>
+

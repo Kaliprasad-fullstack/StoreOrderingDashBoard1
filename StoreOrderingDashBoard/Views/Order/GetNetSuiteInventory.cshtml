@@ -1,0 +1,189 @@
+﻿@using BAL
+@using DAL
+@using System.Globalization
+@{
+    ViewBag.Title = "Get NetSuite Inventory";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<style>
+    .N a, .Y a {
+        text-decoration: underline;
+        color: white;
+    }
+    .N {
+        background-color: #f2a104;
+        color: white;
+    }
+    .Y {
+        background-color: #61b15a;
+        color: white;
+    }
+</style>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Get NetSuite Inventory</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <form id="demo-form" method="post" action="@Url.Action("GetNetSuiteInventory","Order")">
+                        @Html.AntiForgeryToken()
+                       
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <div class="form-group text-right">
+                                    <br />
+                                    <div class="row">
+                                        <div class="col-md-4 col-sm-4 col-xs-12">
+                                            <label>DC Name</label>
+                                            @Html.ListBox("SelectedDC", (MultiSelectList)ViewBag.DCs, new { size = 4, @class = "form-control" })
+                                        </div>
+                                        <div class="col-md-4 col-sm-4 col-xs-12">
+                                            <label>SKU Code</label>
+                                            @Html.ListBox("SelectedSKUs", (MultiSelectList)ViewBag.Items, new { size = 4, @class = "form-control" })
+                                            <p class="text text-danger" style="margin-top:5px;" id="SelectedSKUsError"></p>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 col-sm-12 col-xs-12">
+                                            <div class="form-group text-left">
+                                                @if (!string.IsNullOrEmpty(ViewBag.Error))
+                                                {
+                                                    <p class="text-danger">@ViewBag.Error</p>
+                                                }
+                                            </div>
+                                            <div class="form-group text-right">
+                                                <button class="search btn btn-success btn-sm" id="SearchBtn" style="margin-bottom:0px;" type="submit">Search</button>
+                                                <input type="submit" value="Export to Excel" name="Edit" formaction="@Url.Action("NetSuiteInventoryExportExcel")" formmethod="post" class="btn btn-default" style="margin-bottom:0px;" />
+                                                <hr />
+
+                                                <input type="submit" formaction="@Url.Action("RefreshNetsuiteInventory","Order")" formmethod="post" class="btn btn-info" style="margin-bottom:0px;" value="Get NetSuite Inventory" />
+
+                                                <a href="@Url.Action("GenerateOrder","Order")" class="btn btn-primary" style="margin-bottom:0px;">Process Orders</a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <table id="tblMainInventory" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>SKU Code</th>
+                                <th>DC Name</th>
+                                <th>Available Stock</th>
+                                <th>Actual Ordered Qty</th>
+                                <th>Inventory Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.NetSuiteInventoryList != null)
+                            {
+                                int i = 1;
+                                foreach (NetSuiteInventory Inv in ViewBag.NetSuiteInventoryList)
+                                {
+                                <tr class="@Inv.AvailabilityStatus">
+                                <td>@Inv.SKUCode - @Inv.SKUName</td>
+                                <td>@Inv.DCName</td>
+                                <td>@Inv.AvailableQty</td>
+                                <td>    <a href='#' title="click to view details" class="btn-link" onclick="ViewInventoryDetail('@Inv.SKUID', @Inv.DCId);">@Inv.OrderedQty</a></td>
+                                @*<td>@Inv.OrderedQty</td>*@
+                                <td>@(Inv.OnHandDate != null ? Inv.OnHandDate.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture) : "")</td>
+                                 </tr>
+                                    i++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="modal fade" id="InventoryDetail_Model" role="dialog">
+            <div class="modal-dialog modal-lg">
+                <!-- Modal content-->
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                        <h4 class="modal-title">Inventory Details</h4>
+                    </div>
+                    <div class="modal-body">
+                        <div id="partial"></div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('#SelectedSKUs').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedDC').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+
+
+        });
+
+       function ViewInventoryDetail(SKUCode, DCId) {
+
+                var vSelectedDCId = DCId;
+                var vSelectedSKU = SKUCode;
+                
+        
+                $('#partial').load();
+                $("#InventoryDetail_Model").modal('show');
+                
+                var route = '@Url.Action("GetNetSuiteInventoryDrillDown", "Order")?SelectedDCId=' + vSelectedDCId + '&SelectedSKU=' + vSelectedSKU;
+                $('#partial').load(route);
+        }
+
+        $(document).ready(function () {
+
+            $(".loader").hide();
+            /**/
+            var title = 'Name: Get NetSuite Inventory';
+           
+            $("#message").text(title);
+            /**/
+            var table;
+            table = $("#tblMainInventory").DataTable({
+                responsive: true,
+                "paging": false,
+                "scrollY": '100vh',
+                "scrollCollapse": true,
+                "order": [[3, "desc"]],
+                "dom": 'l<"toolbar">frtip'
+            });
+            $("div.toolbar").html('<b>TOTAL ROW COUNT: ' + table.rows().count() + '</b>');
+        });
+
+    </script>
+</div>
+

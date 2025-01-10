@@ -1,0 +1,81 @@
+﻿
+@using DAL
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_content">
+
+            <table id="example" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>Product Id</th>
+                        <th>SKU Code</th>
+                        <th>Item Description</th>
+                        @*<th>PackingDescription</th>*@
+                        <th>Category</th>
+                        <th>UOM</th>
+                        <th>Max Order Limit</th>
+                        <th>Quantity</th>
+                        <th>Quantity On Hand</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.ItemList != null)
+                    {
+                        int i = 1;
+                        foreach (DetailReport order in ViewBag.ItemList)
+                        {
+                           
+                                <tr>
+                                    <td>@order.Id</td>
+                                    <td>@order.SKUCode</td>
+                                    <td>@order.SKUName</td>
+                                    <td>@order.CaseConversion</td>
+                                    <td>@order.UOMMaster</td>
+                                    <td>@order.MaximumOrderLimit</td>
+                                    <td>@order.Quantity</td>
+                                    <td>@order.QuantityOnHand</td>
+                                </tr>
+                           
+
+                            i++;
+                        }
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $(".loader").hide();
+            //t = $('#example').DataTable();
+            $("#example").DataTable({
+                dom: "Blfrtip",
+                buttons: [
+                    {
+                        extend: "copy",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "csv",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "excel",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "pdfHtml5",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "print",
+                        className: "btn-sm"
+                    },
+                ]
+            });
+        });
+    </script>
+</div>
+
+

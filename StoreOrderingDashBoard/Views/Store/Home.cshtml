@@ -1,0 +1,1536 @@
+﻿@using DAL
+@using DbLayer.Repository
+@using StoreOrderingDashBoard.Models
+@{
+    ViewBag.Title = "Home";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    int days = SessionValues.Remainingdays;
+    MenuRepository menu = new MenuRepository();
+
+    int customerplan = 0;
+    int userid = 0;
+    customerplan = SessionValues.PlanId;
+    userid = SessionValues.UserId;
+    var widget = menu.GetWidgetForStore(1, customerplan, userid);
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<style>
+    th {
+        text-align: center
+    }
+
+    tr {
+        text-align: center
+    }
+
+    .Processed {
+        background-color: #4caf50;
+    }
+    .Processed-_more-than-order-Qty_ {
+        background-color: #1b5e20;
+    }
+
+    .Pending-Processing {
+        background-color: #9e9e9e;
+    }
+
+    .Order-on-Hold {
+        background-color: #607d8b;
+    }
+
+    .Processing {
+        background-color: #dda339;
+    }
+    .Unavaliable {
+        background-color: #dda339;
+    }
+
+    .Partially-Processed {
+        background-color: #283593;
+    }
+    .Billed\/Partially-Fulfilled {
+        background-color: #607d8b;
+    }
+</style>
+@{
+    var finilise = from s in widget
+                   where s.MenuName.Contains("Finilize Order")
+                   select s;
+    var draft = from s in widget
+                where s.MenuName.Equals("Save As Draft Order")
+                select s;
+    var process = from s in widget
+                  where s.MenuName.Equals("Processed Orders")
+                  select s;
+    var finilised = from s in widget
+                    where s.MenuName.Equals("Finalised Order List (Make a Copy)")
+                    select s;
+    var Drafted = from s in widget
+                  where s.MenuName.Equals("Draft Order (Make finilse)")
+                  select s;
+
+    var soapproved = from s in widget
+                     where s.MenuName.Equals("SoApprove Order")
+                     select s;
+    var Fullfillment = from s in widget
+                       where s.MenuName.Equals("FullFillment Order")
+                       select s;
+    var Invoice = from s in widget
+                  where s.MenuName.Equals("Invoice Order")
+                  select s;
+    var OrderList = from s in widget
+                    where s.MenuName.Equals("Order List")
+                    select s;
+    var TransactionSummarry = from s in widget
+                              where s.MenuName.Equals("Transaction Monthly Progress")
+                              select s;
+}
+<!-- /top navigation -->
+<!-- page content -->
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <!-- /top tiles -->
+
+    <div class="row">
+        @if (finilised.Count() > 0)
+        {
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Finalised Order</h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Order No.</th>
+                                    <th scope="col">Order Date</th>
+                                    <th scope="col">OFR</th>
+                                    <th scope="col">LIFR</th>
+                                    @*<th scope="col">Make A Copy</th>*@
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.FiniliseOrderList != null)
+                                {
+                                    int i = 1;
+                                    foreach (OFRLIFR head in ViewBag.FiniliseOrderList)
+                                    {
+                                        <tr>
+                                            <th scope="row">@i</th>
+                                            <td>@head.order_no</td>
+                                            <td>@head.OrderDate</td>
+                                            <td>@(String.Format("{0:0.00}", head.OFRPercentage) + "%")</td>
+                                            <td>@( String.Format("{0:0.00}", head.LIFRPercentage) + "%")</td>
+                                            @*<td><input class="btn btn-default" value="Make A Copy" onclick="Finilize(@head.Id)" /></td>*@
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="row">
+        @if (OrderList.Count() > 0)
+        {
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Order List</h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <table class="table table-striped" id="OrderList">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Date</th>
+                                    <th scope="col">Po Number</th>
+                                    <th scope="col">Line Items</th>
+                                    <th scope="col">Order Quantity</th>
+                                    <th scope="col">Invoice Line Items</th>
+                                    <th scope="col">Invoice Quantity</th>
+                                    <th scope="col">Order Status</th>
+                                    <th scope="col">View</th>
+                                </tr>
+                            </thead>
+                        </table>
+                        <div class="modal fade" id="OrderDetail_Model" role="dialog">
+                            <div class="modal-dialog modal-lg">
+                                <!-- Modal content-->
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                        <h4 class="modal-title">Order Details</h4>
+                                    </div>
+                                    <div class="modal-body">
+                                        <div id="partial" style="min-height:130px"></div>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    @*<div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12" style="height: 80vh;">
+                <div id="OrderCasecontainer" style="height: 100%"></div>
+            </div>
+        </div>*@
+    @if (TransactionSummarry.Count() > 0)
+    {
+        <div class="row">
+            <div class="col-md-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Order vs Delivered<small>Monthly Progress</small></h2>
+                        <div class="filter">
+                            <input type="text" id="DashboardFilterTransactionSummaryDateYear" class="pull-left form-control" style="cursor: pointer;padding: 5px 10px;border: 1px solid #ccc; width:75px; margin-right:5px;" />
+                            <select id="DrpMonth" class="pull-right form-control" searchable="Search here.." style="cursor: pointer;padding: 5px 10px;border: 1px solid #ccc; width:fit-content;">
+                                <option value="1">Jan</option>
+                                <option value="2">Feb</option>
+                                <option value="3">Mar</option>
+                                <option value="4">Apr</option>
+                                <option value="5">May</option>
+                                <option value="6">Jun</option>
+                                <option value="7">Jul</option>
+                                <option value="8">Aug</option>
+                                <option value="9">Sep</option>
+                                <option value="10">Oct</option>
+                                <option value="11">Nov</option>
+                                <option value="12">Dec</option>
+                            </select>
+                            @Html.ListBox("SelectedSKUs", (MultiSelectList)ViewBag.Items, new { size = 4, @class = "pull-right form-control", @style = "cursor: pointer;padding: 5px 10px;border: 1px solid #ccc; width:fit-content; margin-right:5px;" })
+                        </div>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                            <div id="LineContainer" style="height:350px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    <div class="row" style="display:none;">
+        <div class="col-md-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>Order vs Delivery<small></small></h2>
+                    <div class="filter">
+                        <select id="HalfYear" class="form-control pull-right" searchable="Search here.." style="cursor: pointer;padding: 5px 10px;border: 1px solid #ccc;">
+                            <option value="1">APR-SEPT</option>
+                            <option value="2">OCT-MAR</option>
+                        </select>
+                        <input type="text" id="DashboardFilterDateYear" class="form-control pull-right" style="cursor: pointer;padding: 5px 10px;border: 1px solid #ccc; width:fit-content; margin-right:5px;" />
+
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div>
+                            <div id="echart_MonthwiseTop5SKUs_line" style="height:350px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row" id="MonthGraphDiv">
+        <div class="col-md-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>Order vs Delivered<small></small></h2>
+                    <div class="filter">
+                        <div class="form-group">
+                            <div class='input-group date' id='MonthDate'>
+                                <input type='text' class="form-control" readonly="readonly" />
+                                <span class="input-group-addon">
+                                    <span class="glyphicon glyphicon-calendar"></span>
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                        <div id="MonthGraphContainer" style="height:350px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        @if (Drafted.Count() > 0)
+        {
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        @*<h2>Default Example <small>Stores</small></h2>*@
+                        <h2>Draft Order</h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        @*<p class="text-muted font-13 m-b-30">
+                                DataTables has most features enabled by default, so all you need to do to use it with your own tables is to call the construction function: <code>$().DataTable();</code>
+                            </p>*@
+                        <table class="table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">#</th>
+                                    <th scope="col">Order No.</th>
+                                    <th scope="col">Order Date</th>
+                                    <th scope="col">Open</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.SaveasDraftOrderList != null)
+                                {
+                                    int i = 1;
+                                    foreach (OrderHeader head in ViewBag.SaveasDraftOrderList)
+                                    {
+                                        <tr>
+                                            <th scope="row">@i</th>
+                                            <td>@(head.DraftOrderno + head.Id)</td>
+                                            <td>@head.OrderDate</td>
+                                            <td><input class="btn btn-default" value="Open" onclick="OpenSaveAsDraft(@head.Id)" /></td>
+                                        </tr>
+                                        i++;
+                                    }
+
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+    <div class="row">
+        @{
+            Html.RenderAction("TotalSalesValue", "Report");
+            Html.RenderAction("TotalSalesAmount", "Report");
+        }
+    </div>
+    <div class="row">
+        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 no-margin no-padding">
+            @{
+                Html.RenderAction("Top10SKUByCase", "Report");
+            }
+        </div>
+        <div class="col-lg-6 col-md-6 col-sm-12 col-xs-12 no-margin no-padding">
+            @{
+                Html.RenderAction("Top10SKUByAmount", "Report");
+            }
+        </div>
+
+    </div>
+    <script>
+     function Finilize(e) {
+         window.location = "@Url.Content("~/Order/MakeACopy?headerid=")"+e;
+        }
+
+        function OpenSaveAsDraft(e) {
+            window.location = "@Url.Content("~/Order/OrderDetailList?orderheaderid=")"+e;
+        }
+
+            window.onload = function () {
+            var day =@days;
+            if (day > 35) {
+                var msg = "Your password is expired in next " + (45 - day) + " days.Please change your password.";
+                alert(msg);
+            }
+
+        };
+    </script>
+    <script>
+            function ConvertJSONDatetoDate(date,format) {
+                var nowDate = new Date(parseInt(date.substr(6)));
+                var result = "";
+                var dd = nowDate.getDate();
+                var mm = nowDate.getMonth() + 1;
+                var yy = nowDate.getFullYear();
+                if (dd < 10) {
+                    dd = '0' + dd;
+                }
+                if (mm < 10) {
+                    mm = '0' + mm;
+                }
+                if (format === "dd/MM/yyyy") {
+                    result = dd + "/" + mm + "/" + yy;
+                }
+                else if (format === "yyyy/MM/dd") {
+                    result = yy + "/" + mm + "/" + dd;
+                }
+                return result;
+                }
+        function ViewOrderDetail(OrderDate, GroupId, Po_Number) {
+            alert("view order")
+            LoaderDiv = '<div class="loader">';
+            $('#partial').html(LoaderDiv);
+            $("#OrderDetail_Model").modal('show');
+            var route = '@Url.Action("OrderDetails","Order")?StoreOrderDate=' + OrderDate + '&GroupId=' + GroupId +'&PONumber='+Po_Number;
+            $('#partial').load(route);
+            
+        }
+            $(document).ready(function () {
+                var table;
+                $('#MonthDate').datetimepicker({
+                    format: "MM/YYYY",
+                    ignoreReadonly: true,
+                    allowInputToggle: true
+                }).on('dp.change', dateChanged);
+                function dateChanged(ev) {
+                    var MonthDate = $("#MonthDate")[0].children[0].value;
+                    var Month = MonthDate.split("/")[0];
+                    var Year = MonthDate.split("/")[1];
+                    var MonthName = MonthDate;
+                    FilterMonthChange(Month, Year, MonthName);
+                }
+                table = $("#OrderList").DataTable({
+                    "ajax": {
+                    "url": '@Url.Action("GetLastOrders", "Order")',
+                    "type": "Get",
+                    "dataType": "JSON",
+                    },
+                    dom: 'l<"toolbar">frtip',
+                    "columns": [
+                        {
+                            "data": "Date", "autoWidth": true,
+                            render: function (data, type, row, meta) {
+                                return '<p>' + ConvertJSONDatetoDate(row.Store_Order_Date,"dd/MM/yyyy") + '</p>';
+                            }
+                        },
+                        {
+                            "data": "PO Number", "autoWidth": true,
+                            render: function (data, type, row, meta) {
+                                return '<p>' + row.Po_Number+ '</p>';
+                            }
+                        },
+                        {
+                            "data": "Line Items", "autoWidth": true,
+                            render: function (data, type, row, meta) {
+                                return '<p>' + row.Store_ordered_number_of_line_items + '</p>';
+                            }
+                        },
+                        {
+                            "data": "Order Quantity", "autoWidth": true,
+                            render: function (data, type, row, meta) {
+                                return '<p>' + row.Total_Original_ordered_qty + '</p>';
+                            }
+                        },
+                        {
+                            "data": "Invoice Line Items", "autoWidth": true,
+                            render: function (data, type, row, meta) {
+                                return '<p>' + row.Rfpl_Invoiced_number_of_line_items + '</p>';
+                            }
+                        },
+                        {
+                            "data": "Invoice Quantity", "autoWidth": true,
+                            render: function (data, type, row, meta) {
+                                return '<p>' + (row.Invoiced_Qty != null ? row.Invoiced_Qty != 0 ? row.Invoiced_Qty:'' :'') + '</p>';
+                            }
+                        },
+                        {
+                            "data": "Order Status", "autoWidth": true,
+                            render: function (data, type, row, meta) {
+                                return '<p class="label ' + row.Order_status.replaceAll(" ","-").replaceAll("(","_").replaceAll(")","_") + '">' + row.Order_status + '</p>';
+                            }
+                        },
+                        {
+                            "data": "view", "autoWidth": true,
+                            render: function (data, type, row, meta) {
+                                return '<a type="button" class="btn btn-info btn-sm view_detail" style="padding:2px 2px;">View</a>';
+                            }
+                        }
+                    ],
+                    "sorting":false,
+                    "paging": false,
+                    "scrollCollapse": true,
+                    "scrollY": '50vh',
+                    "searching": false
+                });
+                $('#OrderList').on('click', 'a.view_detail', function (e) {
+                    e.preventDefault();
+                    var data = table.row($(this).closest('tr')).data();
+                    ViewOrderDetail(ConvertJSONDatetoDate(data.Store_Order_Date, "yyyy/MM/dd"), data.GroupId, data.Po_Number);
+                });
+                $("#OrderDetail_Model").on("hidden", function () {
+                    LoaderDiv = '<div class="loader">';
+                    $('#partial').html(LoaderDiv);
+                });
+                $("#OrderDetail_Model").on("hidden.bs.modal", function () {
+                    LoaderDiv = '<div class="loader">';
+                    $('#partial').html(LoaderDiv);
+                });
+                var d = new Date();
+                var year = d.getFullYear();
+                var month = d.getMonth()+1;
+                var monthDate = (month > 9 ? month : "0" + month) + "/" + year;
+                FilterMonthChange(month, year, monthDate);
+            });
+    </script>
+    <script>
+        function FilterMonthSKUchanged(data)
+        {
+            var d = new Date();
+            var year = $("#DashboardFilterTransactionSummaryDateYear").val();
+            var SKU = $("#SelectedSKUs").val();
+            var item;
+            if (year == '' || year==undefined)
+            {
+                year = d.getFullYear();
+            }
+            if (data == '') {
+                data = d.getMonth()+1;
+            }
+            $.ajax({
+                url: "@Url.Action("GetLineGraphDataForSkus", "Report")",
+                type: "POST",
+                data: {
+                                        "Month": data,
+                                        "Year": year,
+                                        "SKUs": SKU
+                                    },
+                success: function (response) {
+                                        if (response) {
+                                            item = response;
+                                            LoadLineGraph(item);
+                                        }
+                                    },
+                Error: function (respo) {
+                                        alert("UNABLE TO LOAD GRAPH DATA");
+                                        }
+            });
+        }
+
+        var SKULINEGRAPH;
+        var MonthGraph;
+        $(document).ready(function () {
+            $("#DrpMonth").change(function () {
+                var data = $(this).val();
+                FilterMonthSKUchanged(data);
+            });
+            $("#SelectedSKUs").change(function () {
+                var DATA = $("#DrpMonth").val();
+                FilterMonthSKUchanged(DATA);
+            });
+            $('#SelectedSKUs').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '49%',
+                enableFiltering: true,
+                maxHeight: 150
+            });
+            $('#HalfYear').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '49%',
+                enableFiltering: true,
+                maxHeight: 150
+            });
+            $("#DashboardFilterDateYear").datetimepicker({
+                format: "YYYY",
+                minDate: '2018-01-01'
+            });
+            $("#DashboardFilterTransactionSummaryDateYear").datetimepicker({
+                format: "YYYY",
+                minDate: '2018-01-01'
+            });
+            $("#HalfYear").change(function () {
+                FilterYearMonthChange();
+            });
+            $("#DashboardFilterDateYear").change(function () {
+                FilterYearMonthChange();
+            });
+            $("#DashboardFilterDateYear").on("dp.change", function () {
+                FilterYearMonthChange();
+            });
+            $("#DashboardFilterTransactionSummaryDateYear").change(function () {
+                var data = $("#DrpMonth").val();
+                FilterMonthSKUchanged(data);
+            });
+            $("#DashboardFilterTransactionSummaryDateYear").on("dp.change", function () {
+                var data = $("#DrpMonth").val();
+                FilterMonthSKUchanged(data);
+            });
+            var d = new Date();
+            var n = d.getMonth();
+            var currentmonth = n + 1;
+            var Year = d.getFullYear();
+            $("#DashboardFilterDateYear").val(Year);
+            $("#DashboardFilterTransactionSummaryDateYear").val(Year);
+            $('select option[value="' + currentmonth + '"]').attr("selected", true);
+            $('#DrpMonth').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '30%',
+                enableFiltering: true,
+                maxHeight: 150
+            });
+            FilterMonthSKUchanged(currentmonth);
+            FilterYearMonthChange();
+        });
+
+        function FilterYearMonthChange(){
+            var Year = $("#DashboardFilterDateYear").val();
+            var HalfYear = $("#HalfYear").val();
+            var item;
+            $.ajax({
+                url: "@Url.Action("GetStoreTOPSKUS_HalfYear", "Report")",
+                type: "Post",
+                data: {
+                    "Year": Year,
+                    "Type": HalfYear
+                },
+                success: function (response) {
+                    if (response) {
+                        item = response;
+                        LoadEChartBarGraphDashBoard(item);
+                    }
+                },
+                Error: function (respo)
+                {
+                    alert("UNABLE TO LOAD GRAPH DATA");
+                }
+            });
+        }
+
+        function LoadLineGraph(item) {
+                                if ($('#LineContainer').length) {
+                                    var day_name = [];
+                                    var QTY = [];
+                                    for (var i in item) {
+                                        day_name.push(item[i].day_name);
+                                        QTY.push(item[i].Rfpl_Ordered_Qty);
+                                    }
+                                    SKULINEGRAPH = echarts.init(document.getElementById('LineContainer'));
+                                    SKULINEGRAPH.setOption({
+                                        title: {
+                                            text: "SKU's Ordered",
+                                        },
+                                        tooltip: {
+                                            trigger: 'axis'
+                                        },
+                                        toolbox: {
+                                            show: true,
+                                            feature: {
+                                                magicType: {
+                                                    show: true,
+                                                    title: {
+                                                        line: 'Line',
+                                                        bar: 'Bar'
+                                                    },
+                                                    type: ['line', 'bar']
+                                                },
+                                                restore: {
+                                                    show: true,
+                                                    title: "Restore"
+                                                },
+                                                saveAsImage: {
+                                                    show: true,
+                                                    title: "Save Image"
+                                                }
+                                            }
+                                        },
+                                        calculable: true,
+                                        xAxis: [{
+                                            type: 'category',
+                                            boundaryGap: false,
+                                            data: day_name,
+                                            name: 'DAYS',
+                                            nameLocation: 'middle',
+                                            nameGap:20,
+                                            gridLines: {
+                                                display: false
+                                            },
+                                            autoSkip:false
+                                        }],
+                                        yAxis: [{
+                                            type: 'value',
+                                            name: 'QTY',
+                                            nameLocation: 'middle',
+                                            nameRotate: 90,
+                                            nameGap: 20,
+                                            autoSkip: false
+                                        }],
+                                        series: [{
+                                            name: "SKU's",
+                                            type: 'line',
+                                            smooth: false,
+                                            data: QTY
+                                        }]
+                                    });
+                                }
+        }
+
+        function FilterMonthChange(month,year,MonthName)
+        {
+            var item;
+            $.ajax({
+                url: "@Url.Action("GetStoreMonthWiseOrderDateQtyLineGraph", "ReportCharts")",
+                type: "POST",
+                data: {
+                    "Month": month,
+                    "Year": year,
+                },
+                success: function (response) {
+                    if (response) {
+                        item = response;
+                        LoadMonthGraph(item, MonthName);
+                    }
+                },
+                Error: function (respo){
+                    alert("UNABLE TO LOAD GRAPH DATA");
+                }
+            });
+        }
+
+        function LoadMonthGraph(item,MonthName) {
+            if ($('#MonthGraphContainer').length) {
+                var calendar_date = [];
+                var day_dates = [];
+                var order_dates = [];
+                var Rfpl_Ordered_Qty = [];
+                var Rfpl_FulFilledQty= [];
+                var InvoiceQty= [];
+                for (var i in item) {
+                    var newdate = new Date(parseInt(item[i].calendar_date.substr(6)));
+                    order_dates.push(newdate.format("d"));
+                    Rfpl_Ordered_Qty.push(item[i].Rfpl_Ordered_Qty != null ? item[i].Rfpl_Ordered_Qty:0);
+                    Rfpl_FulFilledQty.push(item[i].Rfpl_FulFilledQty != null ? item[i].Rfpl_FulFilledQty:0);
+                    InvoiceQty.push(item[i].InvoiceQty != null ? item[i].InvoiceQty:0);
+                }
+                MonthGraph = echarts.init(document.getElementById('MonthGraphContainer'));
+                MonthGraph.setOption({
+                    color: ["#4992ff", "#7cffb2", "#fddd60","#ff6e76"],
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    legend: {
+                        data: ['Odered Quantity', 'Fulfilled Quantity', 'Invoice Quantity']
+                    },
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            magicType: {
+                                show: true,
+                                title: {
+                                    bar: 'Bar',
+                                    line:'line'
+                                },
+                                type: ['line', 'bar']
+                            },
+                            restore: {
+                                show: true,
+                                title: "Restore"
+                            },
+                            saveAsImage: {
+                                show: true,
+                                title: "Save Image"
+                            }
+                        }
+                    },
+                    calculable: true,
+                    xAxis: [{
+                        type: 'category',
+                        boundaryGap: true,
+                        data: order_dates,
+                        name: MonthName,
+                        nameLocation: 'middle',
+                        nameGap: 20,
+                        splitLine: {
+                            show: false,
+                        }
+                    }],
+                    yAxis: [{
+                        type: 'value',
+                        name: 'QTY'
+                    }],
+                    series: [{
+                        name: "Odered Quantity",
+                        type: 'bar',
+                        //smooth: false,
+                        data: Rfpl_Ordered_Qty
+                    },
+                    {
+                        name: "Fulfilled Quantity",
+                        type: 'bar',
+                        data: Rfpl_FulFilledQty
+                     },
+                    {
+                        name: "Invoice Quantity",
+                        type: 'bar',
+                        data: InvoiceQty
+                    }]
+                });
+            }
+        }
+
+        function LoadEChartBarGraphDashBoard(item)
+        {
+            var Item_DescList = item.map(x => x.Item_Desc);
+            var uniqueItem_DescList = Item_DescList.filter(function (itm, i, Item_DescList) {
+                return i == Item_DescList.indexOf(itm);
+            });
+            var Year_MonthList = item.map(x => x.Year_Month);
+            var uniqueYear_MonthList = Year_MonthList.filter(function (itm, i, Year_MonthList) {
+                return i == Year_MonthList.indexOf(itm);
+            });
+            var List = [];
+            var sku_ordered_List = item.map(x => x.sku_ordered_times);
+            var SkuwiseDataSeries = []
+            var SKUMonthList = []
+            function Getsku_ordered_List(Item_Desc) {
+                var List = [];
+                uniqueYear_MonthList.forEach(function (Year_Month) {
+                    var res = item.find(e => e.Item_Desc === Item_Desc && e.Year_Month === Year_Month);
+                    if (res != null)
+                        List.push(res.sku_ordered_times);
+                    else
+                        List.push(null);
+                });
+                return List;
+            }
+
+            var Series = []
+            var SeriesData = $.map(uniqueItem_DescList, function (obj, i) {
+                return i = {
+                    name: obj,
+                    type: 'bar',
+                    stack: true,
+                    smooth: false,
+                    data: Getsku_ordered_List(obj)
+                };
+            });
+            console.log(Item_DescList);
+            console.log(SeriesData);
+            var theme = {
+                color: [
+                    '#26B99A', '#34495E', '#BDC3C7', '#3498DB',
+                    '#9B59B6', '#8abb6f', '#759c6a', '#bfd3b7'
+                ],
+
+                title: {
+                    itemGap: 8,
+                    textStyle: {
+                        fontWeight: 'normal',
+                        color: '#408829'
+                    }
+                },
+
+                dataRange: {
+                    color: ['#1f610a', '#97b58d']
+                },
+
+                toolbox: {
+                    color: ['#408829', '#408829', '#408829', '#408829']
+                },
+
+                tooltip: {
+                    backgroundColor: 'rgba(0,0,0,0.5)',
+                    axisPointer: {
+                        type: 'line',
+                        lineStyle: {
+                            color: '#408829',
+                            type: 'dashed'
+                        },
+                        crossStyle: {
+                            color: '#408829'
+                        },
+                        shadowStyle: {
+                            color: 'rgba(200,200,200,0.3)'
+                        }
+                    }
+                },
+
+                dataZoom: {
+                    dataBackgroundColor: '#eee',
+                    fillerColor: 'rgba(64,136,41,0.2)',
+                    handleColor: '#408829'
+                },
+                grid: {
+                    borderWidth: 0
+                },
+
+                categoryAxis: {
+                    axisLine: {
+                        lineStyle: {
+                            color: '#408829'
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: ['#eee']
+                        }
+                    }
+                },
+
+                valueAxis: {
+                    axisLine: {
+                        lineStyle: {
+                            color: '#408829'
+                        }
+                    },
+                    splitArea: {
+                        show: true,
+                        areaStyle: {
+                            color: ['rgba(250,250,250,0.1)', 'rgba(200,200,200,0.1)']
+                        }
+                    },
+                    splitLine: {
+                        lineStyle: {
+                            color: ['#eee']
+                        }
+                    }
+                },
+                timeline: {
+                    lineStyle: {
+                        color: '#408829'
+                    },
+                    controlStyle: {
+                        normal: { color: '#408829' },
+                        emphasis: { color: '#408829' }
+                    }
+                },
+
+                k: {
+                    itemStyle: {
+                        normal: {
+                            color: '#68a54a',
+                            color0: '#a9cba2',
+                            lineStyle: {
+                                width: 1,
+                                color: '#408829',
+                                color0: '#86b379'
+                            }
+                        }
+                    }
+                },
+                map: {
+                    itemStyle: {
+                        normal: {
+                            areaStyle: {
+                                color: '#ddd'
+                            },
+                            label: {
+                                textStyle: {
+                                    color: '#c12e34'
+                                }
+                            }
+                        },
+                        emphasis: {
+                            areaStyle: {
+                                color: '#99d2dd'
+                            },
+                            label: {
+                                textStyle: {
+                                    color: '#c12e34'
+                                }
+                            }
+                        }
+                    }
+                },
+                force: {
+                    itemStyle: {
+                        normal: {
+                            linkStyle: {
+                                strokeColor: '#408829'
+                            }
+                        }
+                    }
+                },
+                chord: {
+                    padding: 4,
+                    itemStyle: {
+                        normal: {
+                            lineStyle: {
+                                width: 1,
+                                color: 'rgba(128, 128, 128, 0.5)'
+                            },
+                            chordStyle: {
+                                lineStyle: {
+                                    width: 1,
+                                    color: 'rgba(128, 128, 128, 0.5)'
+                                }
+                            }
+                        },
+                        emphasis: {
+                            lineStyle: {
+                                width: 1,
+                                color: 'rgba(128, 128, 128, 0.5)'
+                            },
+                            chordStyle: {
+                                lineStyle: {
+                                    width: 1,
+                                    color: 'rgba(128, 128, 128, 0.5)'
+                                }
+                            }
+                        }
+                    }
+                },
+                gauge: {
+                    startAngle: 225,
+                    endAngle: -45,
+                    axisLine: {
+                        show: true,
+                        lineStyle: {
+                            color: [[0.2, '#86b379'], [0.8, '#68a54a'], [1, '#408829']],
+                            width: 8
+                        }
+                    },
+                    axisTick: {
+                        splitNumber: 10,
+                        length: 12,
+                        lineStyle: {
+                            color: 'auto'
+                        }
+                    },
+                    axisLabel: {
+                        textStyle: {
+                            color: 'auto'
+                        }
+                    },
+                    splitLine: {
+                        length: 18,
+                        lineStyle: {
+                            color: 'auto'
+                        }
+                    },
+                    pointer: {
+                        length: '90%',
+                        color: 'auto'
+                    },
+                    title: {
+                        textStyle: {
+                            color: '#333'
+                        }
+                    },
+                    detail: {
+                        textStyle: {
+                            color: 'auto'
+                        }
+                    }
+                },
+                textStyle: {
+                    fontFamily: 'Arial, Verdana, sans-serif'
+                }
+            };
+
+            if ($('#echart_MonthwiseTop5SKUs_line').length) {
+                var echartLine = echarts.init(document.getElementById('echart_MonthwiseTop5SKUs_line'));
+                echartLine.setOption({
+                    title: {
+                        text: 'Top 5 SKUs',
+                    },
+                    tooltip: {
+                        trigger: 'axis'
+                    },
+                    //legend: {
+                    //    data: uniqueItem_DescList,
+                    //    right: 'middle',
+
+                    //    orient:'vertical'
+                    //},
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            magicType: {
+                                show: true,
+                                title: {
+                                    line: 'Line',
+                                    bar: 'Bar',
+                                    stack: 'Stack',
+                                    tiled: 'Tiled'
+                                },
+                                type: ['line', 'bar', 'stack', 'tiled']
+                            },
+                            restore: {
+                                show: true,
+                                title: "Restore"
+                            },
+                            saveAsImage: {
+                                show: true,
+                                title: "Save Image"
+                            }
+                        }
+                    },
+                    calculable: true,
+                    xAxis: [{
+                        type: 'category',
+                        boundaryGap: true,
+                        name: 'YEAR-MONTH',
+                        nameLocation: 'middle',
+                        nameGap: 20,
+                        data: uniqueYear_MonthList
+                    }],
+                    yAxis: [{
+                        type: 'value',
+                        name: 'QTY',
+                        nameLocation: 'middle',
+                        nameRotate: 90,
+                        nameGap: 20,
+                    }],
+                    series: SeriesData
+                });
+            }
+
+        }
+    </script>
+
+    <script type="text/javascript">
+        $(document).ready(function () {
+
+        });
+        function LoadCaseWiseOrderGraph(item) {
+
+
+            var dom = document.getElementById("OrderCasecontainer");
+            var myChart = echarts.init(dom);
+            var app = {};
+            var option;
+            option = {
+                title: {
+                    text: 'text',
+                    subtext: 'subtext'
+                },
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['temp1', 'temp2']
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        dataZoom: {
+                            yAxisIndex: 'none'
+                        },
+                        dataView: { readOnly: false },
+                        magicType: { type: ['line', 'bar'] },
+                        restore: {},
+                        saveAsImage: {}
+                    }
+                },
+                xAxis: {
+                    type: 'category',
+                    boundaryGap: false,
+                    data: ['jan', 'feb', 'mar', 'apr', 'jun', 'july', 'aug', 'sept', 'oct', 'nov', 'dec']
+                },
+                yAxis: {
+                    type: 'value',
+                    axisLabel: {
+                        formatter: '{value} °C'
+                    }
+                },
+                series: [
+                    {
+                        name: 'series 1',
+                        type: 'line',
+                        data: [10, 11, 13, 11, 12, 12, 9],
+                        markPoint: {
+                            data: [
+                                { type: 'max', name: 'max' },
+                                { type: 'min', name: 'min' }
+                            ]
+                        }
+                    },
+                    {
+                        name: 'series 2',
+                        type: 'line',
+                        data: [1, -2, 2, 5, 3, 2, 0]
+                    }
+                ]
+            };
+            if (option && typeof option === 'object') {
+                myChart.setOption(option);
+            }
+        }
+    </script>
+    <script id="ScriptTotalSalesValueGraphStoreContainerData">
+        var TotalSalesValueGraph;
+    $(document).ready(function () {
+        LoadTotalSalesValueGraphContainerData();
+    });
+    function LoadTotalSalesValueGraphContainerData()
+        {
+            var item;
+            $.ajax({
+                url: "@Url.Action("GetTotalSalesValue", "Report")",
+                type: "POST",
+                success: function (response) {
+                    if (response) {
+                        item = response;
+                        LoadTotalSalesValueGraph(item);
+                    }
+                },
+                Error: function (respo){
+                    alert("UNABLE TO LOAD GRAPH DATA");
+                }
+            });
+    }
+        function LoadTotalSalesValueGraph(item) {
+        if ($('#TotalSalesValueGraphContainer').length) {
+            var MonthName = [];
+            var Year=''
+            var TotalSalesValue = [];
+            var Month = [];
+            var Years = [];
+            for (var i in item) {
+                TotalSalesValue.push(item[i].TotalSalesValue != null ? item[i].TotalSalesValue : 0);
+                MonthName.push(item[i].MonthName);
+                Month.push(item[i].Month);
+                Years.push(item[i].Year);
+            }
+            var Year = Years[1];
+            TotalSalesValueGraph = echarts.init(document.getElementById('TotalSalesValueGraphContainer'));
+            TotalSalesValueGraph.setOption({
+                color: ["#4992ff", "#7cffb2", "#fddd60", "#ff6e76"],
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['Odered Quantity', 'Fulfilled Quantity', 'Invoice Quantity']
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        magicType: {
+                            show: true,
+                            title: {
+                                bar: 'Bar',
+                                line: 'line'
+                            },
+                            type: ['line', 'bar']
+                        },
+                        restore: {
+                            show: true,
+                            title: "Restore"
+                        },
+                        saveAsImage: {
+                            show: true,
+                            title: "Save Image"
+                        }
+                    }
+                },
+                calculable: true,
+                xAxis: [{
+                    type: 'category',
+                    boundaryGap: true,
+                    data: MonthName,
+                    name: Year,
+                    nameLocation: 'middle',
+                    nameGap: 20,
+                    splitLine: {
+                        show: false,
+                    }
+                }],
+                yAxis: [{
+                    type: 'value',
+                    name: 'Cases'
+                }],
+                series: [{
+                    name: "Total Sales Value",
+                    type: 'bar',
+                    //smooth: false,
+                    data: TotalSalesValue
+                }]
+            });
+        }
+    }
+    </script>
+    <script id="ScriptTotalSalesAmountGraphStoreContainerData">
+        var TotalSalesAmountGraph;
+    $(document).ready(function () {
+        LoadTotalSalesAmountGraphContainerData();
+    });
+        function LoadTotalSalesAmountGraphContainerData()
+        {
+            var item;
+            $.ajax({
+                url: "@Url.Action("GetTotalSalesAmount", "Report")",
+                type: "POST",
+                success: function (response) {
+                    if (response) {
+                        item = response;
+                        LoadTotalSalesAmountGraph(item);
+                    }
+                },
+                Error: function (respo){
+                    alert("UNABLE TO LOAD TOTAL SALES AMOUNT GRAPH DATA");
+                }
+            });
+    }
+    function LoadTotalSalesAmountGraph(item) {
+            if ($('#TotalSalesAmountGraphContainer').length) {
+            var MonthName = [];
+            var Year=''
+            var TotalSalesAmount = [];
+            var Month = [];
+            var Years = [];
+            for (var i in item) {
+                TotalSalesAmount.push(item[i].Amount != null ? item[i].Amount : 0);
+                MonthName.push(item[i].MonthName);
+                Month.push(item[i].Month);
+                Years.push(item[i].Year);
+            }
+            var Year = Years[1];
+                TotalSalesAmountGraph = echarts.init(document.getElementById('TotalSalesAmountGraphContainer'));
+                TotalSalesAmountGraph.setOption({
+                color: ["#4992ff", "#7cffb2", "#fddd60", "#ff6e76"],
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['Odered Quantity', 'Fulfilled Quantity', 'Invoice Quantity']
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        magicType: {
+                            show: true,
+                            title: {
+                                bar: 'Bar',
+                                line: 'line'
+                            },
+                            type: ['line', 'bar']
+                        },
+                        restore: {
+                            show: true,
+                            title: "Restore"
+                        },
+                        saveAsImage: {
+                            show: true,
+                            title: "Save Image"
+                        }
+                    }
+                },
+                calculable: true,
+                xAxis: [{
+                    type: 'category',
+                    boundaryGap: true,
+                    data: MonthName,
+                    name: Year,
+                    nameLocation: 'middle',
+                    nameGap: 20,
+                    splitLine: {
+                        show: false,
+                    }
+                }],
+                yAxis: [{
+                    type: 'value',
+                    name: 'Amount'
+                }],
+                series: [{
+                    name: "Total Sales Amount",
+                    type: 'bar',
+                    //smooth: false,
+                    data: TotalSalesAmount
+                }]
+            });
+        }
+    }
+    </script>
+    <script id="ScriptTop10SKUByAmountGraphStoreContainerData">
+    var Top10SKUByAmountGraph;
+    $(document).ready(function () {
+        Top10SKUByAmountGraphContainerData();
+    });
+    function Top10SKUByAmountGraphContainerData()
+        {
+            var item;
+            $.ajax({
+                url: "@Url.Action("GetTop10SKUByAmount", "Report")",
+                type: "POST",
+                success: function (response) {
+                    if (response) {
+                        item = response;
+                        LoadTop10SKUByAmountGraph(item);
+                    }
+                },
+                Error: function (respo){
+                    alert("UNABLE TO LOAD TOTAL SALES AMOUNT GRAPH DATA");
+                }
+            });
+    }
+    function LoadTop10SKUByAmountGraph(item) {
+        if ($('#Top10SKUByAmountGraphContainer').length) {
+            var SKUCode = [];
+            var Amount = [];
+            for (var i in item) {
+                Amount.push(item[i].Amount != null ? item[i].Amount : 0);
+                SKUCode.push(item[i].SKUCode);
+            }
+            Top10SKUByAmountGraph = echarts.init(document.getElementById('Top10SKUByAmountGraphContainer'));
+            Top10SKUByAmountGraph.setOption({
+                color: ["#4992ff", "#7cffb2", "#fddd60", "#ff6e76"],
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['SKU Amount']
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        magicType: {
+                            show: true,
+                            title: {
+                                bar: 'Bar',
+                                line: 'line'
+                            },
+                            type: ['line', 'bar']
+                        },
+                        restore: {
+                            show: true,
+                            title: "Restore"
+                        },
+                        saveAsImage: {
+                            show: true,
+                            title: "Save Image"
+                        }
+                    }
+                },
+                calculable: true,
+                xAxis: [{
+                    type: 'category',
+                    boundaryGap: true,
+                    data: SKUCode,
+                    nameLocation: 'middle',
+                    nameGap: 20,
+                    splitLine: {
+                        show: false,
+                    }
+                }],
+                yAxis: [{
+                    type: 'value',
+                    name: 'Amount'
+                }],
+                series: [{
+                    name: "Amount",
+                    type: 'bar',
+                    data: Amount
+                }]
+            });
+        }
+    }
+    </script>
+    <script id="ScriptTop10SKUByCaseGraphStoreContainerData">
+    var Top10SKUByCaseGraph;
+    $(document).ready(function () {
+        Top10SKUByCaseGraphContainerData();
+    });
+    function Top10SKUByCaseGraphContainerData()
+        {
+            var item;
+            $.ajax({
+                url: "@Url.Action("GetTop10SKUByCase", "Report")",
+                type: "POST",
+                success: function (response) {
+                    if (response) {
+                        item = response;
+                        LoadTop10SKUByCaseGraph(item);
+                    }
+                },
+                Error: function (respo){
+                    alert("UNABLE TO LOAD TOTAL SALES AMOUNT GRAPH DATA");
+                }
+            });
+    }
+    function LoadTop10SKUByCaseGraph(item) {
+        if ($('#Top10SKUByAmountGraphContainer').length) {
+            var SKUCode = [];
+            var TotalSalesValue = [];
+            for (var i in item) {
+                TotalSalesValue.push(item[i].Amount != null ? item[i].TotalSalesValue : 0);
+                SKUCode.push(item[i].SKUCode);
+            }
+            Top10SKUByCaseGraph = echarts.init(document.getElementById('Top10SKUByCaseGraphContainer'));
+            Top10SKUByCaseGraph.setOption({
+                color: ["#4992ff", "#7cffb2", "#fddd60", "#ff6e76"],
+                tooltip: {
+                    trigger: 'axis'
+                },
+                legend: {
+                    data: ['SKU Case']
+                },
+                toolbox: {
+                    show: true,
+                    feature: {
+                        magicType: {
+                            show: true,
+                            title: {
+                                bar: 'Bar',
+                                line: 'line'
+                            },
+                            type: ['line', 'bar']
+                        },
+                        restore: {
+                            show: true,
+                            title: "Restore"
+                        },
+                        saveAsImage: {
+                            show: true,
+                            title: "Save Image"
+                        }
+                    }
+                },
+                calculable: true,
+                xAxis: [{
+                    type: 'category',
+                    boundaryGap: true,
+                    data: SKUCode,
+                    nameLocation: 'middle',
+                    nameGap: 20,
+                    splitLine: {
+                        show: false,
+                    }
+                }],
+                yAxis: [{
+                    type: 'value',
+                    name: 'Cases'
+                }],
+                series: [{
+                    name: "Cases",
+                    type: 'bar',
+                    data: TotalSalesValue
+                }]
+            });
+        }
+    }
+    </script>
+</div>
+<!-- /page content -->
+<!-- footer content -->

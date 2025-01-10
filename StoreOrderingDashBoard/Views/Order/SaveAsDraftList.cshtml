@@ -1,0 +1,111 @@
+﻿@using DAL;
+@{
+    ViewBag.Title = "SaveAsDraftList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    long a=0;
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Draft List@*<small>Order List</small>*@</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li>
+                        <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+
+                <table id="datatable-responsive1" class="table table-striped table-bordered dt-responsive nowrap" cellspacing="0" width="100%">
+                    <thead>
+                        <tr>
+                            <th>Order No.</th>
+                            <th>Order Date</th>
+                            @*<th>No. Of Item</th>*@
+                            <th>Open</th>
+                            @*<th>Finilize</th>
+                            <th>Delete</th>*@
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.SaveList != null)
+                        {
+                            foreach (OrderHeader header in ViewBag.SaveList)
+                            {
+                                <tr>
+                                    <td>@(header.DraftOrderno+header.Id)</td>
+                                    <td>@header.OrderDate</td>
+                                    @*<td>@header.orderDetails.Count()</td>*@
+                                    <td><input type="button" value="Open" onclick="Edit(@header.Id)" class="btn-default" /></td>
+                                    @*<td><input type="button" value="Finilize" onclick="Finilize(@header.Id)" class="btn-default" /></td>
+                                    <td><input type="button" value="Delete" onclick="Delete(@header.Id)" class="btn-default" /></td>*@
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+                </table>
+
+
+            </div>
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $('#datatable-responsive1').DataTable({
+                "order": [[1, "desc"]]
+            });
+        });
+    function Edit(e) {
+
+        window.location = "@Url.Content("~/Order/OrderDetailList?orderheaderid=")"+e;
+        }
+
+        function Finilize(e) {
+              var r = confirm("Are you Sure Want to Finilize?");
+            if (r) {
+                $.ajax({
+                    url: "@Url.Action("UpdateFinilize", "Order")",
+                    type: "POST",
+                    data: {
+                        "orderheaderid": e
+                    },
+                    success: function (response) {
+                        if (response) {
+                          
+                            alert("Order Finilize Successfully");
+                          
+                            window.location = "@Url.Action("Home", "Store")"
+                        }
+                    }
+                });
+            }
+        }
+
+        function Delete(e) {
+              var r = confirm("Are you Sure Want to Delete?");
+            if (r) {
+                $.ajax({
+                    url: "@Url.Action("DeleteFinilise", "Order")",
+                    type: "POST",
+                    data: {
+                        "orderheaderid": e
+                    },
+                    success: function (response) {
+                        if (response) {
+                          
+                            alert("Order Successfully Deleted");
+                          
+                            window.location = "@Url.Action("SaveAsDraftList", "Order")"
+                        }
+                    }
+                });
+            }
+        }
+
+    </script>
+</div>

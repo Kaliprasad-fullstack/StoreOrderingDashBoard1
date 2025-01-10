@@ -1,0 +1,285 @@
+﻿@using DAL
+@{
+    ViewBag.Title = "DraftOrder";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    long orderheaderid = 0;
+}
+<div class="right_col" role="main">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Order Summary@*Detail List<small>Item List</small>*@</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li>
+                        <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+
+                <table id="datatable1" class="table table-bordered table-striped table-hover js-basic-example dataTable">
+                    <thead>
+                        <tr>
+                            <th>Product ID</th>
+                            <th>Item Code</th>
+                            <th>Item Description</th>
+                            @*<th>PackingDescription</th>*@
+                            <th>Category</th>
+                            <th>UOM</th>
+                            <th>Max Order Limit</th>
+                            <th>Quantity</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.Orderdetaillist != null)
+                        {
+                            int i = 1;
+                            foreach (OrderDetail detail in ViewBag.Orderdetaillist)
+                            {
+                                orderheaderid = detail.OrderHeaderId;
+                                <tr>
+                                    <td>@detail.Item.Id</td>
+                                    <td>@detail.Item.SKUCode</td>
+                                    <td>@detail.Item.SKUName</td>
+                                    <td>@detail.Item.Category.CaseConversion</td>
+                                    <td>@detail.Item.UOMmaster.UnitofMasureDescription</td>
+                                    <td>@detail.Item.MaximumOrderLimit</td>
+                                    <td><input type="number" id="@("Qty"+i)" min="0" onblur="CheckQty(@detail.Item.MaximumOrderLimit,@i,@detail.OrderHeaderId,@detail.ItemId)" value="@detail.Quantity" disabled /></td>
+                                    <td><input type="button" id="@("Edit" + i)" onclick="Editbutton(@i)" value="Edit" class="btn-default" /></td>
+                                    <td><input type="button" value="Delete" id="@("Delete"+i)" @*onclick="Deleterow(this)"*@ onclick="DeleteItem(@orderheaderid,@detail.Item.Id)" class="btn-default" /></td>
+                                </tr>
+                                i++;
+                            }
+                        }
+                    </tbody>
+                </table>
+                <div class="loader"></div>
+
+            </div>
+            <div class="x_content">
+                <div class="buttons">
+                    <!-- Standard button -->
+                    <button type="button" class="search btn btn-success btn-lg" id="Item" onclick="CreateList(@orderheaderid)" data-toggle="modal" data-target="#myModal">Add New Item</button>                    
+                        <input type="button" class="search btn btn-success btn-lg" id="Finalise" onclick="Finilize(@orderheaderid)" value="Finalise" />                    
+                        <input type="button" class="search btn btn-success btn-lg" id="Delete" onclick="Delete(@orderheaderid)" value="Delete" />
+                    
+                    <div class="modal fade" id="myModal" role="dialog">
+                        <div class="modal-dialog modal-lg">
+
+                            <!-- Modal content-->
+                            <div class="modal-content">
+                                <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                    <h4 class="modal-title">Add New Item</h4>
+                                </div>
+                                <div class="modal-body">
+                                    <div id="partial"></div>
+                                </div>
+                                <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" onclick="AddNew(@orderheaderid)" data-dismiss="modal">Save</button>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var dt;
+        var productlist = [];
+        // A $( document ).ready() block.
+        $(document).ready(function () {
+           @*$('.search').click(function () {
+                var id = $(this).data('assigned-id');
+                var route = '@Url.Action("ItemlistPartial", "Order")?id='+e;
+                $('#partial').load(route);
+            });*@
+            $(".loader").hide();
+            dt = $('#datatable1').DataTable();
+        });
+        function CreateList(e) {
+            var route = '@Url.Action("ItemlistPartial", "Order")?orderheaderid='+e;
+                $('#partial').load(route);
+        }
+        function closePartialView() {
+            $('#partial').html("");
+        }
+        function Editbutton(e) {
+            var qt = "#Qty" + e;
+            $(qt).attr("disabled", false);
+            var qt = "#Qty" + (e - 1);
+            $(qt).attr("disabled", true);
+            var qt = "#Qty" + (e + 1);
+            $(qt).attr("disabled", true);
+
+        }
+
+        function Deleterow(el) {
+            var row = upTo(el, 'tr')
+            if (row) row.parentNode.removeChild(row);
+        }
+
+        function upTo(el, tagName) {
+            tagName = tagName.toLowerCase();
+
+            while (el && el.parentNode) {
+                el = el.parentNode;
+                if (el.tagName && el.tagName.toLowerCase() == tagName) {
+                    return el;
+                }
+            }
+            return null;
+        }
+
+        function Finilize(e) {
+            $(".loader").show();
+            $('#Finalise').prop('disabled', true);
+            $('#Item').prop('disabled', true);
+            $('#Delete').prop('disabled', true);
+            productlist = [];
+            var tableinfo = dt.page.info();
+            total = tableinfo.recordsTotal
+            for (i = 0; i < total; i++) {
+                // var data = t.$('input[id=Qtys' + i + '], select').serialize();
+                var data = dt.cell(i, 6).nodes().to$().find('input').val()
+                //  var Qty = data.split("=");
+                if (parseInt(data) > 0) {
+                    var da = dt.row(i).data();
+                    var product = {};
+                    product.ProductId = parseInt(da[0]);
+                    product.Qty = data;
+                    product.OrderheaderId = parseInt(e);
+                    productlist.push(product);
+                }
+
+            }
+            var r = confirm("Are You Sure You Want To Finalise?");
+            if (r) {
+                $.ajax({
+                    url: "@Url.Action("Finilize", "Order")",
+                    type: "POST",
+                    data: {
+                        "order": productlist,
+                        "issave": "Finilize"
+                    },
+                    success: function (response) {
+                        if (response) {
+                            alert("Order Finalised Successfully");
+                            window.location = "@Url.Action("Home", "Store")"
+                        }
+                    }
+                });
+            }
+            else {
+                $(".loader").hide();
+                $('#Finalise').prop('disabled', false);
+                $('#Item').prop('disabled', false);
+                $('#Delete').prop('disabled', false);
+            }
+        }
+
+        function DeleteItem(e, e1) {
+            var r = confirm("Are You Sure You Want To Delete?");
+            if (r) {
+                $(".loader").show();
+                $('#Finalise').prop('disabled', true);
+                $('#Item').prop('disabled', true);
+                $('#Delete').prop('disabled', true);
+                $.ajax({
+                    url: "@Url.Action("DeleteItem", "Order")",
+                    type: "POST",
+                    data: {
+                        "orderheaderid": e,
+                        "itemid": e1
+                    },
+                    success: function (response) {
+                        if (response) {
+
+                            alert("Item Deleted Successfully");
+
+                            window.location = "@Url.Action("OrderDetailList", "Order")?orderheaderid=" + e;
+                            $(".loader").hide();
+                            $('#Finalise').prop('disabled', false);
+                            $('#Item').prop('disabled', false);
+                            $('#Delete').prop('disabled', false);
+                        }
+                    }
+                });
+            }
+        }
+        function CheckQty(e, e1,e2,e3) {
+            var id = "#Qty" + e1;
+            var value = $(id).val();
+            var a;
+            if (parseInt(value) > parseInt(e))
+                a = confirm("Quantity is greater than order limit");
+
+            if (a) {
+                $(".loader").show();
+                 $.ajax({
+                    url: "@Url.Action("UpdateQuantity", "Order")",
+                    type: "POST",
+                    data: {
+                        "OrderHeaderId": e2,
+                        "ItemId": e3,
+                        "Quantity": value
+                    },
+                    success: function (response) {
+                        if (response) {
+
+                            alert("Quantity Updated Successfully");
+                            $(".loader").hide();
+                            location.reload()
+                        }
+                    }
+                });
+            }
+            else {
+                $(".loader").show();
+                 $.ajax({
+                    url: "@Url.Action("UpdateQuantity", "Order")",
+                    type: "POST",
+                    data: {
+                        "OrderHeaderId": e2,
+                        "ItemId": e3,
+                        "Quantity": value
+                    },
+                    success: function (response) {
+                        if (response) {
+
+                            alert("Quantity Updated Successfully");
+                            $(".loader").hide();
+                            location.reload();
+                        }
+                    }
+                });
+            }
+        }
+
+         function Delete(e) {
+             var r = confirm("Are You Sure You Want To Delete?");
+            if (r) {
+                $.ajax({
+                    url: "@Url.Action("DeleteFinilise", "Order")",
+                    type: "POST",
+                    data: {
+                        "orderheaderid": e
+                    },
+                    success: function (response) {
+                        if (response) {
+                            alert("DRAFT DELETED...");
+                            window.location = "@Url.Action("Home", "Store")"
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</div>
+

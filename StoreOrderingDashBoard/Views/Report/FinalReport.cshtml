@@ -1,0 +1,271 @@
+﻿@using DAL
+@{
+    ViewBag.Title = "FinalReport";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    string startdate = ViewData["StartDate"].ToString();
+    string enddate = ViewData["EndDate"].ToString();
+}
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Store orders end to end details@*<small>Some examples to get you started</small>*@</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                @*<div class="x_title">
+                        <h2>Default Example <small>Stores</small></h2>
+                        <h2>Draft Order</h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>*@
+                <div class="x_content">
+                    @*<p class="text-muted font-13 m-b-30">
+                            DataTables has most features enabled by default, so all you need to do to use it with your own tables is to call the construction function: <code>$().DataTable();</code>
+                        </p>*@
+                    <form id="demo-form" class="form-inline">
+                        <div class="form-group" style="margin-left:10px;">
+                            <label for="FromDate">From Date</label>
+                            <input type="date" value="@startdate" class="form-control" name="FromDate" />
+                        </div>
+                        <div class="form-group" style="margin-left:10px;">
+                            <label for="enddate">To Date</label>
+                            <input type="date" value="@enddate" class="form-control" name="ToDate" />
+                        </div>
+                        @*<div class="form-group">
+                                <label for="QueryPicker">Type</label>
+                                @Html.DropDownList("QueryPicker", new SelectList(ViewBag.SelectList, "Value", "Text",ViewBag.), "Please select", new { @class = "form-control" })
+                            </div>*@
+                        <input type="submit" class="btn btn-default " style="margin-bottom:0px;" />
+                        @*<div class="row">
+                                <div class="col-md-12 col-sm-12 col-xs-12">
+                                    <input type="submit" class="btn btn-default center-block" />
+                                </div>
+                            </div>*@
+
+                        @*<div class="col-md-12 col-sm-12 col-xs-12">
+                                <p style="padding: 5px;">
+                                    <div class="col-md-3 col-sm-4 col-xs-6">
+                                        <div class="checkbox">
+                                            <label class="hover">
+                                                <div class="icheckbox_flat-green hover" style="position: relative;">
+                                                    <input type="checkbox" id="IsProcessed" class="flat" style="position: absolute; opacity: 0;">
+                                                </div> IsProcessed
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-sm-4 col-xs-6">
+                                        <div class="checkbox">
+                                            <label class="hover">
+                                                <div class="icheckbox_flat-green hover" style="position: relative;">
+                                                    <input type="checkbox" id="IsOrderStatus" class="flat" style="position: absolute; opacity: 0;">
+                                                </div> IsOrderStatus
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-sm-4 col-xs-6">
+                                        <div class="checkbox">
+                                            <label class="hover">
+                                                <div class="icheckbox_flat-green hover" style="position: relative;">
+                                                    <input type="checkbox" id="IsSoApproved" class="flat" style="position: absolute; opacity: 0;">
+                                                </div> IsSoApproved
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-sm-4 col-xs-6">
+                                        <div class="checkbox">
+                                            <label class="hover">
+                                                <div class="icheckbox_flat-green hover" style="position: relative;">
+                                                    <input type="checkbox" id="IsFullFillment" class="flat" style="position: absolute; opacity: 0;">
+                                                </div> IsFullFillment
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-3 col-sm-4 col-xs-6">
+                                        <div class="checkbox">
+                                            <label class="hover">
+                                                <div class="icheckbox_flat-green hover" style="position: relative;">
+                                                    <input type="checkbox" id="IsInvoice" class="flat" style="position: absolute; opacity: 0;">
+                                                </div> IsInvoice
+                                            </label>
+                                        </div>
+                                    </div>
+                                </p>
+                            </div>*@
+
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                @*<div class="x_title">
+                        <h2>Default Example <small>Stores</small></h2>
+                        <h2>Draft Order</h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>*@
+                <div class="x_content">
+                    <table id="datatable" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th scope="col">#</th>
+                                <th scope="col">DC Name.</th>
+                                <th scope="col">Store Code</th>
+                                <th scope="col">Store Name</th>
+                                @*<th scope="col">Store Manager</th>
+        <th scope="col">Store Contact No.</th>*@
+                                <th scope="col">Order No.</th>
+                                <th scope="col">Order Date</th>
+                                <th scope="col">Item Code</th>
+                                <th scope="col">Item Name</th>
+                                <th scope="col">Requested Quantity</th>
+                                <th scope="col">Processed Flag</th>
+                                <th scope="col">Processed Date</th>
+                                <th scope="col">SO Approved Flag</th>
+                                <th scope="col">So Number</th>
+                                <th scope="col">Fullfilled Flag</th>
+                                <th scope="col">fullfill quantity</th>
+                                <th scope="col">Invoiced Flag</th>
+                                <th scope="col">Invoice Number</th>
+                                <th scope="col">Invoice Date</th>
+                                <th scope="col">Due Date</th>
+                                <th scope="col">CreateBy</th>
+                                <th scope="col">CreatedOn</th>
+                                <th scope="col">Tax Code</th>
+                                <th scope="col">Tax Rate</th>
+                                <th scope="col">Amount</th>
+                                <th scope="col">Tax Amount</th>
+                                <th scope="col">GrossAmount</th>
+                                <th scope="col">Tax Liable</th>
+                                <th scope="col">Item Category</th>
+                                <th scope="col">Invoice Quantity</th>
+                                @*<th scope="col">Open</th>*@
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.FinalizedReports != null)
+                            {
+                                int i = 1;
+                                foreach (FinalReport head in ViewBag.FinalizedReports)
+                                {
+                            <tr>
+                                <th scope="row">@i</th>
+                                <td>@head.dc_name</td>
+                                <td>@head.StoreCode</td>
+                                <td>@head.StoreName</td>
+                                @*<td>@head.StoreManager</td>
+        <td>@head.StoreContactNo</td>*@
+                                <td>@head.OrderNo</td>
+                                <td>@(head.OrderDate != null ? head.OrderDate.Value.ToString("dd/MM/yyyy hh:mm", System.Globalization.CultureInfo.InvariantCulture) : "")</td>
+                                <td>@head.SKUCode</td>
+                                <td>@head.SKUName</td>
+                                <td>@head.requested_Quantity</td>
+                                <td>@head.Processed_Flag</td>
+                                <td>@(head.ProcessedDate != null ? head.ProcessedDate.Value.ToString("dd/MM/yyyy hh:mm", System.Globalization.CultureInfo.InvariantCulture) : "")</td>
+                                <td>@head.SO_Approved_Flag</td>
+                                <td>@head.SoNumber</td>
+                                <td>@head.Fullfilled_Flag</td>
+                                <td>@head.fullfill_quantity</td>
+                                <td>@head.Invoiced_Flag</td>
+                                <td>@head.Invoice_Number</td>
+                                <td>@head.InvoiceDate</td>
+                                <td>@head.DueDate</td>
+                                <td>@head.CreateBy</td>
+                                <td>@(head.CreatedOn != null ? head.CreatedOn.Value.ToString("dd/MM/yyyy hh:mm", System.Globalization.CultureInfo.InvariantCulture) : "")</td>
+                                <td>@head.TaxCode</td>
+                                <td>@head.TaxRate</td>
+                                <td>@head.Amount</td>
+                                <td>@head.TaxAmount</td>
+                                <td>@head.GrossAmount</td>
+                                <td>@head.TaxLiable</td>
+                                <td>@head.ItemCategory</td>
+                                <td>@head.inv_Quantity</td>
+                                @*<td>
+            <input type="button" class="btn btn-default" value="Open" data-target="#modelWindow" data-toggle="modal" onclick="OpenSaveAsDraft(@head.Id)" />
+        </td>*@
+                            </tr>
+                                    i++;
+                                }
+
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="modelWindow" role="dialog">
+        <div class="modal-dialog modal-lg vertical-align-center">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Item List</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="partial" class="row">
+                        <div class="loader col-sm-12"></div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button type="button" data-dismiss="modal" class="btn btn-default">Close</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function OpenSaveAsDraft(e) {
+            //$('#modelWindow').modal('show');
+            var route = '@Url.Action("DraftItemsPartial", "Report")?orderheaderid=' +e;
+             //var route = '@Url.Action("ItemlistPartial", "Order")?orderheaderid='+e;
+                $('#partial').load(route);
+            }
+        $(document).ready(function () {
+            $(".loader").hide();
+            //t = $('#example').DataTable();
+            $("#datatable").DataTable({
+                dom: "Blfrtip",
+                buttons: [
+                    {
+                        extend: "copy",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "csv",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "excel",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "pdfHtml5",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "print",
+                        className: "btn-sm"
+                    },
+                ],
+                responsive: true
+            });
+        });
+    </script>
+</div>
+

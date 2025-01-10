@@ -1,0 +1,5 @@
+Order #,Expected Delivery Date,Department,Class,Status,Location,Division,SO Approver Partner,ITEM CODE,ITEM NAME,ORDER QUANTITY,eBizDownloadStatus,Store Code,Indent No,Amount,Indent Date,Location,TRANSACTION TYPE,PLACE OF SUPPLY,CUSTOMER PO NO
+"3","20/07/2024","OTRD","RFPL : OTRD","Pending Approval","OTRD : Pune Shell","Trading","IT Support","5012119550","Veeba Eggless Mayonnaise (1 KgX1)","1","Edit","12718374","rfpl/finalised/104494","1","20/09/2022","OTRD : Pune Shell","GST Tax Invoice","Maharashtra",""
+"2","20/07/2024","OTRD","RFPL : OTRD","Pending Approval","OTRD : Bangalore Shell","Trading","IT Support","5024113222","3397005291 - Wiper Eco set 16/16 in (5X1) - MRP 334","5","Edit","10035040","rfpl/finalised/104493","1","04/12/2023","OTRD : Bangalore Shell","GST Tax Invoice","Karnataka",""
+"1","20/07/2024","OTRD","RFPL : OTRD","Pending Approval","OTRD : Bangalore Shell","Trading","IT Support","5024116238/1","3397011651 - Wiper Eco 24 in(D) (10X1) - MRP 288","10","Edit","10035040","rfpl/finalised/104492","1","02/12/2023","OTRD : Bangalore Shell","GST Tax Invoice","Karnataka","	10035040"
+

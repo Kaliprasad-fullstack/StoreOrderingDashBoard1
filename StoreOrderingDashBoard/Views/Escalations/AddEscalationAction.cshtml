@@ -1,0 +1,97 @@
+﻿@using DAL
+@model EscalationAction
+@{
+    ViewBag.Title = "AddEscalationAction";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .checkbox input[type=checkbox] {
+        margin-left: 0px;
+    }
+</style>
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Add Escalation Action</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Escalation Action<small> Form</small></h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <br />
+                        @using (Html.BeginForm())
+                        {
+                            <div class="form-horizontal">
+                                @Html.AntiForgeryToken()
+                                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.Level, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                                    <div class="col-md-6 col-sm-6 col-xs-12">
+                                        @*@Html.EditorFor(model => model.LevelID,new { htmlAttributes = new { @class = "form-control", min = "1", @Value = Model.LevelID } })*@
+                                        <input type="number" id="Level" name="Level" class="form-control" required="required" value="@Model.Level" min="1" />
+                                        @Html.ValidationMessageFor(model => model.Level, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.StoreId, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                                    <div class="col-md-6 col-sm-6 col-xs-12">
+                                        @*@Html.EditorFor(model => model.TriggerType, new { htmlAttributes = new { @class = "form-control" } })*@
+                                        @Html.DropDownListFor(model => model.StoreId, new SelectList(ViewBag.CustomerStores, "Id", "StoreCode", Model.StoreId), new { @class = "form-control", name = "StoreId" })
+                                        @Html.ValidationMessageFor(model => model.StoreId, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.CustEmpId, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                                    <div class="col-md-6 col-sm-6 col-xs-12">
+                                        @Html.DropDownListFor(model => model.CustEmpId, new SelectList(ViewBag.Employees, "Id", "EmpName", Model.CustEmpId), new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.CustEmpId, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.EmailTo_CC_BCCFlag, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12" })
+                                    <div class="col-md-6 col-sm-6 col-xs-12">
+                                        @Html.DropDownListFor(model => model.EmailTo_CC_BCCFlag, new SelectList(ViewBag.EmailToType, "Value", "Text", Model.EmailTo_CC_BCCFlag), new { @class = "form-control" })
+                                        @Html.ValidationMessageFor(model => model.EmailTo_CC_BCCFlag, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.IsDeleted, htmlAttributes: new { @class = "control-label col-md-3 col-sm-3 col-xs-12", @Value = Model.IsDeleted })
+                                    <div class="col-md-6 col-sm-6 col-xs-12">
+                                        <div class="checkbox">
+                                            @*@Html.EditorFor(model => model.IsDeleted)*@
+                                            <input type="checkbox" id="IsDeleted" name="IsDeleted" checked="@(Model.IsDeleted?"checked":"")" />
+                                            @*@Html.CheckBoxFor(m => m.IsDeleted)*@
+                                            @Html.ValidationMessageFor(model => model.IsDeleted, "", new { @class = "text-danger" })
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="col-md-offset-2 col-md-6 col-sm-6 col-xs-12">
+                                        <input type="submit" value="Save" class="btn btn-default" />
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

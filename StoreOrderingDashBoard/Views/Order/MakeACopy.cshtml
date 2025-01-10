@@ -1,0 +1,322 @@
+﻿
+@{
+    ViewBag.Title = "MakeACopy";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using DAL
+@{
+    ViewBag.Title = "OrderDetailList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    long orderheaderid = 0;
+    int i = 1;
+    string MkrChkrFlag = Session["MkrChkrFlag"].ToString();
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+
+<div class="right_col" role="main">
+    <div class="col-md-12 col-sm-12 col-xs-12">
+        <div class="x_panel">
+            <div class="x_title">
+                <h2>Order List@*<small>Item List</small>*@</h2>
+                <ul class="nav navbar-right panel_toolbox">
+                    <li>
+                        <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                    </li>
+
+                </ul>
+                <div class="clearfix"></div>
+            </div>
+            <div class="x_content">
+
+                <table id="datatable1" class="table table-striped table-bordered">
+                    <thead>
+                        <tr>
+                            <th>ProductId</th>
+                            <th>Item Code</th>
+                            <th>Item Description</th>
+                            @*<th>PackingDescription</th>*@
+                            <th>Category</th>
+                            <th>UOM</th>
+                            <th>Max Order Limit</th>
+                            <th>Quantity</th>
+                            <th>Edit</th>
+                            <th>Delete</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @if (ViewBag.Itemlist != null)
+                        {
+
+                            foreach (TempTbl detail in ViewBag.Itemlist)
+                            {
+                                orderheaderid = detail.headerid;
+                                <tr>
+                                    <td>@detail.ProductId</td>
+                                    <td>@detail.ItemCode</td>
+                                    <td>@detail.Skudescription</td>
+                                    @*<td>@detail.Item.PackingDescription</td>*@
+                                    <td>@detail.Category</td>
+                                    <td>@detail.UOM</td>
+                                    <td>@detail.MaxorderLimit</td>
+                                    <td><input type="number" id="@("Qty"+i)" min="0" onblur="CheckQty(@detail.MaxorderLimit,@i,@detail.headerid,@detail.ProductId)" value="@detail.Quantity" disabled /></td>
+                                    <td><input type="button" id="@("Edit" + i)" onclick="Editbutton(@i)" value="Edit" class="btn-default" /></td>
+                                    <td><input type="button" value="Delete" id="@("Delete"+i)" @*onclick="Deleterow(this)"*@ onclick="DeleteItem(@orderheaderid,@detail.ProductId)" class="btn-default" /></td>
+                                </tr>
+                                i++;
+                            }
+                        }
+
+                    </tbody>
+                </table>
+
+                <div class="loader"></div>
+            </div>
+            <div class="x_content">
+                <div class="buttons">
+                    <!-- Standard button -->
+                    <button type="button" class="search btn btn-success btn-lg" id="Item" onclick="CreateList(@orderheaderid)" data-toggle="modal" data-target="#myModal">Add New Item</button>
+                    @if (MkrChkrFlag != "Chkr")
+    {
+                <input type="button" class="search btn btn-success btn-lg" id="Draftbtn" onclick="Finilize(@orderheaderid,'Save')" value="Save As Draft" />
+}
+                    @if (MkrChkrFlag != "Mkr")
+                    {
+                <input type="button" class="search btn btn-success btn-lg" id="Finalise" onclick="Finilize(@orderheaderid,'Finilize')" value="Finalise" />
+                    }
+                @*<input type="button" class="search btn btn-success btn-lg" onclick="Delete(@orderheaderid)" value="Delete" />*@
+                <div class="modal fade" id="myModal" role="dialog">
+                    <div class="modal-dialog modal-lg">
+
+                        <!-- Modal content-->
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                <h4 class="modal-title">Add New Item</h4>
+                            </div>
+                            <div class="modal-body">
+                                <div id="partial"></div>
+                            </div>
+                            <div class="modal-footer">
+
+                                <button type="button"  class="btn btn-default" onclick="AddNew(@orderheaderid,@i)" data-dismiss="modal">Save</button>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var dt;
+        var productlist = [];
+        // A $( document ).ready() block.
+        $(document).ready(function () {
+           @*$('.search').click(function () {
+                var id = $(this).data('assigned-id');
+                var route = '@Url.Action("ItemlistPartial", "Order")?id='+e;
+                $('#partial').load(route);
+            });*@
+            //document.getElementById("Draftbtn").disabled = true;
+            
+           $(".loader").hide();
+            dt = $('#datatable1').DataTable();
+        });
+        function CreateList(e) {
+            var route = '@Url.Action("SummeriseReport", "Order")?orderheaderid='+e;
+                $('#partial').load(route);
+        }
+        function Editbutton(e) {
+            var qt = "#Qty" + e;
+            $(qt).attr("disabled", false);
+            var qt = "#Qty" + (e - 1);
+            $(qt).attr("disabled", true);
+            var qt = "#Qty" + (e + 1);
+            $(qt).attr("disabled", true);
+
+        }
+
+        function Deleterow(el) {
+            var row = upTo(el, 'tr')
+            if (row) row.parentNode.removeChild(row);
+        }
+
+        function upTo(el, tagName) {
+            tagName = tagName.toLowerCase();
+
+            while (el && el.parentNode) {
+                el = el.parentNode;
+                if (el.tagName && el.tagName.toLowerCase() == tagName) {
+                    return el;
+                }
+            }
+            return null;
+        }
+
+        function Finilize(e,e1) {
+            
+            $(".loader").show();
+            $('#Finalise').prop('disabled', true);
+            $('#Draftbtn').prop('disabled', true);
+            $('#Item').prop('disabled', true);
+            
+            
+            var tableinfo = dt.page.info();
+            total = tableinfo.recordsTotal
+            for (i = 0; i < total; i++) {
+                // var data = t.$('input[id=Qtys' + i + '], select').serialize();
+                var data = dt.cell(i, 6).nodes().to$().find('input').val()
+                //  var Qty = data.split("=");
+                if (parseInt(data) > 0) {
+                    var da = dt.row(i).data();
+                    var product = {};
+                    product.ProductId = parseInt(da[0]);
+                    product.Qty = data;
+                    product.OrderheaderId = parseInt(e);
+                    productlist.push(product);
+                }
+
+            }
+            if (e1 == "Save") {
+                 $.ajax({
+                    url: "@Url.Action("SavaAsDraftOrFinilize", "Order")",
+                    type: "POST",
+                    data: {
+                        "order": productlist,
+                        "issave": e1
+                    },
+                    success: function (response) {
+                        if (response) {
+                            alert("Order Saved As Draft Successfully");
+                            window.location = "@Url.Action("Home", "Store")"
+                        }
+                    }
+                });
+            }
+            else {
+                var r = confirm("Are You Sure You Want To Finalise?");
+            if (r) {
+                $.ajax({
+                    url: "@Url.Action("SavaAsDraftOrFinilize", "Order")",
+                    type: "POST",
+                    data: {
+                        "order": productlist,
+                        "issave": e1
+                    },
+                    success: function (response) {
+                        if (response) {
+                            alert("Order Finalised Successfully");
+                            window.location = "@Url.Action("Home", "Store")"
+                        }
+                    }
+                });
+            }
+            else {
+                $(".loader").hide();
+                $('#Finalise').prop('disabled', false);
+                $('#Draftbtn').prop('disabled', false);
+                $('#Item').prop('disabled', false);
+            }
+            }
+            
+        }
+
+        function DeleteItem(e, e1) {
+            var r = confirm("Are You Sure You Want To Delete?");
+            if (r) {
+                $(".loader").show();
+                $.ajax({
+                    url: "@Url.Action("DeleteFromTemp", "Order")",
+                    type: "POST",
+                    data: {
+                        "headerid": e,
+                        "productid": e1
+                    },
+                    success: function (response) {
+                        if (response) {
+
+                            alert("Item Deleted Successfully");
+                            $(".loader").hide();
+                            window.location = "@Url.Action("MakeACopy", "Order")?headerid=" + e;
+                        }
+                    }
+                });
+            }
+        }
+        function CheckQty(e, e1, e2, e3) {
+            debugger;
+            var id = "#Qty" + e1;
+            var value = $(id).val();
+            var a;
+            if (parseInt(value) > parseInt(e))
+                 a = confirm("Quantity is greater than order limit");
+           
+            if (a) {
+                $(".loader").show();
+                 $.ajax({
+                    url: "@Url.Action("UpdateFromTemp", "Order")",
+                    type: "POST",
+                    data: {
+                        "OrderHeaderId": e2,
+                        "ItemId": e3,
+                        "Quantity": value
+                    },
+                    success: function (response) {
+                        if (response) {
+
+                            alert("Quantity Updated Successfully");
+                            $(".loader").hide();
+                            location.reload()
+                        }
+                    }
+                });
+            }
+            else {
+                $(".loader").show();
+                 $.ajax({
+                    url: "@Url.Action("UpdateFromTemp", "Order")",
+                    type: "POST",
+                    data: {
+                        "OrderHeaderId": e2,
+                        "ItemId": e3,
+                        "Quantity": value
+                    },
+                    success: function (response) {
+                        if (response) {
+
+                            alert("Quantity Updated Successfully");
+                            $(".loader").hide();
+                            location.reload();
+                        }
+                    }
+                });
+            }
+        }
+
+         function Delete(e) {
+             var r = confirm("Are You Sure You Want To Delete?");
+             if (r) {
+                 $(".loader").show();
+                $.ajax({
+                    url: "@Url.Action("DeleteFinilise", "Order")",
+                    type: "POST",
+                    data: {
+                        "orderheaderid": e
+                    },
+                    success: function (response) {
+                        if (response) {
+
+                            alert("Order Successfully Deleted");
+                            $(".loader").hide();
+                            window.location = "@Url.Action("SaveAsDraftList", "Order")"
+                        }
+                    }
+                });
+            }
+        }
+    </script>
+</div>
+
+

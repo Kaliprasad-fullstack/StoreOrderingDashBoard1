@@ -1,0 +1,119 @@
+﻿@using DAL
+@{
+    /**/
+
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    string ErrorMsg = (string)TempData["ErrorMsg"];
+    string SuccessMsg = (string)TempData["Messege"];
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<!-- page content -->
+
+<div class="right_col" role="main">
+
+
+    @if (ErrorMsg != null)
+    {
+        <div class="alert alert-danger alert-dismissible " role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">×</span>
+            </button>
+            @ErrorMsg
+        </div>
+    }
+    @if (SuccessMsg != null)
+    {
+        <div class="alert alert-success alert-dismissible " role="alert">
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">×</span>
+            </button>
+            @SuccessMsg
+        </div>
+    }
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Brands</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="loader"></div>
+                    <div class="x_content">
+                        <table id="datatable-buttons" class="table table-striped table-bordered dataTable no-footer dtr-inline" role="grid" aria-describedby="datatable_info">
+                            <thead>
+                                <tr role="row">
+                                    <th>Name</th>
+                                    <th>Start date</th>
+                                    <th>Edit</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.brands != null)
+                                {
+                                    int sr = 1;
+                                    foreach (Brand ob in ViewBag.brands)
+                                    {
+                                        <tr role="row" class="@(sr%2!=0?"Odd":"even")">
+                                            <td>
+                                                @ob.BrandName
+                                            </td>
+                                            <td>
+                                                @(ob.ModifiedDate.HasValue ? ob.ModifiedDate.Value.ToString("dd/MM/yyyy") : ob.CreatedDate.ToString("dd/MM/yyyy"))
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-info @(ob.IsDeleted?"disabled":"") datatable-btn" href="@Url.Action("EditBrand","Brand",new { Id=ob.Id})">Edit</a>
+                                            </td>
+                                            <td>
+                                                @if (ob.IsDeleted)
+                                                {
+                                                    <button class="btn btn-danger datatable-btn" type="button" onclick="ActiveDeactive($(this).val(), 'Active', 'false');" value="@ob.Id" title="click to activate">DeActive</button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-success datatable-btn" type="button" onclick="ActiveDeactive($(this).val(),'Deactive','true');" value="@ob.Id" title="click to de-activate">Active</button>
+                                                }
+                                            </td>
+                                        </tr>
+                                        sr++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $(".loader").hide();
+    });
+    function ActiveDeactive(Id, flag,IsDeleted ) {
+        var a = confirm("Are you sure want to " + flag + " Brand?");
+        if (a) {
+            $(".loader").show();
+                $.ajax({
+                    url: '@Url.Action("DeleteBrand", "Brand")',
+                    type: "post",
+                    datatype: "json",
+                    data: {
+                        "id": Id,
+                        "IsDelete": IsDeleted
+                    },
+                    success: function (response) {
+                        if (response == "true" || response==true) {
+                            window.location.href = '@Url.Action("Index", "Brand")';
+                        }
+                    },
+                })
+        }
+     }
+</script>
+<!-- /page content -->

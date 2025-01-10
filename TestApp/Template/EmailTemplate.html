@@ -1,0 +1,51 @@
+﻿<html>
+<head>
+    <style>
+        body {
+            font-family: Helvetica;
+            background: #ddd;
+        }
+
+        .trigger {
+            margin: 50px auto 20px;
+            /* width: 150px; */
+            position: relative;
+            text-align: center;
+            padding: 30px;
+        }
+
+        .popup {
+            position: absolute;
+            left: 0;
+            /* transform: translate3d(0, -50%, 0); */
+            box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.5);
+            background: white;
+            /* border-radius: 100px; */
+            width: 100%;
+        }
+
+
+
+        .inner {
+            /* padding: 30px 0; */
+            background: #fff;
+            /* border-radius: 100px; */
+        }
+    </style>
+</head>
+<body>
+    <div class="trigger">
+        <div class="popup">
+            <div class="inner">
+                <h1 style="font-family:'Comic Sans MS'">Store Count - {{StoreCount}}</h1>
+            </div>
+            <div class="inner">
+                <h1 style="font-family:'Comic Sans MS'">Stores - Yet to Order</h1>
+                <table>
+                    <tbody>{{StoreNames}}</tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

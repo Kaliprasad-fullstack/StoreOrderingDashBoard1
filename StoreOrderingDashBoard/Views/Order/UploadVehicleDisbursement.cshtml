@@ -1,0 +1,166 @@
+﻿@model List<DAL.VehicleDispatchExcel>
+@{
+    ViewBag.Title = "UploadVehicleDisbursement";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Vehicle Allocation</h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a style="color:#5A738E;" href="@Url.Action("DownloadFormat","Order",new { filename="Vehicle_Allocation_Template.xlsx" })" title="Download Format"><i class="fa fa-download"></i> Download Format</a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        @using (Html.BeginForm("ImportVehicleDisbursement", "Order", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                        {
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group form-inline">
+                                        <label class="control-label" for="FileUpload1">
+                                            Select File <span class="required">*</span>
+                                        </label>
+                                        <input type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" id="FileUpload1" name="FileUpload1" class="form-control" required="" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                </div>
+                                <div class="col-md-3 pull-right">
+                                    <input class="search btn btn-success btn-sm" type="submit" value="Submit" />
+                                </div>
+                                @if (ViewBag.FinilizeOrder != null)
+                                {
+                                    <div class="loader"></div>
+                                    <table id="example" class="display" cellspacing="0" width="100%">
+                                        <thead>
+                                            <tr>
+                                                @*<th><input type="checkbox" id="@("Check" + i)" value="@header.Id" name="id[]" /></th>*@
+                                                <th>
+                                                    Invoice No
+                                                </th>
+                                                <th>
+                                                    VehicleNo
+                                                </th>
+                                                <th>
+                                                    Error
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (ViewBag.FinilizeOrder != null)
+                                            {
+                                                int i = 0;
+                                                foreach (DAL.VehicleDispatchExcel import in ViewBag.FinilizeOrder)
+                                                {
+                                                    <tr>
+                                                        <td>
+                                                            @import.DocNo
+                                                        </td>
+                                                        <td>
+                                                            @import.VehicleNo
+                                                        </td>
+                                                        <td>
+                                                            @import.Error
+                                                        </td>
+                                                    </tr>
+                                                    i++;
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                    <button type="button" class="search btn btn-success btn-lg" id="Uploadbtn" onclick="CreateList()" data-toggle="modal" data-target="#myModal">Upload</button>
+                                }
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <script>
+                var table;
+                var vehicleDisbursementlist = [];
+                $(document).ready(function () {
+                    $('.loader').hide();
+                     table = $('#example').DataTable({
+                        'columnDefs': [{
+                            'targets': 0,
+                            'searchable': false,
+                            'orderable': false,
+                            'className': 'dt-body-center'
+                        }],
+                        'order': [1, 'desc']
+                    });
+
+                });
+
+
+                function CreateList() {
+                    var tableinfo = table.page.info();
+                    var error = false;
+                    total = tableinfo.recordsTotal
+                    for (i = 0; i < total; i++) {
+                        //var data1 = table.cell(i, 0).nodes().to$().find('input').val();
+                        //var dc = table.cell(i, 4).nodes().to$().find('select').val();
+                        var data = table.$('input[id=Check' + i + '], checked').serialize();
+                        var da = table.row(i).data();
+                        var vehicleDisbursement = {};
+                        vehicleDisbursement.DocNo = da[0];
+                        vehicleDisbursement.VehicleNo = da[1];
+                        vehicleDisbursement.Error = da[2];
+                        if (vehicleDisbursement.Error != "") {
+                            vehicleDisbursementlist = [];
+                            error = true;
+                            break;
+                        }
+                        vehicleDisbursementlist.push(vehicleDisbursement);
+                    }
+                    if (error == true) {
+                        alert("please solve the errors first.");
+                    }
+                    else {
+                        if (vehicleDisbursementlist.length > 0) {
+                            var r = confirm("Are you Sure Want to Upload?");
+                            if (r) {
+                                $('.loader').show();
+                                $('#Uploadbtn').prop('disabled', true);
+                                $.ajax({
+                                    url: "@Url.Action("SaveVehicleDisbursementList", "Order")",
+                                    type: "POST",
+                                    data: {
+                                        "vehicleDisbursementList": vehicleDisbursementlist
+                                    },
+                                    success: function (response) {
+                                        if (response) {
+                                            alert("List Uploaded Successfully");
+                                            window.location = "@Url.Action("UploadVehicleDisbursement", "Order")"
+                                        }
+                                    },
+                                    Error: function (respo) {
+                                        alert("unable to upload.");
+                                    }
+                                });
+                            }
+                        }
+                        else {
+                            $('.loader').hide();
+                            alert("Please Select Box")
+                        }
+                    }
+                }
+            </script>
+
+        </div>
+    </div>
+</div>
+
+
+

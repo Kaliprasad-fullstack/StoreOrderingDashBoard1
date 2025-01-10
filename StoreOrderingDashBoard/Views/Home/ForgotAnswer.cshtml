@@ -1,0 +1,82 @@
+﻿@using DAL;
+@model List<Answer>
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Change Question Answers</title>
+    <!-- Bootstrap -->
+    <link href="~/Content/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/Content/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="~/Content/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link href="~/Content/vendors/animate.css/animate.min.css" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="~/Content/build/css/custom.css" rel="stylesheet">
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <style>
+        .wrapper {
+            right: 0px;
+            margin: 0px auto;
+            margin-top: 5%;
+            position: relative;
+        }
+    </style>
+</head>
+<body class="login">
+    <div>
+        <div class="wrapper conta" style="width:auto !important">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Change<small> Question Answers</small></h2>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        <br>
+                        <form action="@Url.Action("ChangeQuestionAnswers","Home")" method="post">
+                            <input type="hidden" value="@ViewBag.UserId" name="UserId" autocomplete="off" />
+
+
+                            @*@foreach (Answer answer in Model)
+                                {
+                                    <div class="col-md-6">
+                                        <label for="fullname">@answer.Question.Ques.ToString() * :</label>
+                                        <input type="text" id="fullname" class="form-control" name="@answer.Question.Id" required="required" value="@answer.Answers">
+                                    </div>
+                                }*@
+                            @for (int i = 0; i < Model.Count; i++)
+                            {
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label for="fullname"> @Model[i].Question.Ques * </label>
+                                        @*<input type="text" id="fullname" class="form-control" name="@answer.Question.Id" required="required" value="@answer.Answers">*@
+                                        <input type="hidden" value="@i" name="Questions.Index" />
+                                        @Html.Hidden("AllQuestions[" + @i + "].Id", Model[i].Question.Id, new { @readonly = "readonly" })
+                                        @Html.Hidden("AllQuestions[" + @i + "].ques", Model[i].Question.Ques, new { @readonly = "readonly" })
+                                        @Html.TextBox("AllQuestions[" + @i + "].answer", Model[i].Answers, new { @class = "form-control", required = "required", autocomplete = "off" })
+                                    </div>
+                                </div>
+                            }
+                            <div class="col-md-6">
+                                <button type="submit" class="btn btn-success">Save</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

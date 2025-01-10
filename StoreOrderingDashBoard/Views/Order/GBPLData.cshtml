@@ -1,0 +1,118 @@
+﻿@using BAL
+@using DAL
+@using System.Globalization
+@{
+    ViewBag.Title = "GBPL Data";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<style>
+    .N a, .Y a {
+        text-decoration: underline;
+        color: white;
+    }
+
+    .N {
+        background-color: #f2a104;
+        color: white;
+    }
+
+    .Y {
+        background-color: #61b15a;
+        color: white;
+    }
+</style>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>GBPL Data</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <form id="demo-form" method="post" action="@Url.Action("GetGBPLData","Order")">
+                        @Html.AntiForgeryToken()
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <div class="form-group text-right">
+                                @*<br />
+                                    <div class="row">
+                                        <div class="col-md-4 col-sm-4 col-xs-12">
+                                            <label for="FromDate">Date</label>
+                                            <input type="date" id="GBPLDate" value="" name="FromDate" class="form-control" />
+                                        </div>
+                                    </div>*@
+                                <div class="row">
+                                    <div class="col-md-12 col-sm-12 col-xs-12">
+                                        <div class="form-group text-right">
+                                            <button class="search btn btn-success btn-sm" id="SearchBtn" style="margin-bottom:0px;" type="submit">Get Latest GBPL Data</button>
+                                            <input type="submit" value="Export to Excel" name="Edit" formaction="@Url.Action("GetGBPLDataExportExcel")" formmethod="post" class="btn btn-default" style="margin-bottom:0px;" />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content"> 
+                    <table id="tblGBPAData" class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>GBPA_NUMBER</th>
+                                <th>REVISION_NUMBER</th>
+                                <th>ITEM_NUMBER</th>
+                                <th>ITEM_DESCRIPTION</th>
+                                <th>UOM</th>
+                                <th>RATE</th>
+                                <th>TS</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.GBPAData != null)
+                            {
+                                foreach (GBPA data in ViewBag.GBPAData)
+                                {
+                                    <tr>
+                                        <td>@data.GBPA_NUMBER</td>
+                                        <td>@data.REVISION_NUMBER</td>
+                                        <td>@data.ITEM_NUMBER</td>
+                                        <td>@data.ITEM_DESCRIPTION</td>
+                                        <td>@data.UOM</td>
+                                        <td>@data.RATE</td>
+                                        <td>@data.TS.ToString("dd/MM/yyyy HH:mm", CultureInfo.InvariantCulture)</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>      
+    </div>
+    <script>
+      
+        $(document).ready(function () {
+            $(".loader").hide();            
+            var table;
+            table = $("#tblGBPAData").DataTable({
+                responsive: true,
+                "paging": false,
+                "scrollY": '100vh',
+                "scrollCollapse": true,
+                dom: 'l<"toolbar">frtip',
+            });
+            $("div.toolbar").html('<b>TOTAL ROW COUNT: ' + table.rows().count() + '</b>');
+        });
+
+    </script>
+</div>
+

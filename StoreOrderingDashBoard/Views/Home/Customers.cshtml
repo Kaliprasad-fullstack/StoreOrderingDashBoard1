@@ -1,0 +1,198 @@
+﻿@using DAL
+@using StoreOrderingDashBoard.Models;
+
+@{
+    Layout = null;
+    int id = Convert.ToInt32(@SessionValues.UserId);
+    int attempt = Convert.ToInt32(ViewData["Attempt"].ToString());
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Customer Wise Login-QuickOrder</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    @*<title>Gentelella Alela! | </title>*@
+    <!-- Bootstrap -->
+    <link href="~/Content/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/Content/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="~/Content/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link href="~/Content/vendors/animate.css/animate.min.css" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="~/Content/build/css/custom.css" rel="stylesheet">
+
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <script src="~/Content/vendors/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script type="text/javascript">
+        function preventBack() { window.history.forward(); }
+        setTimeout("preventBack()", 0);
+        window.onunload = function () { null };
+
+        $(document).ready(function () {
+            $("form").attr('autocomplete', 'off');
+
+            $("input").attr('autocomplete', 'off');
+        });
+
+        if (self == top) { vartheBody = document.getElementsByTagName('body')[0]; vartheBody.style.display = "block"; }
+        else { top.location = self.location; }
+    </script>
+</head>
+<body class="login">
+    <div>
+        <a class="hiddenanchor" id="signup"></a>
+        <a class="hiddenanchor" id="signin"></a>
+        <div class="login_wrapper">
+            <div class="animate form login_form">
+                <section class="login_content">
+
+
+                    <h1>Customer Wise Login</h1>
+                    @if (ViewBag.Password == "False")
+                    {
+                        <div style="color:red">Username Or Password is Incorrect</div>
+                    }
+                    @if (ViewBag.Customer != null)
+                    {
+                        <div class="loader"></div>
+                        <form class="" id="x_ChangeCustomer">
+                            @Html.AntiForgeryToken()
+                            @{int i = 0;
+                            }
+                            @foreach (CustomerList cust in ViewBag.Customer)
+                            {
+                                <button class="btn btn-primary" type="button" data-toggle="collapse" data-target="@("#multiCollapseExample"+i)" aria-expanded="false" aria-controls="multiCollapseExample1">@cust.Name</button>
+                                <div class="row">
+                                    <div class="col">
+                                        <div class="collapse multi-collapse" id="@("multiCollapseExample"+i)">
+                                            <div class="card card-body">
+                                                @*<div class="row">@cust.Question</div>*@
+                                                @*<div class="row"><input type="text" id="@("Ans"+i)" class="form-control col-md-7 col-xs-12" /></div>*@
+                                                <div class="row"><input class="btn btn-default submit" value="Submit" onclick="PageChange(@i,@id,@cust.QuestionId,@cust.Id)" type="button" /></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                                i++;
+                            }
+                        </form>
+                    }
+                    <div class="row">
+                        @*<a class="reset_pass text-center col-md-10 col-md-offset-7" href="#" onclick='ForgetAnswer()'><b>Forgot Answer?</b></a>*@
+                    </div>
+                    @*<div class="loader"></div>*@
+                    <div class="clearfix"></div>
+                    <div class="separator">
+                        <p class="change_link">
+                            <a href="#signup" class="to_register"></a>
+                        </p>
+                        <div class="clearfix"></div>
+                        <br />
+                        <div>
+
+                            <p></p>
+                            <h1>Quick Order</h1>
+                            <p>Copyright @(DateTime.Now.Year - 1) - @DateTime.Now.Year © Radhakrishna Foodland Pvt Ltd.<br /> All Rights Reserved.(RFPL IT Team)</p>
+                        </div>
+                    </div>
+
+                </section>
+            </div>
+            <script>
+    $(document).ready(function () {
+        $(".loader").hide();
+    });
+                var i = @attempt;
+                var j = 0;
+    function ForgetAnswer()
+    {
+         $(".loader").show();
+            $.ajax({
+                url: "@Url.Action("ForgotAnswred", "Home")",
+                type: "POST",
+                data: {
+                    "UserId": @id
+                },
+                success: function (response) {
+                    if (response) {
+                        $(".loader").hide();
+                        alert("Please check your inbox")
+                        window.location='@Url.Action("LogOut")'
+                    }
+                    else {
+                        $(".loader").hide();
+                        i++;
+                        alert(false)
+                    }
+                }
+            });
+    }
+
+    function PageChange(e,e1,e2,e3)
+    {
+        var form = $('#x_ChangeCustomer');
+        var token = $('input[name="__RequestVerificationToken"]', form).val();
+        var fileData = new FormData();
+        fileData.append("UserId", e1);
+        fileData.append("custId", e3);
+        fileData.append("__RequestVerificationToken", token);
+        //var pass = "#Ans" + e;
+        //var password = $(pass).val();
+        //if (password != "")
+        //{
+            $(".loader").show();
+            $.ajax({
+                url: "@Url.Action("Customerwiselogin", "Home")",
+                type: "POST",
+                data: fileData,
+                dataType: 'json',
+                contentType: false,
+                processData: false,
+                error: function (error) {
+                    alert("unable to save.");
+                },
+                success: function (response) {
+                    if (response) {
+                        window.location = "@Url.Action("Index", "Home")"
+                    }
+                    else
+                    {
+                        $(".loader").hide();
+                        j++;
+                        if (i == j)
+                        {
+                            $.ajax({
+                                url: "@Url.Action("DisableUser", "Home")",
+                                type: "GET",
+                                success: function (response) {
+                                    $(".loader").hide();
+                                    window.location.href = "@Url.Action("LogOut","Home")";
+                                }
+                            });
+                        }
+                        else {
+                            alert("The end user has the total of " + i + " attempts to get the question right. If user fails to login in the " + i + " attempts the account would be locked.");
+                        }
+                    }
+                }
+            });
+        //}
+        //else
+        //{
+        //    alert("Please Enter answer")
+        //}
+    }
+            </script>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,489 @@
+﻿@using DAL;
+@{
+    ViewBag.Title = "AddBulkUsers";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<style>
+    table.dataTable tbody td {
+        vertical-align: top;
+    }
+
+    ul {
+        margin-top: 0;
+        margin-bottom: 2px;
+    }
+</style>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>AddBulkUsers @*<small>Some examples to get you started</small>*@</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <div class="col-md-3 center-block">
+                        @*<button id="singlebutton" name="singlebutton" class="btn btn-primary center-block">Next Step!</button>*@
+                        @Html.ActionLink("Store User Format", "ImportFormat", "Store", new { title = " download Format(csv)", @class = "btn btn-primary fa fa-download" })
+                        @*<a class="btn btn-primary" title="download Format(csv)" href="@Url.Action("ImportFormat", "Store")"><i class="fa fa-download" onclick=""></i> Download Store User Format</a>*@
+                    </div>
+                    <div class="col-md-9">
+                        <form enctype="multipart/form-data" role="form" id="exceldata" action="@Url.Action("AddBulkUsers","Store")" method="post">
+                            <div class="form-group">
+                                <label class="sr-only" for="name">Select File <span class="required">*</span></label>
+                                <input type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" id="CSVUpload" name="CSVUpload" class="form-control" required="" />
+                            </div>
+                            <button type="submit" class="btn btn-default">Submit</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <table id="example" class="display nowrap" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                @*<th><input name="select_all" value="1" id="example-select-all" type="checkbox" /></th>*@
+                                <th>StoreCode</th>
+                                <th>StoreName</th>
+                                <th>Address</th>
+                                <th>StoreEmailId</th>
+                                <th>Region</th>
+                                <th>Route</th>
+                                <th>StoreManager</th>
+                                <th>StoreContactNo</th>
+                                <th>CustomerName</th>
+                                <th>Location</th>
+                                <th>PlaceOfSupply</th>
+                                <th>WarehouseDc</th>
+                                <th>UserEmailAddress</th>
+                                <th>PlanName</th>
+                                <th>MkrChkrFlag</th>
+                                <th>NetSuitMapCls</th>
+                                <th>Errors</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.ExcelUsers != null)
+                            {
+                                foreach (StoreUserExcelImport import in ViewBag.ExcelUsers)
+                                {
+                                    <tr>
+                                        @*<td><input type="checkbox" id="@("Check" + i)" value="@header.Id" name="id[]" /></td>*@
+                                        <td>@import.StoreCode</td>
+                                        <td>@import.StoreName</td>
+                                        <td>@import.Address</td>
+                                        <td>@import.StoreEmailId</td>
+                                        <td>@import.Region</td>
+                                        <td>@import.Route</td>
+                                        <td>@import.StoreManager</td>
+                                        <td>@import.StoreContactNo</td>
+                                        <td>@import.CustomerName</td>
+                                        <td>@import.Location</td>
+                                        <td>@import.PlaceOfSupply</td>
+                                        <td>@import.WarehouseDc</td>
+                                        <td>@import.UserEmailAddress</td>
+                                        <td>@import.PlanName</td>
+                                        <td>@import.MkrChkrFlag</td>
+                                        <td>@(import.NetSuitMapCls_Id != null ? import.NetSuitMapCls_Id.Value.ToString() : "")</td>
+                                        <td>
+                                            @if (import.Error != null && import.Error.Count() > 0)
+                                            {
+                                                <ul>
+                                                    @foreach (string Error in import.Error)
+                                                    {
+                                                        <li>@Error</li>
+                                                    }
+                                                </ul>
+                                            }
+                                        </td>
+
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <button type="button" class="search btn btn-success" id="Uploadbtn" onclick="CreateList()">Upload</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script>
+    var table;
+    $(document).ready(function () {
+        $('.loader').hide();
+        table = $('#example').DataTable({
+            'columnDefs': [{
+                'searchable': false,
+                'className': 'dt-body-center',
+                'sScrollY': "700px"
+            }],
+            // data: [],
+            //"columns": [
+            //    {
+            //        "data": "StoreCode", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.StoreCode == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.StoreCode + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "StoreName", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.StoreName == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.StoreName + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "Address", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.VehicleNo == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.VehicleNo + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "StoreEmailId", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.StoreEmailId == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.StoreEmailId + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "Region", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.Region == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.Region + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "Route", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.Route == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.Route + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "StoreManager", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.StoreManager == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.StoreManager + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "StoreContactNo", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.StoreContactNo == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.StoreContactNo + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "CustomerName", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.CustomerName == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.CustomerName + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "Location", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.Location == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.Location + '</p>';
+            //        }
+            //    },{
+            //        "data": "Location", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.PlaceOfSupply == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.PlaceOfSupply + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "WarehouseDc", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            return '<p>' + row.WarehouseDc + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "UserEmailAddress", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.UserEmailAddress == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.UserEmailAddress + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "PlanName", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            //return '<p>' + new Date(row.VehicleOutTimeStr.match(/\d+/)[0] * 1).toLocaleString().replace("/","-") + '</p>';
+            //            if (row.PlanName == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.PlanName + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "MkrChkrFlag", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.MkrChkrFlag == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.MkrChkrFlag + '</p>';
+            //        }
+            //    },{
+            //        "data": "NetSuitMapCls", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.NetSuitMapCls == null)
+            //                return '<p>' + '</p>';
+            //            else
+            //                return '<p>' + row.NetSuitMapCls + '</p>';
+            //        }
+            //    },
+            //    {
+            //        "data": "Errors", "autoWidth": true,
+            //        render: function (data, type, row, meta) {
+            //            if (row.Errors == null)
+            //                return '<p>' + '</p>';
+            //            else {
+            //                return '<p>' + row.Errors + '</p>';
+            //            }
+            //        }
+            //    }
+            //],
+            'order': [1, 'desc']
+        });
+    });
+</script>
+<script>
+    function Download()
+    {
+        $.ajax({
+            url: "@Url.Action("ImportFormat", "Store")",
+            datatype: "json",
+            success: function (data) {
+            }
+        });
+    }
+</script>
+<script>
+    function CreateList() {
+        var StoreUserlist = [];
+        $('.loader').show();
+        var tableinfo = table.page.info();
+        total = tableinfo.recordsTotal;
+        var HasErrors = false;
+        for (i = 0; i < total; i++)
+        {
+            //var data1 = table.cell(i, 0).nodes().to$().find('input').val();
+            var da = table.row(i).data();
+            var UploadStoreUser = {};
+            UploadStoreUser.Error = ConvertList(da[16]);
+            if (UploadStoreUser.Error != "") {
+                HasErrors = true;
+                break;
+            }
+            else
+            {
+                UploadStoreUser.StoreCode = da[0];
+                UploadStoreUser.StoreName = da[1];
+                UploadStoreUser.Address = da[2];
+                UploadStoreUser.StoreEmailId = da[3];
+                UploadStoreUser.Region = da[4];
+                UploadStoreUser.Route = da[5];
+                UploadStoreUser.StoreManager = da[6];
+                UploadStoreUser.StoreContactNo = da[7];
+                UploadStoreUser.CustomerName = da[8];
+                UploadStoreUser.Location = da[9];
+                UploadStoreUser.PlaceOfSupply = da[10];
+                UploadStoreUser.WarehouseDc = da[11];
+                UploadStoreUser.UserEmailAddress = da[12];
+                UploadStoreUser.PlanName = da[13];
+                UploadStoreUser.MkrChkrFlag = da[14];
+                //UploadStoreUser.NetSuitMapCls = da[15];
+                UploadStoreUser.NetSuitMapCls_Id = da[15];
+            }
+            StoreUserlist.push(UploadStoreUser);
+        }
+        if (StoreUserlist.length > 0 && HasErrors != true)
+        {
+            var r = confirm("Are you Sure Want to Upload?");
+            if (r)
+            {
+                $('#Uploadbtn').prop('disabled', true);
+                $.ajax({
+                    url: "@Url.Action("SaveUploadStoreUsers", "Store")",
+                    type: "POST",
+                    data: {
+                        "excelImports": StoreUserlist
+                    },
+                    success: function (response) {
+                        if (response) {
+                            alert("Store User Uploaded Successfully.");
+                            window.location = "@Url.Action("AddBulkUsers", "Store")"
+                        }
+                        else {
+                            alert("Store User Upload fail.");
+                             window.location = "@Url.Action("AddBulkUsers", "Store")"
+                        }
+                    }
+                });
+            }
+        }
+        else{
+            alert("please Solve Errors....")
+        }
+    }
+</script>
+<script>
+    function ConvertList(str) {
+        var string = str.replace("<ul>", '');
+        string = $.trim(replaceAll(string, "</li>", ''));
+        string = $.trim(string.replace("</ul>", ''));
+        var res = string.split("<li>");
+        const index = res.indexOf('');
+        if (index !== -1)
+            res.splice(index, 1);
+        return res;
+    }
+    function replaceAll(str, term, replacement) {
+        return str.replace(new RegExp(escapeRegExp(term), 'g'), replacement);
+    }
+    function escapeRegExp(string) {
+        return string.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+</script>
+@*<script>
+    $("form#exceldata").submit(function (e) {
+        e.preventDefault();
+        // Create FormData object
+        var fileData = new FormData();
+        // Looping over all files and add it to FormData object
+        var fileUpload = $("#CSVUpload").get(0);
+        var files = fileUpload.files;
+        for (var i = 0; i < files.length; i++) {
+            fileData.append(files[i].name, files[i]);
+        }
+        table.destroy();
+        table = $("#SheetDtlTable").DataTable({
+                        "ajax": {
+                            "url": '@Url.Action("AddBulkUsers", "AddBulkUsers")',
+                            "type": "post",
+                            "dataType": "JSON",
+                            data: fileData,
+                        },
+                        "columns": [
+                            {
+                                "data": "StoreCode", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.StoreCode == null)
+                                        return '<p>' + '</p>';
+                                    else
+                                        return '<p>' + row.StoreCode + '</p>';
+                                }
+                            },
+                            {
+                                "data": "StoreName", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.StoreName == null)
+                                        return '<p>' + '</p>';
+                                    else
+                                        return '<p>' + row.StoreName + '</p>';
+                                }
+                            },
+                            {
+                                "data": "Address", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.VehicleNo == null)
+                                        return '<p>' + '</p>';
+                                    else
+                                        return '<p>' + row.VehicleNo + '</p>';
+                                }
+                            },
+                            {
+                                "data": "StoreEmailId", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.StoreEmailId == null)
+                                        return '<p>' + '</p>';
+                                    else
+                                        return '<p>' + row.StoreEmailId + '</p>';
+                                }
+                            },
+                            {
+                                "data": "Region", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.Region == null)
+                                        return '<p>' + '</p>';
+                                    else
+                                        return '<p>' + row.Region + '</p>';
+                                }
+                            },
+                            {
+                                "data": "Route", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.Route == null)
+                                        return '<p>' + '</p>';
+                                    else
+                                        return '<p>' + row.Route + '</p>';
+                                }
+                            },
+                            {
+                                "data": "StoreManager", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.StoreManager == null)
+                                        return '<p>' + '</p>';
+                                    else
+                                        return '<p>' + row.StoreManager + '</p>';
+                                }
+                            },
+                            {
+                                "data": "StoreContactNo", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.StoreContactNo == null)
+                                        return '<p>' + '</p>';
+                                    else
+                                        return '<p>' + row.StoreContactNo + '</p>';
+                                }
+                            },
+                            {
+                                "data": "CustomerName", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.CustomerName == null)
+                                        return '<p>' + '</p>';
+                                    else
+                                        return '<p>' + row.CustomerName + '</p>';
+                                }
+                            },
+                            {
+                                "data": "Location", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.Location == null)
+                                        return '<p>' + '</p>';
+    

@@ -1,0 +1,452 @@
+﻿@using DAL;
+
+
+@model ViewPODBulkUpdate
+@{
+    ViewBag.Title = "PODBulkUpload";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+
+    string VehicleNo = ViewData["VehicleNo"].ToString();
+
+    List<SelectListItem> listItems = new List<SelectListItem>();
+    listItems.Add(new SelectListItem
+    {
+        Text = "Delivered",
+        Value = "1",
+        Selected = true
+    });
+    listItems.Add(new SelectListItem
+    {
+        Text = "Not Delivered",
+        Value = "2",
+    });
+    listItems.Add(new SelectListItem
+    {
+        Text = "Partially Delivered",
+        Value = "3",
+    });
+}
+<link href="~/Content/vendors/jquery-ui/jquery-ui.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Content/vendors/jquery-ui/jquery-ui.js"></script>
+<script src="~/Content/vendors/jquery-ui/jquery-ui.min.js"></script>
+<script src="~/Content/build/js/loader.js"></script>
+<script src="~/Scripts/signature_pad.min.js"></script>
+<script src="~/Content/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+<style>
+    .dtHorizontalVerticalExampleWrapper {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .dataTables_filter {
+        width: auto;
+        float: right;
+    }
+
+    .dataTables_length {
+        width: auto;
+        float: left;
+    }
+
+    #datatable12 th, td {
+        white-space: nowrap;
+    }
+
+    table.dataTable thead .sorting:after,
+    table.dataTable thead .sorting:before,
+    table.dataTable thead .sorting_asc:after,
+    table.dataTable thead .sorting_asc:before,
+    table.dataTable thead .sorting_asc_disabled:after,
+    table.dataTable thead .sorting_asc_disabled:before,
+    table.dataTable thead .sorting_desc:after,
+    table.dataTable thead .sorting_desc:before,
+    table.dataTable thead .sorting_desc_disabled:after,
+    table.dataTable thead .sorting_desc_disabled:before {
+        bottom: .5em;
+    }
+</style>
+<style>
+    .checkbox input[type=checkbox] {
+        margin-left: 0px;
+    }
+    /* -- quantity box -- */
+
+    .quantity {
+        display: inline-block;
+    }
+
+        .quantity .input-text.qty {
+            width: 35px;
+            height: 39px;
+            padding: 0 5px;
+            text-align: center;
+            background-color: transparent;
+            border: 1px solid #efefef;
+        }
+
+        .quantity.buttons_added {
+            text-align: left;
+            position: relative;
+            white-space: nowrap;
+            vertical-align: top;
+        }
+
+            .quantity.buttons_added input {
+                display: inline-block;
+                margin: 0;
+                vertical-align: top;
+                box-shadow: none;
+            }
+
+            .quantity.buttons_added .minus,
+            .quantity.buttons_added .plus {
+                padding: 7px 10px 8px;
+                height: 41px;
+                background-color: #ece6e6;
+                border: 1px solid #efefef;
+                cursor: pointer;
+            }
+
+            .quantity.buttons_added .minus {
+                border-right: 0;
+            }
+
+            .quantity.buttons_added .plus {
+                border-left: 0;
+            }
+
+                .quantity.buttons_added .minus:hover,
+                .quantity.buttons_added .plus:hover {
+                    background: #eeeeee;
+                }
+
+        .quantity input::-webkit-outer-spin-button,
+        .quantity input::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            margin: 0;
+        }
+
+        .quantity.buttons_added .minus:focus,
+        .quantity.buttons_added .plus:focus {
+            outline: none;
+        }
+
+    /*input:enabled {
+        background: #ffff00;
+    }*/
+
+    input:disabled {
+        background: #dddddd;
+    }
+    
+</style>
+
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>E-POD Bulk Update</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <form id="frmPODBulkUpload" method="post" action="@Url.Action("PODBulkUpdate", "Order")">
+                        @Html.AntiForgeryToken()
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label for="FromDate">VehicleNo</label>
+                                <input type="text" value="@VehicleNo" class="form-control" name="VehicleNo" id="VehicleNo" />
+                            </div>
+                            <div class="col-md-8 col-sm-8 col-xs-12">
+                                <div class="form-group text-left">
+                                    <br />
+                                    <input type="submit" class="btn btn-default btn btn-success" style="margin-bottom:0px;" value="Search" />
+
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <table id="tblInvoiceBulkUpload" class="table table-striped table-bordered table-sm display" cellspacing="0">
+                        <thead>
+                            <tr>
+                                <th>Invoice No</th>
+                                <th>Store Code</th>
+                                <th>Delivery Status</th>
+                                <th>Delivery Date Time</th>
+                                <th>Reasons</th>
+                                <th> View SKU Details</th>
+
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.InvoiceList != null)
+                            {
+                                int i = 1;
+                                foreach (PODBulkUpdate item in ViewBag.InvoiceList)
+                                {
+                                    <tr>
+                                        <td>
+                                            @item.Invoice_Number
+                                        </td>
+
+                                        <td>
+                                            @item.StoreCode
+                                        </td>
+                                        <td>  @Html.DropDownList("DeliveryStatus" + i, listItems, "Select", new { @class = "form-control DeliveryStatus" })</td>
+                                        <td><input type="text" class="form-control dateclass" id="@("Date"+i)"></td>
+                                        <td>
+                                            @Html.DropDownList("Reason" + i, (SelectList)ViewBag.Reasons, "Select", new { @class = "form-control Reason", @disabled = "true" })
+                                        </td>
+                                        <td>
+                                            <input type="text" value="@item.InvoiceDispatchId" id="@("DispatchID"+@item.InvoiceDispatchId)" style="display:none" />
+                                            <button class="btn btn-primary" id="DisplaySKUDetails" type="button" onclick="POPUPSKUDetails(@("DeliveryStatus"+i),@item.InvoiceDispatchId,'@item.Invoice_Number')">View</button>
+
+                                        </td>
+
+                                    </tr>
+                                    i++;
+                                }
+                            }
+
+                        </tbody>
+                    </table>
+                    @if (ViewBag.RecordCount <= 0)
+                    {
+                        <input type="text" value="@ViewBag.RecordCount" id="RecordCount" style="display:none" />
+                    }
+                </div>
+                <div class="clearfix"></div>
+                <div class="col-md-6">
+                    <button class="btn btn-primary" id="btnPODBulkUpdate" type="button" onclick="PODBulkUpdate()">Submit POD</button>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <div class="modal fade" id="PODDetail_Model" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">SKU Details</h4>
+                </div>
+                <div class="modal-body">
+                    <div id="partial"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" id="btnSave"class="btn btn-default"onclick="SaveSKUDetails()" disabled>Save</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script>
+
+
+                $(document).ready(function () {
+                    $('.tblInvoiceBulkUpload').DataTable({
+                        responsive: false
+                    });
+                var formWidth = true;
+                var today = new Date();
+                var dd = today.getDate();
+                var mm = today.getMonth() + 1;
+                var yyyy = today.getFullYear();
+                if (dd < 10) {
+                    dd = '0' + dd;
+                }
+                if (mm < 10) {
+                    mm = '0' + mm;
+                }
+                var minute = today.getMinutes();
+                if (today.getMinutes() < 10) {
+                    minute = '0' + today.getMinutes();
+                }
+                var Hours = today.getHours();
+                if (today.getHours() < 10) {
+                    Hours = '0' + today.getHours();
+                }
+                var time = Hours + ":" + minute;
+                var today = dd + '/' + mm + '/' + yyyy + ' ' + time;
+                    $('.dateclass').val(today);
+                    $('.dateclass').datetimepicker({
+                format: 'DD/MM/YYYY HH:mm'
+                    });
+                  
+                    if ($('#RecordCount').val() == 0) {
+                        alert("InvoiceNo Not exist");
+                    }
+                    
+            });
+            $("#VehicleNo").keyup(function () {
+                $(this).val($(this).val().toUpperCase());
+        });
+
+            $('#VehicleNo').autocomplete({
+            source: function (request, response) {
+                    $('#load').show();
+                    $.ajax({
+                    url: '@Url.Action("AutoVehicleNo", "Order")',
+                        data: "{ 'search': '" + request.term + "'}",
+                        dataType: "json",
+                        type: "POST",
+                        contentType: "application/json; charset=utf-8",
+                        success: function (data) {
+                            response($.map(data, function (item) {
+                                return item;
+                            }))
+                            $('#load').hide();
+                        },
+                        error: function (response) {
+                            alert(response.responseText);
+                                 $('#load').hide();
+                        },
+                        failure: function (response) {
+                            alert(response.responseText);
+                                 $('#load').hide();
+                        }
+                    });
+                },
+                minLength: 2,
+                select: function (event, ui) {
+                },
+                });
+
+    </script>
+
+    <script>
+        $('.DeliveryStatus').on('change', function () {
+
+            var el = $(this);
+            if (el.val() != 1) {
+                var currentRow = $(this).parents('tr');
+                currentRow.find('.Reason').prop("disabled", false);
+            }
+            else {
+                var currentRow = $(this).parents('tr');
+                currentRow.find('.Reason').prop("disabled", true);
+            }
+        });
+
+    </script>
+
+    <script>
+        function POPUPSKUDetails(DeliveryStatusID,vInvoiceDispatchID, vInvoiceNumber) {
+
+            var vDeliveryStatus = DeliveryStatusID.value;
+            if (vDeliveryStatus == 3) {
+                $('#btnSave').prop("disabled", false);
+            }
+            else {
+                $('#btnSave').prop("disabled", true);
+            }
+            $('#partial').load();
+            $("#PODDetail_Model").modal('show');
+            var route = '@Url.Action("PODBulkUpdateSKUDetails", "Order")?InvoiceDispatchId=' + vInvoiceDispatchID + '&InvoiceNumber=' + vInvoiceNumber + '&DeliveryStatus=' + vDeliveryStatus;
+            $('#partial').load(route);
+           
+        }
+
+        function SaveSKUDetails() {
+            var dt = $('#TblInvoiceSKUDetails').DataTable().rows().iterator('row', function (context, index) {
+                var node = $(this.row(index).node());
+            });
+            var BulkPODResponse= [];
+            var tableinfo = dt.page.info();
+            var total = tableinfo.recordsTotal;
+            for (var i = 0; i < total; i++) {
+                var oBulkPODResponse = {};
+                oBulkPODResponse.ItemId = dt.$('input[id=No' + (i) + ']').val();
+                oBulkPODResponse.ItemCode = dt.$('input[id=ItemCode' + (i) + ']').val();
+                oBulkPODResponse.Description = dt.$('input[id=Description' + (i) + ']').val();
+                oBulkPODResponse.Reason = dt.$('select[id=Reason' + (i) + ']').val();
+                oBulkPODResponse.InvoiceQty = dt.$('input[id=InvoiceQty' + (i) + ']').val();
+                oBulkPODResponse.DeliveredQty = dt.$('input[id=Qty' + (i) + ']').val();
+                oBulkPODResponse.DispatchQty = dt.$('input[id=Qty' + (i) + ']').val();
+                oBulkPODResponse.Invoice_Number = $('#InvoiceNumber').val();
+
+                BulkPODResponse.push(oBulkPODResponse);
+            }
+            BulkPODResponse = JSON.stringify({ 'BulkPODResponse': BulkPODResponse });
+            if (BulkPODResponse.length > 0) {
+                    $.ajax({
+                        url: "@Url.Action("SavePODBulkUpdate_SKUDetails", "Order")",
+                        type: "POST",
+                        data: BulkPODResponse,
+                        dataType: 'json',
+                        contentType: 'application/json; charset=utf-8',
+                        processData: false,
+                        error: function (error) {
+                            console.log(error);
+                                alert("unable to save.");
+                        },
+                        success: function (response) {
+                             $("#PODDetail_Model").modal('hide');
+
+                        }
+                    });
+            }
+        }
+
+        function PODBulkUpdate() {
+
+            var PODBulkUpdate = [];
+            var ii = 1;
+            $('#tblInvoiceBulkUpload').DataTable().rows().iterator('row', function (context, index) {
+                var node = $(this.row(index).node());
+                const objPODBulkUpdate = {
+                    BulkPODResponse: [],
+                };
+                objPODBulkUpdate.Invoice_Number = node.context.cells[0].innerText;
+                objPODBulkUpdate.SotreCode = node.context.cells[1].innerText;
+                objPODBulkUpdate.StoreId = 0;
+                objPODBulkUpdate.DeliveryStatus = node.context.cells[2].firstElementChild.value;
+                objPODBulkUpdate.DeliveryDate = node.context.cells[3].firstElementChild.value;
+                objPODBulkUpdate.Reason = node.context.cells[4].firstElementChild.value;
+                objPODBulkUpdate.InvoiceDispatchId = node.context.cells[5].firstElementChild.value;
+
+                ii = ii + 1;
+                PODBulkUpdate.push(objPODBulkUpdate);
+
+            });
+
+            PODBulkUpdate = JSON.stringify({ 'PODBulkUpdate': PODBulkUpdate });
+            if (PODBulkUpdate.length > 0) {
+                $.ajax({
+                    url: "@Url.Action("SavePODBulkUpdate", "Order")",
+                    type: "POST",
+                    data: PODBulkUpdate,
+                    dataType: 'json',
+                    contentType: 'application/json; charset=utf-8',
+                    processData: false,
+                    error: function (error) {
+                        console.log(error);
+                        alert("unable to save.");
+                    },
+                    success: function (response) {
+                        alert("SAVED SUCCESSFULLY");
+                         window.location = "@Url.Action("PODBulkUpdate", "Order")";
+
+                    }
+                });
+            }
+        }
+     </script>
+
+</div>
+

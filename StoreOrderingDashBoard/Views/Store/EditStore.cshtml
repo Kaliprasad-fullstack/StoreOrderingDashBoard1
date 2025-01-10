@@ -1,0 +1,170 @@
+﻿@model DAL.Store
+@using DAL
+@{
+    /**/
+
+    ViewBag.Title = "EditStore";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    var EmailPattern = @"[a-zA-Z0-9._%+-]+@[a-z0-9.-]+\.[a-z]{2,3}$";
+}
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Edit Store</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Store<small> Form</small></h2>
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+
+                        <div class="clearfix"></div>
+                        @*<a class="btn btn-success datatable-btn" href="@Url.Action("EditStore","Store")">Edit</a>*@
+                    </div>
+                    <div class="x_content">
+                        <br />
+                        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left" action="@Url.Action("EditStore","Store")" method="post">
+                            @Html.AntiForgeryToken()
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="first-name">
+                                    Store Name <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="store-name" required="required" name="StoreName" class="form-control col-md-7 col-xs-12" value="@Model.StoreName">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-code">
+                                    Store Code <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="store-code" required="required" name="StoreCode" class="form-control col-md-7 col-xs-12" value="@Model.StoreCode">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-manager">
+                                    Store Manager @*<span class="required">*</span>*@
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="store-manager" @*required="required"*@ name="StoreManager" class="form-control col-md-7 col-xs-12" value="@Model.StoreManager">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-custId">
+                                    Customer Name <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @(Html.DropDownList("CustId", new SelectList(ViewBag.CustomerList, "Id", "Name", Model.CustId), "--Choose Name---", new { @class = "form-control col-md-7 col-xs-12", required = "required" }))
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-address">
+                                    Address <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <textarea id="store-address" required="required" name="Address" class="form-control col-md-7 col-xs-12" rows="3">@Model.Address</textarea>
+                                </div>
+                            </div>
+                            @*<div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-pincode">
+                PinCode <span class="required">*</span>
+            </label>
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <input type="text" id="store-pincode" required="required" name="Pincode" class="form-control col-md-7 col-xs-12" pattern="[0-9]{6}" value="@Model.PinCode">
+            </div>
+        </div>*@
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-email">
+                                    Store Email <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="store-email" required="required" name="StoreEmailId" class="form-control col-md-7 col-xs-12" pattern="@EmailPattern" value="@Model.StoreEmailId">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-region">
+                                    Region @*<span class="required">*</span>*@
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="store-region" @*required="required"*@ name="Region" class="form-control col-md-7 col-xs-12" value="@Model.Region">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-route">
+                                    Route @*<span class="required">*</span>*@
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="store-route" @*required="required"*@ name="Route" class="form-control col-md-7 col-xs-12" value="@Model.Route">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-location">
+                                    Location <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @*<input type="text" id="store-location" required="required" name="Location" class="form-control col-md-7 col-xs-12" value="@Model.Locations">*@
+                                    @(Html.DropDownList("LocationId", new SelectList(ViewBag.LocationList, "LocationId", "Name", Model.LocationId), "--Choose Name---", new { @class = "form-control col-md-7 col-xs-12", required = "required" }))
+                                </div>
+                            </div>
+                            @*<div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-location">
+                Location <span class="required">*</span>
+            </label>
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <input type="text" id="store-location" required="required" name="Location" class="form-control col-md-7 col-xs-12" value="@Model.Location">
+            </div>
+        </div>*@
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-contactNo">
+                                    Contact No @*<span class="required">*</span>*@
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="store-contactNo" @*required="required"*@ name="StoreContactNo" class="form-control col-md-7 col-xs-12" pattern="[0-9]+" value="@Model.StoreContactNo">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-PlaceOfSupply">
+                                    Place Of Supply <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="store-PlaceOfSupply" required="required" name="PlaceOfSupply" class="form-control col-md-7 col-xs-12" value="@Model.PlaceOfSupply">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-contactNo">
+                                    Dc WareHouse <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @(Html.DropDownList("WareHouseDC.Id", new SelectList(ViewBag.warehouse, "Id", "Name", Model.WareHouseDC.Id), "--Choose Dc Warehouse---", new { @class = "form-control col-md-7 col-xs-12", required = "required" }))
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="store-contactNo">
+                                    Net Suit Class <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @(Html.DropDownList("NetSuitMapCls.Id", new SelectList(ViewBag.netsuit, "Id", "Customer", Model.NetSuitMapCls.Id), "--Choose Net suit mapping---", new { @class = "form-control col-md-7 col-xs-12", required = "required" }))
+                                </div>
+                            </div>
+                            <div class="ln_solid"></div>
+                            <div class="form-group">
+                                <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                    @*<button class="btn btn-primary" type="reset">Reset</button>*@
+                                    <button type="submit" class="btn btn-success">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

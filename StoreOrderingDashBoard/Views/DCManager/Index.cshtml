@@ -1,0 +1,167 @@
+﻿@using DAL;
+@{
+    ViewBag.Title = "Index";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<!-- page content -->
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Admin Users @*<small>Some examples to get you started</small>*@</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        @*<h2>Default Example <small>Users</small></h2>*@
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="loader"></div>
+                    <div class="x_content">
+
+                        <table id="datatable-buttons" class="table table-striped table-bordered dataTable no-footer dtr-inline" role="grid" aria-describedby="datatable_info">
+                            <thead>
+                                <tr role="row">
+                                    <th class="sorting_asc" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-sort="ascending" aria-label="UserId: activate to sort column descending">UserId</th>
+                                    <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="User Name: activate to sort column ascending">User Name</th>
+                                    <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Edit: activate to sort column ascending">Edit</th>
+                                    <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Plans: activate to sort column ascending">Plans</th>
+                                    <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Widgets: activate to sort column ascending">Widgets</th>
+                                    <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Delete: activate to sort column ascending">Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.AdminUsers != null)
+                                {
+                                    int sr = 1;
+                                    foreach (DcAdmin user in ViewBag.AdminUsers)
+                                    {
+                                        <tr role="row" class="@(sr%2!=0?"Odd":"even")">
+                                            <td>
+                                                @user.Id
+                                            </td>
+                                            <td>
+                                                @user.Name
+                                            </td>
+                                            <td>
+                                                <a class="btn btn-primary datatable-btn" href="@Url.Action("EditAdminUser","DCManager",new { UserId=user.Id})">Edit</a>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-info datatable-btn" type="button" onclick="View(@user.PlanId,@user.Id);" value="@user.PlanId">Plans</button>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-warning datatable-btn" type="button" onclick="Widgets(@user.PlanId,@user.Id);" value="@user.PlanId">Widgets</button>
+                                            </td>
+                                            <td>
+                                                <button class="btn btn-danger datatable-btn" type="button" onclick="Delete(@user.Id);" value="@user.Id">Delete</button>
+                                            </td>
+                                        </tr>
+                                        sr++;
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="modal fade" id="Custom_Plan_Model" role="dialog">
+                <div class="modal-dialog modal-lg">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Customise Plan</h4>
+                        </div>
+                        <div class="modal-body">
+                            <div id="partial"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" onclick="Create()" data-dismiss="modal">Save</button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+            <div class="modal fade" id="Custom_Widget_Model" role="dialog">
+                <div class="modal-dialog modal-lg">
+                    <!-- Modal content-->
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <button type="button" class="close" data-dismiss="modal">&times;</button>
+                            <h4 class="modal-title">Role Management <small>Widget</small></h4>
+                        </div>
+                        <div class="modal-body">
+                            <div id="Partial_Widgets"></div>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-default" onclick="RoleCreate()" data-dismiss="modal">Save</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $(document).ready(function () {
+        $(".loader").hide();
+    });
+    function Delete(Id) {
+            //$('.loader').show();
+                //OpenAutoModel("Approval");
+        var a = confirm("Are you sure want to delete User?");
+        if (a) {
+            $(".loader").show();
+            $.ajax({
+                url: '@Url.Action("DeleteAdminUser", "DCManager")',
+                type: "post",
+                datatype: "json",
+                data: {
+                    "UserId": Id
+                },
+                success: function (response) {
+                    if (response == "true" || response == true) {
+                        location.reload();
+                    }
+                },
+            })
+        }
+    }
+    function View(CustomerPlanId, UserId) {
+        var drop = CustomerPlanId;
+        if (!isNaN(drop)) {
+            $('#partial').load();
+            $("#Custom_Plan_Model").modal('show');
+            var route = '@Url.Action("MenuRightsForUser", "DCManager")?UserId=' + UserId + '&custplanid=' + drop + '';
+            $('#partial').load(route);
+        }
+        else {
+            $("#Custom_Plan_Model").modal('hide');
+            alert("Please select plan")
+        }
+    }
+    function Widgets(CustomerPlanId, UserId) {
+        var drop = CustomerPlanId;
+        if (!isNaN(drop)) {
+            $('#Partial_Widgets').load();
+            $("#Custom_Widget_Model").modal('show');
+            var route = '@Url.Action("WidgetsForUser", "DCManager")?UserId=' + UserId + '&custplanid=' + drop + '';
+            $('#Partial_Widgets').load(route);
+        }
+        else {
+            $("#Custom_Widget_Model").modal('hide');
+            alert("Please select plan")
+        }
+    }
+</script>

@@ -1,0 +1,133 @@
+﻿@{
+    Layout = null;
+    int attempt = Convert.ToInt32(ViewData["Attempt"].ToString());
+    int noofattempt = StoreOrderingDashBoard.Models.SessionValues.AdminCount;
+    int remainingAttempts = attempt - noofattempt;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>LogIn</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    @*<title>Gentelella Alela! | </title>*@
+    <!-- Bootstrap -->
+    <link href="~/Content/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/Content/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="~/Content/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link href="~/Content/vendors/animate.css/animate.min.css" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="~/Content/build/css/custom.css" rel="stylesheet">
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    <link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+    @*<script src="https://apis.google.com/js/api:client.js"></script>
+    <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>*@
+    <!--Microsoft Login-->
+    @*<script src="https://cdnjs.cloudflare.com/ajax/libs/bluebird/3.3.4/bluebird.min.js"></script>
+    <script src="https://secure.aadcdn.microsoftonline-p.com/lib/0.2.3/js/msal.js"></script>*@
+    <script>
+        $(document).ready(function () {
+            $(".loader").hide();
+            localStorage.clear();
+            $("form").attr('autocomplete', 'off');
+
+            $("input").attr('autocomplete', 'off');
+
+        });
+
+        if (self == top) { vartheBody = document.getElementsByTagName('body')[0]; vartheBody.style.display = "block"; }
+        else { top.location = self.location; }
+
+        function validate() {         
+            var Username = $("#Username").val();
+            var Password = $("#Password").val();
+            if (Username.trim() == "" || Username.trim() == undefined) {
+                return false;
+                alert("Enter Username")
+            }
+            if (Password.trim() == "" || Password.trim() == undefined) {
+                return false;
+                alert("Enter Username")
+            }
+        }
+    </script>
+</head>
+<body class="login">
+    <div>
+        <a class="hiddenanchor" id="signup"></a>
+        <a class="hiddenanchor" id="signin"></a>
+        <div class="login_wrapper">
+            <div class="animate form login_form">
+                <section class="login_content">
+                    <form action="@Url.Action("Login","Home")" method="post" onsubmit="return validate()"> 
+                        @Html.AntiForgeryToken()
+                        <h1>User Login</h1>
+                        <input type="hidden" name="ForgotAnswers" id="ForgotAnswers" value="@ViewBag.ForgotAnswers" />
+                        <input type="hidden" name="Expires" id="Expires" value="@ViewBag.Expires" />
+                        @if (ViewBag.Password == "False")
+                        {
+                            if ((noofattempt == attempt) || (noofattempt > attempt))
+                            {
+                                <div style="color:red">User is Disabled or not registered.</div>
+                            }
+                            else
+                            {
+                                <div style="color:red">Invalid User Credentials. Attempts Remaining: @remainingAttempts</div>
+                            }
+
+                        }
+                        @if (ViewBag.Errors != null)
+                        {
+                            <div style="color:red">@ViewBag.Errors</div>
+                        }
+                        @if (ViewBag.IsSessionExpired!=null)
+                        {
+                            <div style="color:red">Session is expired due to the system was Ideal for 30 Min.</div>
+                           
+                        }
+                        <div>
+                            <input type="text" class="form-control" id="Username" name="Username" placeholder="EmailAddress" required="" />
+                            @*@Html.ValidationMessageFor("Username", null, new { @class = "alert alert-danger" })*@
+                        </div>
+                        <div>
+                            <input type="password" class="form-control" name="Password" placeholder="Password" required="" />
+                        </div>
+                        <div>
+                            <input class="btn btn-default submit" value="Log In" type="submit" />
+
+                            @*<a class="reset_pass" href="#">Lost your password?</a>*@
+                        </div>
+                        <p>
+                            <a href="@Url.Action("SignIn", "Home")" title="Sign in" class="btn btn-default">
+                                <img alt="Sign in" src="@Url.Content("~/images/microsoft.png")" style="max-width: 30px;max-height: 30px;">
+                                Sign in with Office365
+                            </a>
+                        </p>
+                        <div class="loader"></div>
+                        <div class="clearfix"></div>
+                        <div class="separator">
+                            <div class="clearfix"></div>
+                            <br />
+                            <div>
+                                @*<h1>Quick Order</h1>*@
+                                <img src="~/images/OrderXPro-1.png" style="height:99px; margin-bottom:5px;" />
+                                <p>Copyright @(DateTime.Now.Year - 1) - @DateTime.Now.Year © Radhakrishna Foodland Pvt Ltd.<br /> All Rights Reserved.(RFPL IT Team)</p>
+                            </div>
+                        </div>
+                    </form>
+                </section>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,1505 @@
+﻿@using BAL
+@using DAL
+@{
+    ViewBag.Title = "FillRate Report";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    string startdate = ViewData["StartDate"].ToString();
+    string enddate = ViewData["EndDate"].ToString();
+    string UniqueReferenceID = ViewData["UniqueReferenceID"] != null ? ViewData["UniqueReferenceID"].ToString() : "";
+    string Invoice_Number= ViewData["Invoice_Number"] != null ? ViewData["Invoice_Number"].ToString() : "";
+    List<SelectListItem> listItems = new List<SelectListItem>();
+    listItems.Add(new SelectListItem
+    {
+        Text = "Order Wise",
+        Value = "1"
+    });
+    listItems.Add(new SelectListItem
+    {
+        Text = "Quantity Wise",
+        Value = "2",
+    });
+    List<SelectListItem> filterByOrderInvoiceDateItems = new List<SelectListItem>();
+    filterByOrderInvoiceDateItems.Add(new SelectListItem
+    {
+        Text = "By Order Date",
+        Value = "OD"
+    });
+    filterByOrderInvoiceDateItems.Add(new SelectListItem
+    {
+        Text = "By Invoice Date",
+        Value = "ID",
+    });
+    List<SelectListItem> FillRateCompItems = new List<SelectListItem>();
+    FillRateCompItems.Add(new SelectListItem
+    {
+        Text = ">=",
+        Value = "G"
+    });
+    FillRateCompItems.Add(new SelectListItem
+    {
+        Text = "<=",
+        Value = "L",
+    });
+    FillRateCompItems.Add(new SelectListItem
+    {
+        Text = "=",
+        Value = "E",
+    });
+
+    List<SelectListItem> FillRateCompItemsTo = new List<SelectListItem>();
+    FillRateCompItemsTo.Add(new SelectListItem
+    {
+        Text = "<=",
+        Value = "L",
+    });
+
+
+    List<SelectListItem> FulFillmentType = new List<SelectListItem>();
+    FulFillmentType.Add(new SelectListItem
+    {
+        Text = "Correct Fulfilment",
+        Value = "CF"
+    });
+    FulFillmentType.Add(new SelectListItem
+    {
+        Text = "Partial Fulfilment",
+        Value = "PF",
+    });
+    FulFillmentType.Add(new SelectListItem
+    {
+        Text = "Pending",
+        Value = "P",
+    });
+
+}
+
+<style>
+    /*::-webkit-scrollbar {
+        width: 10px;
+    }*/
+    td.highlight {
+        font-size: 16px;
+        font-weight: bold;
+    }
+    .input-sm
+    {
+        font-size:10px;
+    }
+
+    .float {
+        position: fixed;
+        box-shadow: 2px 2px 3px #999;
+        z-index: 1;
+        right: 0px;
+        text-align: center;
+    }
+    .filter-min {
+        width: 50px;
+        height: 50px;
+        
+        color: #FFF;
+        border-bottom-left-radius: 50px;
+        border-top-left-radius: 50px;
+        
+    }
+    .float-success {
+        background-color: #0C9;
+    }
+    .top-float {
+        top: 70px;
+    }
+    .bottom-float {
+        bottom: 70px;
+    }
+    .float-yellow {
+        background :#f3d546;
+    }
+    .my-float {
+        margin-top: 7px;
+    }
+
+    .modal.left .modal-dialog,
+    .modal.right .modal-dialog {
+        position: fixed;
+        margin: auto;
+        width: 320px;
+        height: 100%;
+        -webkit-transform: translate3d(0%, 0, 0);
+        -ms-transform: translate3d(0%, 0, 0);
+        -o-transform: translate3d(0%, 0, 0);
+        transform: translate3d(0%, 0, 0);
+    }
+
+    .modal.left .modal-content,
+    .modal.right .modal-content {
+        height: 100%;
+        overflow-y: auto;
+    }
+
+    .modal.left .modal-body,
+    .modal.right .modal-body {
+        padding: 15px 15px 80px;
+    }
+
+    .show-more {
+        text-align: right;
+        cursor:pointer;
+    }
+    /*Left*/
+    .modal.left.fade .modal-dialog {
+        left: -320px;
+        -webkit-transition: opacity 0.3s linear, left 0.3s ease-out;
+        -moz-transition: opacity 0.3s linear, left 0.3s ease-out;
+        -o-transition: opacity 0.3s linear, left 0.3s ease-out;
+        transition: opacity 0.3s linear, left 0.3s ease-out;
+    }
+
+    .modal.left.fade.in .modal-dialog {
+        left: 0;
+    }
+
+    /*Right*/
+    .modal.right.fade .modal-dialog {
+        right: -320px;
+        -webkit-transition: opacity 0.3s linear, right 0.3s ease-out;
+        -moz-transition: opacity 0.3s linear, right 0.3s ease-out;
+        -o-transition: opacity 0.3s linear, right 0.3s ease-out;
+        transition: opacity 0.3s linear, right 0.3s ease-out;
+    }
+
+    .modal.right.fade.in .modal-dialog {
+        right: 0;
+    }
+
+    /* ----- MODAL STYLE ----- */
+    .modal-content {
+        border-radius: 0;
+        border: none;
+    }
+
+    .modal-header {
+        border-bottom-color: #EEEEEE;
+        background-color: #FAFAFA;
+    }
+
+    #SelectedFilters {
+        width: 200px;
+        height: 200px;
+        display: none;
+        position: absolute;
+        right: 0px;
+        background: #ccc;
+    }
+</style>
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>FillRate Report</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+    </div>
+    <div id="ChartPanel" class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12 no-padding">
+            <div class="x_panel" style="height:390px;">
+                <div class="x_title">
+                    <h4>Company Overall Fill Rate</h4>
+                </div>
+                <div class="x_content">
+                    <div id="ChartContainerForOverAllFillRate" style="height:280px;"> </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ChartPanel" class="row">
+        <div class="col-md-4 col-sm-12 col-xs-12 no-padding">
+            <div class="x_panel" style="overflow-x:scroll">
+                <div class="row x_title">
+                    <div class="col-md-6">
+                        <h4>City Wise Details</h4>
+                    </div>
+                </div>
+                <div class="x_content">
+                    <canvas id="ChartContainerForCity" height="280"></canvas>
+
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12 col-xs-12 no-padding" id="Container_ChartContainerForCity_Store">
+            <div class="x_panel" style="height:390px;">
+                <div class="x_title">
+                    <h4>Store Wise data</h4>
+                </div>
+                <div class="x_content">
+                    <div id="ChartContainerForCity_Store" style="height:280px;"> </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 col-sm-12 col-xs-12 no-padding">
+            <div class="x_panel" style="height:390px;">
+                <div class="x_title">
+                    <h4>Item Category Wise data</h4>
+                </div>
+                <div class="x_content">
+                    <div id="ChartContainerForCity_Item" style="height:280px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ChartPanel" class="row">
+
+        <div class="col-md-4 col-sm-12 col-xs-12 no-padding">
+            <div class="x_panel" style="overflow-x:scroll">
+                <div class="row x_title">
+                    <div class="col-md-6">
+                        <h4>DC Wise Details</h4>
+                    </div>
+                </div>
+                <div class="x_content">
+                    <canvas id="ChartContainerForDC" height="280"></canvas>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12 col-xs-12 no-padding">
+            <div class="x_panel" style="height:390px; overflow-x:scroll">
+                <div class="x_title">
+                    <h4>Store Wise data</h4>
+
+                </div>
+                <div class="x_content">
+                    <div id="ChartContainerForStoreDC" style="height:280px;"></div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4 col-sm-12 col-xs-12 no-padding">
+            <div class="x_panel" style="height:390px;">
+                <div class="x_title">
+                    <h4>Item Category Wise data</h4>
+                </div>
+                <div class="x_content">
+                    <div id="ChartContainerForItemCategoryDC" style="height:280px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <a class="float top-float filter-min float-success" style="font-size: 38px;" onclick="OpenFilterPopUp()">
+        @*<i class="glyphicon glyphicon-filter my-float"></i>*@
+        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAABmJLR0QA/wD/AP+gvaeTAAABeElEQVRIie3Vz0vTcRjA8dc2W5qYGEnGKgTBEA8aHcSD+D907hIeOnjwL/B/qCDIOkgQQVAKQSAIhhiSIKLBGFEoEUHbqZujLh2+3+EYzu277Tsve18e+DzP53nD5yfnRCKMQ1hBOmZfEfdQ6AoHMpjGw5jFS7hZLi6GcQcHMUknwvivMvEYvzEag3Q07P3otGQCL/ATwy2U3sARXiJZrSiFN/iG6y2QDiKHVXTVqJXGB3zBlSak/djDOi7WO6kHm4LD1teA9BK2sI3eqJMvYxcb6I4wL4017GMgqrTEVWTxHhfqqE/hLb7iWqPSEhkchg1TZ9Ql8Ro/cKtZaYkR/MKyk2e2nASeIY/b9TQ8rUk1xgUHLo/jilyPYGlnBVtTk5p3q4ws3mEMrypy9/GpXmlUcYkcnleM3Y3apOoTFjcdcUfcEZ+b+C9mcKfd4kV8xGc81cR/G1X8B/OYwiS+Y8HZ32XLSWIOBcEWLLVTTrDcT/Cg3eKG+A+BQTuDD58PRQAAAABJRU5ErkJggg==">
+    </a>
+    @*<div class="float bottom-float float-yellow" style="font-size: 38px;" id="">
+            <div id="ShowhideSelectedFilters">Filters</div>
+            <div id="SelectedFilters">
+                <div class="row">
+
+                </div>  
+            </div>
+        </div>*@
+
+    @*<div class="float bottom-float float-yellow" style="font-size: 16px;height: auto;display: table;clear: both;" id="">
+        <span id="" style="float: left;    height: 100px;    text-orientation: sideways;    writing-mode: vertical-rl;    background: yellow;">Filters</span>
+        <span id="" style="display: inherit;height: 100px;background: red;width: 100px;">Filters</span>
+    </div>*@
+    <div class="float bottom-float float-yellow" style="font-size: 16px;display: table;clear: both;width: auto;border: 1px;border-right: 0px;border-color: rgb(0, 204, 153);border-style: solid;" id="SelectedFilterContainer">
+        <span id="ShowhideSelectedFilters" style="float: left; height: 200px; text-orientation: sideways; writing-mode: vertical-rl; font-weight:600; background: yellow;cursor:pointer">Selected Values</span>
+        <div id="SelectedFilters" style="display:none; height:200px">
+            <div class="dashboard_graph" style="height:100%; padding-right:0px;">
+                <div class="x_panel no-padding" style="height:100%;overflow-y:scroll">
+                    <div class="x_content">
+                        <div class="col-xs-12 no-padding">
+                            <div style="text-align: left;">
+                                <p style="font-weight: bold;font-size: small;">Status and Age</p>
+                                <div class="" style="font-size: small;margin-bottom: 3px;border-bottom: 1px solid;">
+                                    <span class="">
+                                        Value1
+                                    </span>
+                                    <span class="">
+                                        Value2
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 no-padding">
+                            <div style="text-align: left;">
+                                <p style="font-weight: bold;font-size: small;">Status and Age</p>
+                                <div class="" style="font-size: small;margin-bottom: 3px;border-bottom: 1px solid;">
+                                    <span class="">
+                                        Value
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 no-padding">
+                            <div style="text-align: left;">
+                                <p style="font-weight: bold;font-size: small;">Status and Age</p>
+                                <div class="" style="font-size: small;margin-bottom: 3px;border-bottom: 1px solid;">
+                                    <p class="">
+                                        Value
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 no-padding">
+                            <div style="text-align: left;">
+                                <p style="font-weight: bold;font-size: small;">Status and Age</p>
+                                <div class="" style="font-size: small;margin-bottom: 3px;border-bottom: 1px solid;">
+                                    <span class="">
+                                        Value
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 no-padding">
+                            <div style="text-align: left;">
+                                <p style="font-weight: bold;font-size: small;">Status and Age</p>
+                                <div class="" style="font-size: small;margin-bottom: 3px;border-bottom: 1px solid;">
+                                    <p class="">
+                                        Value
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-xs-12 no-padding">
+                            <div style="text-align: left;">
+                                <p style="font-weight: bold;font-size: small;">Status and Age</p>
+                                <div class="" style="font-size: small;margin-bottom: 3px;border-bottom: 1px solid;">
+                                    <p class="">
+                                        Value
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal right fade" id="RightFilterModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel2">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">></span></button>
+                    <h4 class="modal-title" id="myModalLabel2">Filter: FillRate Report Chart</h4>
+                </div>
+
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <label for="FilterDate">Filter Date By</label>
+                            @Html.DropDownList("filterByOrderInvoiceDate", filterByOrderInvoiceDateItems, new { @class = "form-control" })
+
+                        </div>
+                        @Html.AntiForgeryToken()
+                        <div class="col-md-6 col-sm-12 col-xs-12">
+                            <label for="FromDate">From Date</label>
+                            <input type="date" value="@startdate" class="form-control input-sm" name="FromDate" id="FromDate" required />
+                        </div>
+                        <div class="col-md-6 col-sm-12 col-xs-12">
+                            <label for="enddate">To Date</label>
+                            <input type="date" value="@enddate" class="form-control input-sm" name="ToDate" id="ToDate" required />
+                        </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <label for="UniqueReferenceID">Unique Reference ID</label>
+                            <input type="text" value="@UniqueReferenceID" class="form-control input-sm" name="UniqueReferenceID" id="UniqueReferenceID" />
+                        </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <label>DC</label>
+                            @Html.ListBox("SelectedDC", (MultiSelectList)ViewBag.DCs, new { size = 4, @class = "form-control input-sm" })
+                        </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <label>Kitchen</label>
+                            @Html.ListBox("SelectedStores", (MultiSelectList)ViewBag.Stores, new { size = 4, @class = "form-control input-sm" })
+                        </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <label>SKU</label>
+                            @Html.ListBox("SelectedSKUs", (MultiSelectList)ViewBag.Items, new { size = 4, @class = "form-control input-sm" })
+                            <input id="hdnAgeGroup" type="hidden" />
+                            <input id="hdnStatus" type="hidden" />
+                            <input id="hdnCity" type="hidden" />
+                            <input id="hdnDC" type="hidden" />
+                        </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <label>Report Type</label>
+                            @Html.DropDownList("ReportType", listItems, new { @class = "form-control" })
+                            <input id="hdnCity" type="hidden" />
+                            <input id="hdnDC" type="hidden" />
+
+                        </div>
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <p style="margin-top:27px">
+                                Date Range:
+                                <input type="radio" id="DateRange" value="DateRange" name="radSize" style="margin-right:10px">
+                                YTD:
+                                <input type="radio" id="YTD" value="YTD" name="radSize" style="margin-right:10px">
+                                MTD:
+                                <input type="radio" id="MTD" value="MTD" name="radSize">
+                            </p>
+                        </div>
+                        <div class="col-md-6 col-sm-12 col-xs-12">
+                            <label for="FillRate">Fill Rate From</label>
+
+                            @Html.DropDownList("FillRateCompare", FillRateCompItems, new { @class = "form-control input-sm" })
+                        </div>
+                        <div class="col-md-6 col-sm-12 col-xs-12">
+                            <label for="FillRatePercentage">Value in %</label>
+                            <input type="text" class="form-control input-sm" name="FillRatePercentage" id="FillRatePercentage" />
+                        </div>
+                        <div class="col-md-6 col-sm-12 col-xs-12">
+                            <label for="FillRateTO">Fill Rate To</label>
+
+                            @Html.DropDownList("FillRateCompareTO", FillRateCompItemsTo, new { @class = "form-control input-sm" })
+                        </div>
+                        <div class="col-md-6 col-sm-12 col-xs-12">
+                            <label for="FillRatePercentageTO">Value in %</label>
+                            <input type="text" class="form-control input-sm" name="FillRatePercentageTo" id="FillRatePercentageTo" />
+                        </div>
+                        </BR>
+                        <p id="filterShowMore" class="show-more" data-toggle="collapse">
+                            show more...
+                        </p>
+
+                        <div class="collapse multi-collapse" id="multiCollapseExample1">
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <label for="UniqueReferenceID">Invoice Number</label>
+                                <input type="text" value="@Invoice_Number" class="form-control input-sm" name="InvoiceNumber" id="InvoiceNumber" />
+                            </div>
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <label for="UniqueReferenceID">Item Type</label>
+                                @*<input type="text" class="form-control input-sm" name="ItemType" id="ItemType" />*@
+                                @Html.ListBox("SelectedItemType", (MultiSelectList)ViewBag.ItemTypes, new { size = 4, @class = "form-control input-sm" })
+                            </div>
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <label for="UniqueReferenceID">Item Sub Type</label>
+                                @*<input type="text" class="form-control input-sm" name="ItemSubType" id="ItemSubType" />*@
+                                @Html.ListBox("SelectedItemSubType", (MultiSelectList)ViewBag.ItemCategories, new { size = 4, @class = "form-control input-sm" })
+                            </div>
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <label for="SelectedCity">City</label>
+                                @*<input type="text" class="form-control input-sm" name="City" id="City" />*@
+                                @Html.ListBox("SelectedCity", (MultiSelectList)ViewBag.Locations, new { size = 4, @class = "form-control input-sm" })
+
+                            </div>
+
+
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <label>FullFillment</label>
+
+                                @Html.DropDownList("SelectedFullfillmentType", FulFillmentType, new { @class = "form-control" })
+                            </div>
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <label for="OrderedQuantityFrom">Ordered Quantity from:</label>
+                                <input type="text" class="form-control input-sm" name="OrderedQuanityFrom" id="OrderedQuanityFrom" />
+                            </div>
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <label for="OrderedQuantityTo">Ordered Quantity To:</label>
+                                <input type="text" class="form-control input-sm" name="OrderedQuanityTo" id="OrderedQuanityTo" />
+                            </div>
+                        </div>
+
+                        <div class="col-md-12 col-sm-12 col-xs-12">
+                            <div class="form-group text-right">
+                                <br />
+                                <input type="button" value="Generate Chart" id="btnGenerate" class="btn btn-sm btn btn-success" style="margin-bottom:0px;" />
+                                @*<input type="submit" class="btn btn-default btn btn-success" style="margin-bottom:0px;" value="Generate" />
+                                    <input type="submit" value="Export to Excel" name="Edit" formaction="@Url.Action("Report2ExportExcel")" formmethod="post" class="btn btn-default" style="margin-bottom:0px;" />*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div><!-- modal-content -->
+        </div><!-- modal-dialog -->
+    </div>
+    <script>
+        var vCompanyOverAllFillRate;
+        var vCityChart;
+        var vDCChart;
+
+        var vCityStoreChart;
+
+        var vCityItemCategoryChart;
+        var vDCStoreChart;
+        var vDCItemCategoryChart;
+
+        $(document).ready(function () {
+            $(".loader").hide();
+            OpenFilterPopUp()
+            $('#ShowhideSelectedFilters').click(function () {
+                var required_width = parseInt($('#SelectedFilters').css("width"), 10) + parseInt($('#ShowhideSelectedFilters').css("width"), 10);
+                console.log("Required Filter Width " + required_width)
+                if ($('#SelectedFilters').css("display") !='none') {
+                    $('#SelectedFilters').css("display", "none");
+                    $("#SelectedFilterContainer").css("width", parseInt($('#ShowhideSelectedFilters').css("width"), 10) + "px");
+                } else {
+                    $('#SelectedFilters').css("display", "block");
+                    $("#SelectedFilterContainer").css("width", required_width + "px");
+                }
+                
+                
+            });
+
+            var SessionCustomer = window.SessionCustomer != undefined ? window.SessionCustomer : "";
+            var title = 'Name: Fill Rate Report';
+            var titleText = 'Store Order Date: From: ' + convertDate($("#FromDate").val()) + ' To: ' + convertDate($("#ToDate").val()) + '';
+            $("#message").text(titleText);
+            $('#SelectedDC').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                enableFiltering: true
+            });
+            $('#SelectedStores').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedSKUs').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedItemType').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedItemSubType').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedCity').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            var isCollapse = 1;
+            $('.show-more').click(function () {
+                if (isCollapse == 1) {
+                    $("#filterShowMore").text("show less...");
+                    isCollapse = 0;
+                }
+                else {
+                    $("#filterShowMore").text("show more...");
+                    isCollapse = 1;
+                }
+                $('#multiCollapseExample1').toggle();
+            });
+
+            $('#SelectedItemType').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedItemCategory').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+
+            GenerateOverAllFillRateChartOnPageLoad();
+
+        });
+        function convertDate(dateString) {
+            var p = dateString.split(/\D/g)
+            return [p[2], p[1], p[0]].join("-");
+        }
+        $('#demo-form').submit(function (e) {
+            var FromDate = $("#FromDate").val();
+            var ToDate = $("#ToDate").val();
+            var date1 = new Date(FromDate);
+            var date2 = new Date(ToDate);
+            var datediffmill = date2 - date1;
+            var datediff = datediffmill / (1000 * 60 * 60 * 24)
+            if (datediff > 30) {
+                alert("Search Date Limit Exceeded.\nPlease Select Date Range Between 30 Days");
+                e.preventDefault();
+            }
+            else {
+                return true;
+            }
+        });
+        $('#FromDate').change(function (e) {
+            var FromDate = $("#FromDate").val();
+            var date1 = new Date(FromDate);
+            date1.setDate(date1.getDate() + 30);
+            $("#ToDate").val(FormatDate(date1));
+            $('#DateRange').prop('checked', true);
+        })
+        function FormatDate(date) {
+            month = '' + (date.getMonth() + 1),
+                day = '' + date.getDate(),
+                year = date.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+            return [year, month, day].join('-');
+        }
+
+       //  Code for Charts
+
+        function GenerateOverAllFillRateChartOnPageLoad() {
+            $('#MTD').prop('checked', true);
+            GenerateOverAllFillRateChart();
+        }
+
+        $(document).ready(function () {
+            $("#btnGenerate").click(function () {
+                if (Validations()) { GenerateOverAllFillRateChart() };
+
+            });
+
+            $("#YTD").change(function () {
+                if ($(this).is(':checked')) {
+                    var vFromDate = getCurrentFinancialYear();
+                    $("#FromDate").val(vFromDate);
+                    var vToDate = new Date();
+                    $("#ToDate").val(FormatDate(vToDate));
+                }
+            });
+
+            $("#MTD").change(function () {
+                if ($(this).is(':checked')) {
+                    var vFromDate = getCurrentMonthStartDate();
+                    $("#FromDate").val(vFromDate);
+                    var vToDate = new Date();
+                    $("#ToDate").val(FormatDate(vToDate));
+                }
+            });
+        });
+
+        function getCurrentFinancialYear() {
+            var fiscalyear = "";
+            var today = new Date();
+            if ((today.getMonth() + 1) <= 3) {
+                fiscalyear = (today.getFullYear() - 1) + "-04-01";
+            } else {
+                fiscalyear = today.getFullYear() + "-04-01";
+            }
+            return fiscalyear
+        }
+
+        function getCurrentMonthStartDate() {
+            var fiscalyear = "";
+            var today = new Date();
+            var vMonth = today.getMonth() + 1;
+            if (vMonth<10) {
+                vMonth = '0' + vMonth;
+            }
+            fiscalyear = today.getFullYear() + "-" + vMonth + "-01";
+
+            return fiscalyear
+        }
+        function Validations() {
+            var Flag = true;
+            if (($('#FillRatePercentage').val() != '' && ($('#FillRatePercentage').val() > 100)) || ($('#FillRatePercentage').val() != '' && ($('#FillRatePercentage').val() < 0))) {
+                alert("Percentage value should be between 1 and 100");
+                Flag = false;
+            }
+
+            else if (($('#FillRatePercentageTo').val() != '' && ($('#FillRatePercentageTo').val() > 100)) ||
+                ($('#FillRatePercentageTo').val() != '' && ($('#FillRatePercentageTo').val() < 0))) {
+                alert("Percentage value should be between 1 and 100"); Flag = false;
+            }
+            else if ($('#FillRatePercentageTo').val() != '' && ($('#FillRatePercentage').val() != '')) {
+                if ($('#FillRatePercentage').val() > $('#FillRatePercentageTo').val()) {
+                    alert("FillRate TO should be greater than FillRate From");
+                    Flag = false;
+                }
+            }
+            else if (($('#OrderedQuanityFrom').val() != '') && ($('#OrderedQuanityTO').val() != '') &&
+                ($('#OrderedQuanityFrom').val() > $('#OrderedQuanityTO').val())) {
+                alert("Ordered Quantity from should be less than Ordered Quantity To");
+                Flag = false;
+            }
+            else {
+                Flag = true;
+            }
+
+            return Flag;
+        }
+        function GenerateOverAllFillRateChart() {
+            var Token = $('input[name="__RequestVerificationToken"]').val();
+
+            var vByOrderDateOrInvoiceDate = $('#filterByOrderInvoiceDate').val();
+            var vFromDate = $("#FromDate").val();
+            var vTodate = $("#ToDate").val();
+
+            var vUniqueReferenceID = $("#UniqueReferenceID").val();
+
+            var vSelectedDC = $('select#SelectedDC').val();
+            var vSelectedStores = $('select#SelectedStores').val();
+            var vSelectedSKUs = $('select#SelectedSKUs').val();
+
+            var vReportType = $('#ReportType').val();
+            var vFillRateCompare = $('#FillRateCompare').val();
+            var vFillRatePercentage = $('#FillRatePercentage').val();
+
+            var vFillRateCompareTO = $('#FillRateCompareTO').val();
+            var vFillRatePercentageTO = $('#FillRatePercentageTo').val();
+
+            var vInvoice_Number = $("#InvoiceNumber").val();
+
+            var vItemType = $('select#SelectedItemType').val();
+            var vitem_sub_type = $('select#SelectedItemSubType').val();
+            var vCity = $('select#SelectedCity').val();
+
+            var vSelectedFullfillmentType = $('#SelectedFullfillmentType').val();
+
+            var vOrderedQuantityFrom = $('#OrderedQuanityFrom').val();
+            var vorderQuantityTO = $('#OrderedQuanityTO').val();
+
+            $.ajax({
+                      url: "@Url.Action("FillRateReportChart", "ReportCharts")",
+                      type: "POST",
+                      data: {
+                          FromDate: vFromDate,
+                          ToDate: vTodate,
+                          UniqueReferenceID: vUniqueReferenceID,
+                          SelectedDC: vSelectedDC,
+                          SelectedStores: vSelectedStores,
+                          SelectedSKUs: vSelectedSKUs,
+                          ReportType: vReportType,
+                          ByOrderDateOrInvoiceDate: vByOrderDateOrInvoiceDate,
+                          City: vCity,
+                          State: '',
+                          Invoice_Number: vInvoice_Number,
+                          ItemType: vItemType,
+                          item_sub_type: vitem_sub_type,
+                          OrderedQuantityFrom: vOrderedQuantityFrom,
+                          orderQuantityTO: vorderQuantityTO,
+                          FillRateCompare: vFillRateCompare,
+                          FillRatePercentage: vFillRatePercentage,
+                          FillRateCompareTO: vFillRateCompareTO,
+                          FillRatePercentageTO: vFillRatePercentageTO,
+                          SelectedFullfillmentType:vSelectedFullfillmentType,
+                          __RequestVerificationToken: Token,
+                      },
+                     success: function (response)
+                     {
+                         if (response) {
+                             if (response.CompanyFillRate != 0) {
+                                 LoadChartForOverAllFillRate(response.CompanyFillRate.toFixed(2));
+                                 LoadChartForCityAndDC(response.CityPair, response.DCPair);
+                                 ClearControls();
+                             }
+                             else
+                                 alert("No data found for given Search criteria.");
+                         }
+                       },
+                      Error: function (respo) {
+                                    alert("UNABLE TO LOAD GRAPH DATA");
+                      }
+                   });
+        }
+        function LoadChartForOverAllFillRate(vComapanyOverAllRateData) {
+            if ($('#ChartContainerForOverAllFillRate').length) {
+
+                vCompanyOverAllFillRate = echarts.init(document.getElementById('ChartContainerForOverAllFillRate'));
+
+              var  option = {
+                    tooltip: {
+                        formatter: '{a} <br/>{b} : {c}%'
+                    },
+                    toolbox: {
+                        feature: {
+                            restore: {},
+                            saveAsImage: {}
+                        }
+                    },
+                    series: [
+                        {
+                            type: 'gauge',
+                            detail: { formatter: '{value}%' },
+                            data: [{ value: vComapanyOverAllRateData, name: 'Fill Rate' }],
+                            radius: '100%',
+                            axisLine:
+                            {
+                                lineStyle:
+                                {
+                                    color: [[0.2, '#ff0000'], [0.8, '#ffcc00'], [1, '#36622b']]
+                                }
+                            },
+
+                        }
+                    ]
+                };
+
+                vCompanyOverAllFillRate.setOption(option);
+
+            }
+        }
+        function LoadChartForCityAndDC(vCityPair, VDCPair) {
+            //---------City---
+            var vCity = [];
+            var QTY1 = [];
+
+            for (var i in vCityPair) {
+                vCity.push(vCityPair[i].name);
+                QTY1.push(vCityPair[i].value);
+            }
+            var ctx1 = document.getElementById('ChartContainerForCity');
+            var parentnode = ctx1.parentElement;
+            var HeigherParentWidth = parentnode.parentElement.clientWidth;
+            parentnode.style.width = HeigherParentWidth + "px";
+            var required_width = vCity.length * 50 + 50;
+            if (required_width > parentnode.clientWidth)
+                parentnode.style.width = required_width + "px";
+
+            if (vCityChart != undefined) {
+                vCityChart.clear();
+                vCityChart.destroy();
+            }
+            vCityChart = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: vCity,
+                    datasets: [{
+                        label: 'City',
+                        data: QTY1,
+                        backgroundColor:
+                            '#fb9224',
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function (value, index, values) {
+                                    return  '% ' + value;
+                                }
+                            }
+                        }],
+                        xAxes: [{
+                            barPercentage: 0.5,
+                            ticks: {
+                               autoSkip: false,
+                                maxRotation: 90,
+                                minRotation: 90,
+                                padding: -110,
+
+                                mirror: true
+                            }
+
+                        }]
+                    },
+                    onClick: CityBarClickEvent
+                }
+            });
+           //-----------DC Details
+
+            var vDC = [];
+            var QTY2 = [];
+
+            for (var i in VDCPair) {
+                vDC.push(VDCPair[i].name);
+                QTY2.push(VDCPair[i].value);
+            }
+            var ctx2 = document.getElementById('ChartContainerForDC');
+            var parentnode = ctx2.parentElement;
+            var HeigherParentWidth = parentnode.parentElement.clientWidth;
+            parentnode.style.width = HeigherParentWidth + "px";
+            var required_width = vDC.length * 50 + 50;
+            if (required_width > parentnode.clientWidth)
+                parentnode.style.width = required_width + "px";
+
+            if (vDCChart != undefined) {
+                vDCChart.clear();
+                vDCChart.destroy();
+            }
+            vDCChart = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: vDC,
+                    datasets: [{
+                        label: 'DC',
+                        data: QTY2,
+                        backgroundColor:
+                            '#fb9224',
+                    }]
+                },
+                options: {
+                    maintainAspectRatio: false,
+                    scales: {
+                        yAxes: [{
+                            ticks: {
+                                beginAtZero: true,
+                                callback: function (value, index, values) {
+                                    return '% ' + value;
+                                }
+                            }
+                        }],
+                        xAxes: [{
+                            barPercentage: 0.5,
+                            ticks: {
+                                autoSkip: false,
+                                maxRotation: 90,
+                                minRotation: 90,
+                                padding: -110,
+
+                                mirror: true
+                            }
+                        }]
+                    }, onClick: DCBarClickEvent
+                }
+            });
+        }
+        function CityBarClickEvent(event, array) {
+            if (array[0]) {
+                $("#hdnCity").val(array[0]._model.label);
+                GetFillRateStoreWiseData(array[0]._model.label, '', '', '');
+                GetFillRateItemCategoryWiseData(array[0]._model.label, '', '', '');
+            }
+        }
+        function DCBarClickEvent(event, array) {
+            if (array[0]) {
+                $("#hdnDC").val(array[0]._model.label);
+                GetFillRateStoreWiseData('', array[0]._model.label, '', '');
+                GetFillRateItemCategoryWiseData('',array[0]._model.label,'', '');
+            }
+        }
+        function GetFillRateStoreWiseData(vClickCity, vDC, vStore, vItemCategory) {
+            var vByOrderDateOrInvoiceDate = $('#filterByOrderInvoiceDate').val();
+            var vFromDate = $("#FromDate").val();
+            var vTodate = $("#ToDate").val();
+
+            var vUniqueReferenceID = $("#UniqueReferenceID").val();
+
+            var vSelectedDC = $('select#SelectedDC').val();
+            var vSelectedStores = $('select#SelectedStores').val();
+            var vSelectedSKUs = $('select#SelectedSKUs').val();
+
+            var vReportType = $('#ReportType').val();
+            var vFillRateCompare = $('#FillRateCompare').val();
+            var vFillRatePercentage = $('#FillRatePercentage').val();
+
+            var vFillRateCompareTO = $('#FillRateCompareTO').val();
+            var vFillRatePercentageTO = $('#FillRatePercentageTo').val();
+
+            var vInvoice_Number = $("#InvoiceNumber").val();
+            var vItemType = $('select#SelectedItemType').val();
+            var vitem_sub_type = $('select#SelectedItemSubType').val();
+            var vCity = $('select#SelectedCity').val();
+
+
+            var vSelectedFullfillmentType = $('#SelectedFullfillmentType').val();
+
+            var vOrderedQuantityFrom = $('#OrderedQuanityFrom').val();
+            var vorderQuantityTO = $('#OrderedQuanityTO').val();
+
+
+
+            $.ajax({
+                      url: "@Url.Action("GetFillRateStoreWiseData", "ReportCharts")",
+                      type: "POST",
+                      data: {
+
+                          FromDate: vFromDate,
+                          ToDate: vTodate,
+                          UniqueReferenceID: vUniqueReferenceID,
+                          SelectedDC: vSelectedDC,
+                          SelectedStores: vSelectedStores,
+                          SelectedSKUs: vSelectedSKUs,
+                          ReportType: vReportType,
+
+                          ByOrderDateOrInvoiceDate: vByOrderDateOrInvoiceDate,
+                          City: vCity,
+                          State: '',
+                          Invoice_Number: vInvoice_Number,
+                          ItemType: vItemType,
+                          item_sub_type: vitem_sub_type,
+                          OrderedQuantityFrom: vOrderedQuantityFrom,
+                          orderQuantityTO: vorderQuantityTO,
+
+                          FillRateCompare: vFillRateCompare,
+                          FillRatePercentage: vFillRatePercentage,
+                          FillRateCompareTO: vFillRateCompareTO,
+                          FillRatePercentageTO: vFillRatePercentageTO,
+                          SelectedFullfillmentType: vSelectedFullfillmentType,
+
+                          ClickCity: vClickCity,
+                          DC: vDC,
+                          Store: vStore,
+                          ItemCategory: vItemCategory
+                      },
+                     success: function (response)
+                     {
+                         if (response) {
+                             if (vStore != '') {
+                                 for (var i = 0; i < response.StorePair.length; i++) {
+                                     if (response.StorePair[i].name == vStore) {
+                                         response.StorePair[i].selected = true;
+                                         break;
+                                     }
+                                 }
+                             }
+                             if (vClickCity != '') {
+                                 LoadChartForCity_Store(response.StorePair, response.ItemCategoryPair);
+                                 //LoadChartForCity_ItemCategory(response.StorePair, response.ItemCategoryPair);
+                             }
+                             if (vDC != '') {
+                                 LoadChartForDC_Store(response.StorePair, response.ItemCategoryPair);
+                                 //LoadChartForDC_ItemCategory(response.StorePair, response.ItemCategoryPair);
+                             }
+                         }
+                       },
+                      Error: function (respo) {
+                                    alert("UNABLE TO LOAD GRAPH DATA");
+                      }
+                   });
+
+        }
+
+        function GetFillRateItemCategoryWiseData(vClickCity, vDC, vStore, vItemCategory) {
+            var vByOrderDateOrInvoiceDate = $('#filterByOrderInvoiceDate').val();
+            var vFromDate = $("#FromDate").val();
+            var vTodate = $("#ToDate").val();
+
+            var vUniqueReferenceID = $("#UniqueReferenceID").val();
+
+            var vSelectedDC = $('select#SelectedDC').val();
+            var vSelectedStores = $('select#SelectedStores').val();
+            var vSelectedSKUs = $('select#SelectedSKUs').val();
+
+            var vReportType = $('#ReportType').val();
+            var vFillRateCompare = $('#FillRateCompare').val();
+            var vFillRatePercentage = $('#FillRatePercentage').val();
+            var vFillRateCompareTO = $('#FillRateCompareTO').val();
+            var vFillRatePercentageTO = $('#FillRatePercentageTo').val();
+
+            var vInvoice_Number = $("#InvoiceNumber").val();
+            var vItemType = $('select#SelectedItemType').val();
+            var vitem_sub_type = $('select#SelectedItemSubType').val();
+            var vCity = $('select#SelectedCity').val();
+
+            var vSelectedFullfillmentType = $('#SelectedFullfillmentType').val();
+
+            var vOrderedQuantityFrom = $('#OrderedQuanityFrom').val();
+            var vorderQuantityTO = $('#OrderedQuanityTO').val(); var vUniqueReferenceID = "";
+                  $.ajax({
+                      url: "@Url.Action("GetFillRateItemCategoryWiseData", "ReportCharts")",
+                      type: "POST",
+                      data: {
+                          FromDate: vFromDate,
+                          ToDate: vTodate,
+                          UniqueReferenceID: vUniqueReferenceID,
+                          SelectedDC: vSelectedDC,
+                          SelectedStores: vSelectedStores,
+                          SelectedSKUs: vSelectedSKUs,
+                          ReportType: vReportType,
+
+                          ByOrderDateOrInvoiceDate: vByOrderDateOrInvoiceDate,
+                          City: vCity,
+                          State: '',
+                          Invoice_Number: vInvoice_Number,
+                          ItemType: vItemType,
+                          item_sub_type: vitem_sub_type,
+                          OrderedQuantityFrom: vOrderedQuantityFrom,
+                          orderQuantityTO: vorderQuantityTO,
+
+                          FillRateCompare: vFillRateCompare,
+                          FillRatePercentage: vFillRatePercentage,
+                          FillRateCompareTO: vFillRateCompareTO,
+                          FillRatePercentageTO: vFillRatePercentageTO,
+
+                          SelectedFullfillmentType: vSelectedFullfillmentType,
+
+                          ClickCity: vClickCity,
+                          DC: vDC,
+                          Store: vStore,
+                          ItemCategory: vItemCategory
+                      },
+                     success: function (response)
+                     {
+                         if (response) {
+                             if (vItemCategory != '') {
+                                 for (var i = 0; i < response.ItemCategoryPair.length; i++) {
+                                     if (response.ItemCategoryPair[i].name == vItemCategory) {
+                                         response.ItemCategoryPair[i].selected = true;
+                                         break;
+                                     }
+                                 }
+                             }
+                             if (vClickCity != '') {
+                                // LoadChartForCity_Store(response.StorePair, response.ItemCategoryPair);
+                                 LoadChartForCity_ItemCategory(response.StorePair, response.ItemCategoryPair);
+                             }
+                             if (vDC != '') {
+                                // LoadChartForDC_Store(response.StorePair, response.ItemCategoryPair);
+                                 LoadChartForDC_ItemCategory(response.StorePair, response.ItemCategoryPair);
+                             }
+                         }
+                       },
+                      Error: function (respo) {
+                                    alert("UNABLE TO LOAD GRAPH DATA");
+                      }
+                   });
+
+        }
+        function LoadChartForCity_Store(vStorePair, vItemCategoryPair) {
+            if ($('#ChartContainerForCity_Store').length) {
+                vCityStoreChart = echarts.init(document.getElementById('ChartContainerForCity_Store'));
+               var option = {
+                    tooltip: {
+                        trigger: 'item',
+                        //formatter: "{a} <br/>{b}: {c}"
+
+                        formatter: function (params) {
+                            if (params.seriesIndex == 0) {
+                                return vStorePair[params.dataIndex].Store_name + ":" + vStorePair[params.dataIndex].value;
+                            }
+                            else {
+                                return vItemCategoryPair[params.dataIndex].name + ":" + vItemCategoryPair[params.dataIndex].value;
+                            }
+                        }
+                    },
+                    series: [
+                        {
+                            name: 'Store',
+                            type: 'pie',
+                            selectedMode: 'single',
+                            radius: ['0', '30%'],
+
+                            label: {
+                                normal: {
+                                    position: 'inner',
+                                    show: false
+                                }
+                            },
+                            labelLine: {
+                                normal: {
+                                    show: false,
+                                }
+                            },
+                            data: vStorePair,
+                            color: ['#f7b71d', '#afa939', '#36622b', '#729d39', '#c6e377', '#a40a3c', '#ec610a', '#ffc300', '#521262', '#6639a6', '#3490de', '#6fe7dd', '#522546', '#88304e', '#e23e57',   ],
+                        },
+
+                        {
+                            name: 'ItemCategory',
+                            type: 'pie',
+                            selectedMode: 'single',
+                            radius: ['40%', '60%'],
+                            label: {
+                                normal: {
+                                    formatter: '{b} : {c}',
+                                }
+                            },
+                            data: vItemCategoryPair,
+                            color: ['#6a2c70', '#b83b5e', '#f08a5d', '#f9ed69', '#36622b', '#729d39', '#c6e377', '#a40a3c', '#ec610a', '#ffc300', '#521262', '#6639a6', '#3490de', '#6fe7dd', '#522546', '#88304e', '#e23e57',],
+                        }
+
+                    ]
+                };
+                vCityStoreChart.setOption(option);
+                vCityStoreChart.on('click', function (params) {
+                    if (params.seriesIndex == 0) {
+                        GetFillRateStoreWiseData($('#hdnCity').val(), '', params.data.name, '');
+                    }
+                });
+
+            }
+        }
+        function LoadChartForCity_ItemCategory(vStorePair, vItemCategoryPair)  {
+            if ($('#ChartContainerForCity_Item').length) {
+                vCityItemCategoryChart = echarts.init(document.getElementById('ChartContainerForCity_Item'));
+                  var  optionCI = {
+                        tooltip: {
+                            trigger: 'item',
+                           // formatter: "{a} <br/>{b}: {c}",
+                            formatter: function (params) {
+                                if (params.seriesIndex == 1) {
+                                    return vStorePair[params.dataIndex].Store_Name + ":" + vStorePair[params.dataIndex].value;
+                                }
+                                else {
+                                    return vItemCategoryPair[params.dataIndex].name + ":" + vItemCategoryPair[params.dataIndex].value;
+                                }
+                            },
+                            show: true,
+
+                        },
+                        series: [
+                            {
+                                name: 'ItemCategory',
+                                type: 'pie',
+                                selectedMode: 'single',
+                                radius: ['0', '30%'],
+
+                                label: {
+                                    normal: {
+                                        position: 'inner',
+                                        show: false
+                                    }
+                                },
+                                labelLine: {
+                                    normal: {
+                                        show: false,
+                                    }
+                                },
+                                data: vItemCategoryPair,
+                                color: ['#f7b71d', '#afa939', '#36622b', '#729d39', '#c6e377', '#a40a3c', '#ec610a', '#ffc300', '#521262', '#6639a6', '#3490de', '#6fe7dd', '#522546', '#88304e', '#e23e57'],
+                            },
+
+                            {
+                                name: 'Store',
+                                type: 'pie',
+                                selectedMode: 'single',
+                                radius: ['40%', '60%'],
+                                label: {
+                                    normal: {
+                                        formatter: '{b} : {c}',
+                                    }
+                                },
+                                data: vStorePair,
+                                color: ['#6a2c70', '#b83b5e', '#f08a5d', '#f9ed69', '#36622b', '#729d39', '#c6e377', '#a40a3c', '#ec610a','#ffc300', '#521262', '#6639a6', '#3490de', '#6fe7dd', '#522546', '#88304e', '#e23e57'],
+                            }
+
+                        ]
+                };
+                vCityItemCategoryChart.setOption(optionCI);
+                vCityItemCategoryChart.on('click', function (params) {
+                    if (params.seriesIndex == 0) {
+                        GetFillRateItemCategoryWiseData($('#hdnCity').val(), '', '', params.data.name);
+                    }
+                });
+
+                }
+
+        }
+
+        function LoadChartForDC_Store(vStorePair, vItemCategoryPair) {
+            if ($('#ChartContainerForStoreDC').length) {
+                vDCStoreChart = echarts.init(document.getElementById('ChartContainerForStoreDC'));
+               var option = {
+                    tooltip: {
+                        trigger: 'item',
+                       // formatter: "{a} <br/>{b}: {c}"
+                        formatter: function (params) {
+                            if (params.seriesIndex == 0) {
+                                return vStorePair[params.dataIndex].Store_name + ":" + vStorePair[params.dataIndex].value;
+                            }
+                            else {
+                                return vItemCategoryPair[params.dataIndex].name + ":" + vItemCategoryPair[params.dataIndex].value;
+                            }
+                        },
+                    },
+                    series: [
+                        {
+                            name: 'Store',
+                            type: 'pie',
+                            selectedMode: 'single',
+                            radius: ['0', '30%'],
+
+                            label: {
+                                normal: {
+                                    position: 'inner',
+                                    show: false
+                                }
+                            },
+                            labelLine: {
+                                normal: {
+                                    show: false,
+                                }
+                            },
+                            data: vStorePair,
+                            color: [
+
+                                '#f7b71d',
+                                '#afa939',
+                                '#36622b',
+                                '#729d39',
+                                '#c6e377',
+                                '#a40a3c',
+                                '#ec610a',
+                                '#ffc300',
+                                '#521262',
+                                '#6639a6',
+                                '#3490de',
+                                '#6fe7dd',
+                                '#522546',
+                                '#88304e',
+                                '#e23e57',
+                            ],
+                        },
+
+                        {
+                            name: 'ItemCategory',
+                            type: 'pie',
+                            selectedMode: 'single',
+                            radius: ['40%', '60%'],
+                            label: {
+                                normal: {
+                                    formatter: '{b} : {c}',
+                                }
+                            },
+                            data: vItemCategoryPair,
+                            color: [
+                                '#6a2c70',
+                                '#b83b5e',
+                                '#f08a5d',
+                                '#f9ed69',
+                                '#36622b',
+                                '#729d39',
+                                '#c6e377',
+                                '#a40a3c',
+                                '#ec610a',
+                                '#ffc300',
+                                '#521262',
+                                '#6639a6',
+                                '#3490de',
+                                '#6fe7dd',
+                                '#522546',
+                                '#88304e',
+                                '#e23e57',
+                            ],
+                        }
+
+                    ]
+                };
+                vDCStoreChart.setOption(option);
+                vDCStoreChart.on('click', function (params) {
+                    if (params.seriesIndex == 0) {
+                        GetFillRateStoreWiseData('', $('#hdnDC').val(), params.data.name, '');
+                    }
+                });
+            }
+        }
+        function LoadChartForDC_ItemCategory(vStorePair, vItemCategoryPair) {
+            if ($('#ChartContainerForItemCategoryDC').length) {
+                vDCItemCategoryChart = echarts.init(document.getElementById('ChartContainerForItemCategoryDC'));
+                var optionDI= {
+                    tooltip: {
+                        trigger: 'item',
+                       // formatter: "{a} <br/>{b}: {c}",
+                        formatter: function (params) {
+                            if (params.seriesIndex == 1) {
+                                return vStorePair[params.dataIndex].Store_Name + ":" + vStorePair[params.dataIndex].value;
+                            }
+                            else {
+                                return vItemCategoryPair[params.dataIndex].name + ":" + vItemCategoryPair[params.dataIndex].value;
+                            }
+                        },
+                        show: true,
+
+                    },
+                    series: [
+                        {
+                            name: 'ItemCategory',
+                            type: 'pie',
+                            selectedMode: 'single',
+                            radius: ['0', '30%'],
+
+                            label: {
+                                normal: {
+                                    position: 'inner',
+                                    show: false
+                                }
+                            },
+                            labelLine: {
+                                normal: {
+                                    show: false,
+                                }
+                            },
+                            data: vItemCategoryPair,
+                            color: [
+
+                                '#f7b71d',
+                                '#afa939',
+                                '#36622b',
+                                '#729d39',
+                                '#c6e377',
+                                '#a40a3c',
+                                '#ec610a',
+                                '#ffc300',
+                                '#521262',
+                                '#6639a6',
+                                '#3490de',
+                                '#6fe7dd',
+                                '#522546',
+                                '#88304e',
+                                '#e23e57',
+                            ],
+                        },
+
+                        {
+                            name: 'Store',
+                            type: 'pie',
+                            selectedMode: 'single',
+                            radius: ['40%', '60%'],
+                            label: {
+                                normal: {
+                                    formatter: '{b} : {c}',
+                                }
+                            },
+                            data: vStorePair,
+                            color: [
+                                '#6a2c70',
+                                '#b83b5e',
+                                '#f08a5d',
+                                '#f9ed69',
+                                '#36622b',
+                                '#729d39',
+                                '#c6e377',
+                                '#a40a3c',
+                                '#ec610a',
+                                '#ffc300',
+                                '#521262',
+                                '#6639a6',
+                                '#3490de',
+                                '#6fe7dd',
+                                '#522546',
+                                '#88304e',
+                                '#e23e57',
+                            ],
+                        }
+
+                    ]
+                }
+                vDCItemCategoryChart.setOption(optionDI);
+                vDCItemCategoryChart.on('click', function (params) {
+                    if (params.seriesIndex == 0) {
+                        GetFillRateItemCategoryWiseData('', $('#hdnDC').val(), '', params.data.name);
+                    }
+                });
+            }
+
+        }
+
+        function ClearControls() {
+            if (vCityStoreChart != '' && vCityStoreChart!= undefined)
+                vCityStoreChart.clear();
+            if (vCityItemCategoryChart != '' && vCityItemCategoryChart != undefined)
+                vCityItemCategoryChart.clear();
+            if (vDCStoreChart != '' && vDCStoreChart != undefined)
+                vDCStoreChart.clear();
+            if (vDCItemCategoryChart != '' && vDCItemCategoryChart != undefined)
+                vDCItemCategoryChart.clear();
+        }
+        function OpenFilterPopUp() {
+            $("#RightFilterModal").modal('show');
+        }
+    </script>
+</div>

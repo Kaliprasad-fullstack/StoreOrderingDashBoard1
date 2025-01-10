@@ -1,0 +1,1197 @@
+[
+  {
+    "Controller": "CategoryController",
+    "Action": "DeleteCategory",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "CategoryController",
+    "Action": "EditCategory",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "CategoryController",
+    "Action": "EditCategory",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization,HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "CategoryController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "CategoryController",
+    "Action": "InsertCategory",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "CategoryController",
+    "Action": "InsertCategory",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization,HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "CustomerController",
+    "Action": "AddCustomer",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "CustomerController",
+    "Action": "AddCustomer",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "CustomerController",
+    "Action": "DeleteCustomer",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "CustomerController",
+    "Action": "EditCustomer",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "CustomerController",
+    "Action": "EditCustomer",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "CustomerController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "AddAdminUser",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "AddAdminUser",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "AddDcManager",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "CustomerStores",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "DeleteAdminUser",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost"
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "EditAdminUser",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "EditAdminUser",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost"
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "MenuRights",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "MenuRightsForUser",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "SaveMenuManagement",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "SaveWidgetForUser",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "DCManagerController",
+    "Action": "WidgetsForUser",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "About",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "BarGraphResult",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "ChangePassword",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "ChangePassword",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "ChangeQuestionAnswers",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "Contact",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "Customers",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "Customerwiselogin",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "DashBoard2",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "DisableUser",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "Error404",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "Error500",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "ExternalLogin",
+    "ReturnType": "Task`1",
+    "Attributes": "AsyncStateMachine,DebuggerStepThrough"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "ForgotAnswer",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "ForgotAnswer",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization,HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "ForgotAnswred",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "ForgotAnwerLogin",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "LogIn",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "LogIn",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "LogOut",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "ReturnURL",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "HomeController",
+    "Action": "SignIn",
+    "ReturnType": "Void",
+    "Attributes": ""
+  },
+  {
+    "Controller": "ItemController",
+    "Action": "AddItem",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ItemController",
+    "Action": "AddItem",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization,HttpPost"
+  },
+  {
+    "Controller": "ItemController",
+    "Action": "DeleteItem",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "ItemController",
+    "Action": "EditItem",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ItemController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "LocationController",
+    "Action": "AddLocation",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "LocationController",
+    "Action": "AddLocation",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken,AdminAuthorization"
+  },
+  {
+    "Controller": "LocationController",
+    "Action": "DeleteLocation",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "LocationController",
+    "Action": "EditLocation",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "LocationController",
+    "Action": "EditLocation",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,AdminAuthorization,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "LocationController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "MenuController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "MenuController",
+    "Action": "Management",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "MenuController",
+    "Action": "PlanManegementForDcUser",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "MenuController",
+    "Action": "PlanManegementForStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "MenuController",
+    "Action": "SaveMenuManagement",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "MenuController",
+    "Action": "SaveWidget",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "NetSuitController",
+    "Action": "AddNetSuit",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "NetSuitController",
+    "Action": "AddNetSuit",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization,HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "NetSuitController",
+    "Action": "DeleteNetsuit",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "NetSuitController",
+    "Action": "EditNetsuit",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "NetSuitController",
+    "Action": "EditNetsuit",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization,HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "NetSuitController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "AddItem",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "DeleteFinilise",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "DeleteFromTemp",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "DeleteItem",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "DeleteOrders",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "Finilize",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "Importexcel",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,AdminAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "ImportOrder",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "InsertInTemp",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "ItemList",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "ItemlistPartial",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "MakeACopy",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "OrderDelete",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "OrderDetailList",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "OrderNew",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "SavaAsDraftOrFinilize",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "SaveAsDraftList",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "SaveOrFinaliseOrder",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "SaveUploadOrder",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "SummeriseReport",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "UpdateFinilize",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "UpdateFromTemp",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "OrderController",
+    "Action": "UpdateQuantity",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,CustomApiAuthorization"
+  },
+  {
+    "Controller": "ProcessController",
+    "Action": "DeleteItem",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,AdminApiAuthorization"
+  },
+  {
+    "Controller": "ProcessController",
+    "Action": "DeleteOrder",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "ProcessController",
+    "Action": "Export",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ProcessController",
+    "Action": "ExportToExcel",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ProcessController",
+    "Action": "FinaliseItemlist",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ProcessController",
+    "Action": "FinilizeList",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ProcessController",
+    "Action": "ProcessedOrder",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,AdminApiAuthorization"
+  },
+  {
+    "Controller": "ProcessController",
+    "Action": "ProcessOrderOneByOne",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,AdminApiAuthorization"
+  },
+  {
+    "Controller": "ProcessController",
+    "Action": "UpdateItemQuantity",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "DcManagerReport",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "DraftItemsPartial",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "DraftReports",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "DraftReportsDetails",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "FinalizedReports",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "FinalizedReportsbystore",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "FinalizedReportsbystoreDetail",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "FinalizedReportsDetails",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "FinalReport",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "FullFillmentDetailReport",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "FullFillmentDetailReportByStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "FullFillmentReportbyStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "FullFillmentSummaryReport",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "GetItem",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "GetWeek",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "GetWeekByMonth",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "GetWeekByQuarter",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "GetWeekFirstLastDay",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "InvoiceDetailReport",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "InvoiceDetailReportByStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "InvoiceReportByStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "InvoiceSummaryReport",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "NetsuitItemPartial",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "OfrReport",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "OrderCount",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "ProcessedReport",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "ProcessedReportbystore",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "ProcessedReportbystoreDetail",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "ProcessedReportDetails",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "RevisedOrderReport",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "SaveAsDraftbystore",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "SaveAsDraftbystoreDetail",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "SoApproved",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "SoApprovedbyStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "SoApprovedDetail",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "ReportController",
+    "Action": "SoApprovedDetailReportByStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "AddBulkUsers",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "AddBulkUsers",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization,HttpPost"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "AddStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "AddStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,AdminAuthorization,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "AddUser",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "AddUser",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "AutoStoreCode",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "ChangePassword",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "ChangePassword",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "ChangePasswordSetting",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "ChangePasswordSetting",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "DeleteStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "DeleteStoreUser",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "EditStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "EditStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,AdminAuthorization,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "EditUser",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "EditUser",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "FAQ",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "ForgotPassword",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "GetStoreUserForStoreId",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "Home",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "ImportFormat",
+    "ReturnType": "Void",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "InfoVideo",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "Login",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "Login",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "LogOut",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "LostPassword",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "LostPassword",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "MenuMangementForStore",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "MenuRightsForUser",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "OTP",
+    "ReturnType": "ActionResult",
+    "Attributes": "OTPAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "OTP",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken,OTPAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "ResetPasswordForUser",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "ResetStoreUserPassword",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "SavemenuManagementForStore",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,AdminApiAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "SaveUploadStoreUsers",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "SaveWidgetForStoreUser",
+    "ReturnType": "JsonResult",
+    "Attributes": "AdminApiAuthorization,HttpPost"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "StoreUsers",
+    "ReturnType": "ActionResult",
+    "Attributes": ""
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "UserManual",
+    "ReturnType": "ActionResult",
+    "Attributes": "CustomAuthorization"
+  },
+  {
+    "Controller": "StoreController",
+    "Action": "WidgetsForUser",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "SubCategoryController",
+    "Action": "DeleteSubCategory",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,AdminApiAuthorization"
+  },
+  {
+    "Controller": "SubCategoryController",
+    "Action": "EditSubCategory",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "SubCategoryController",
+    "Action": "EditSubCategory",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization,HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "SubCategoryController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "SubCategoryController",
+    "Action": "InsertSubCategory",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "SubCategoryController",
+    "Action": "InsertSubCategory",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization,HttpPost,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "UOMController",
+    "Action": "DeleteUOM",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost"
+  },
+  {
+    "Controller": "UOMController",
+    "Action": "EditUOM",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "UOMController",
+    "Action": "EditUOM",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,AdminAuthorization,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "UOMController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "UOMController",
+    "Action": "UOMInsert",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "UOMController",
+    "Action": "UOMInsert",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,AdminAuthorization,ValidateAntiForgeryToken"
+  },
+  {
+    "Controller": "WareHouseController",
+    "Action": "AddWarehouse",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "WareHouseController",
+    "Action": "AddWarehouse",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken,AdminAuthorization"
+  },
+  {
+    "Controller": "WareHouseController",
+    "Action": "DeleteWareHouse",
+    "ReturnType": "JsonResult",
+    "Attributes": "HttpPost,AdminApiAuthorization"
+  },
+  {
+    "Controller": "WareHouseController",
+    "Action": "EditWareHouse",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  },
+  {
+    "Controller": "WareHouseController",
+    "Action": "EditWareHouse",
+    "ReturnType": "ActionResult",
+    "Attributes": "HttpPost,ValidateAntiForgeryToken,AdminAuthorization"
+  },
+  {
+    "Controller": "WareHouseController",
+    "Action": "Index",
+    "ReturnType": "ActionResult",
+    "Attributes": "AdminAuthorization"
+  }
+
+]

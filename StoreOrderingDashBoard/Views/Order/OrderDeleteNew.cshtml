@@ -1,0 +1,330 @@
+﻿@using DAL
+@using BAL
+@{
+    ViewBag.Title = "OrderDeleteNew";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@using DAL
+@{
+    ViewBag.Title = "Finlized Order Delete";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    string startdate = ViewData["StartDate"].ToString();
+    string enddate = ViewData["EndDate"].ToString();
+    string RFPLID = ViewData["RFPLID"] != null ? ViewData["RFPLID"].ToString() : "";
+    List<SelectListItem> listItems = new List<SelectListItem>();
+  
+}
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Finlized Order Delete</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <form id="demo-form" method="post" action="@Url.Action("OrderDeleteNew","Order")">
+                        @Html.AntiForgeryToken()
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label for="FromDate">Order From Date</label>
+                                <input type="date" value="@startdate" class="form-control" name="FromDate" id="FromDate" />
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label for="enddate">Order To Date</label>
+                                <input type="date" value="@enddate" class="form-control" name="ToDate" id="ToDate" />
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label for="RFPLID">RFPL ID</label>
+                                <input type="text" value="@RFPLID" class="form-control" name="RFPLID" id="RFPLID" />
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>DC</label>
+                                @Html.ListBox("SelectedDC", (MultiSelectList)ViewBag.DCs, new { size = 4, @class = "form-control" })
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>StoreCode</label>
+                                @Html.ListBox("SelectedStores", (MultiSelectList)ViewBag.Stores, new { size = 4, @class = "form-control" })
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            
+                            <div class="col-md-8 col-sm-12 col-xs-12">
+                                <div class="form-group text-right">
+                                    <br />
+                                    <input id="btnSearch" type="submit" class="btn btn-default btn btn-success" style="margin-bottom:0px; " value="Search" />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <p class="text-muted font-13 m-b-30">
+
+                        <br />
+                        <span id="message" name="Message"> Store Order Date: From: @startdate To: @enddate</span>
+                    </p>
+                    <table id="datatable" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th><input name="select_all" id="select_all" value="1" type="checkbox"></th>
+                                <th>RFPL order number</th>
+                                <th>Store Order Date</th>
+                                <th>Store Code</th>
+
+
+                                <th>From DC</th>
+                                <th>Reason</th>
+                                @*<th>Custom Reason</th>*@
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (ViewBag.FinalizedReports != null)
+                            {
+                                int i = 1;
+                                foreach (OrderDeleteNew head in ViewBag.FinalizedReports)
+                                {
+                                    <tr>
+                                        <td>@(head.Id)</td>
+                                        <td>@head.Id</td>
+                                        <td>@(head.DateOfOrder != null ? head.DateOfOrder.Value.ToString("dd-MM-yyyy") : "")</td>
+                                        <td>@head.StoreCode</td>
+
+
+                                        <td>@head.DcName</td>
+                                        @*<td>@Html.DropDownList("Reason"+head.Id, ReasonLists,"select reason", new { @class = "form-control input-sm" })</td>*@
+                                        <td>@Html.DropDownList("Reason" + head.Id, (SelectList)ViewBag.Resons, "Select", new { @class = "form-control INPUT-SM" })</td>
+                                        @*<td><textarea id="@("CustomReason"+head.Id)" type="text" class="form-control input-sm"></textarea></td>*@
+                                    </tr>
+                                    i++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+
+
+
+                </div>
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                    <div class="form-group text-right">
+                        <br />
+                        <button type="button" class="btn btn-default btn btn-success" style="margin-bottom:0px;" onclick="CreateListToDeleteOrder()">Process</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        var table;
+     
+        var rows_selected = [];
+        $(document).ready(function () {
+            $(".loader").hide();
+            var SessionCustomer = window.SessionCustomer != undefined ? window.SessionCustomer : "OYO";
+            /**/
+            var title = 'Name: Order Delete/Close';
+            var titleText = 'Store Order Date: From: ' + convertDate($("#FromDate").val()) + ' To: ' + convertDate($("#ToDate").val()) + '';
+           
+            $("#message").text(titleText);
+            /**/
+           // var table;
+            var id = 1;
+            table = $("#datatable").DataTable({
+                "scrollY": '100vh',
+                "scrollCollapse": false,
+                "paging": false,
+                "searching": false,
+                "ordering": false,
+                dom: 'l<"toolbar">frtip',
+                "columnDefs": [{
+                    'targets': 0,
+                    'searchable': false,
+                    'orderable': false,
+                    'width': '1%',
+                    'className': 'dt-body-center',
+                    'render': function (full, type, data, meta) {
+                        return '<input type="checkbox" id="' + ("Check" + id++) + '" value="' + (data[0])+'" name="id[]" class="call-checkbox" >';
+                    }
+                }],
+                'rowCallback': function (row, data, dataIndex) {
+                    var rowId = data[0];
+                    if ($.inArray(rowId, rows_selected) !== -1) {
+                        $(row).find('input[type="checkbox"]').prop('checked', true);
+                        $(row).addClass('selected');
+                    }
+                }
+            });
+            $('#datatable tbody').on('click', 'input[type="checkbox"]', function (e) {
+                var $row = $(this).closest('tr');
+                // Get row data
+                var data = table.row($row).data();
+                // Get row ID
+                var rowId = data[0];
+                // Determine whether row ID is in the list of selected row IDs
+                var index = $.inArray(rowId, rows_selected);
+                // If checkbox is checked and row ID is not in list of selected row IDs
+                if (this.checked && index === -1) {
+                    rows_selected.push(rowId);
+                    // Otherwise, if checkbox is not checked and row ID is in list of selected row IDs
+                } else if (!this.checked && index !== -1) {
+                    rows_selected.splice(index, 1);
+                }
+                if (this.checked) {
+                    $row.addClass('selected');
+                } else {
+                    $row.removeClass('selected');
+                }
+                // Update state of "Select all" control
+                updateDataTableSelectAllCtrl(table);
+
+                // Prevent click event from propagating to parent
+                e.stopPropagation();
+            });
+
+            // Handle click on table cells with checkboxes
+            //$('#datatable').on('click', 'tbody td, thead th:first-child', function (e) {
+            //    $(this).parent().find('input[type="checkbox"]').trigger('click');
+            //});
+
+            // Handle click on "Select all" control
+            $('thead input[name="select_all"]', table.table().container()).on('click', function (e) {
+                if (this.checked) {
+                    $('#datatable tbody input[type="checkbox"]:not(:checked)').trigger('click');
+                } else {
+                    $('#datatable tbody input[type="checkbox"]:checked').trigger('click');
+                }
+
+                // Prevent click event from propagating to parent
+                e.stopPropagation();
+            });
+           // $("div.toolbar").html('<b>TOTAL ROW COUNT: ' + table.rows().count() + '</b>');
+            $('#SelectedDC').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                enableFiltering: true
+            });
+            $('#SelectedStores').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedSKUs').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+         
+        });
+
+        function convertDate(dateString) {
+            var p = dateString.split(/\D/g)
+            return [p[2], p[1], p[0]].join("-");
+        }
+
+        function CreateListToDeleteOrder()
+        {
+            var productlist = [];
+            var tableinfo = table.page.info();
+          
+            var hasReason = true;
+            total = tableinfo.recordsTotal;
+            var oTable = $('#datatable').dataTable();
+            var rowcollection = oTable.$(".call-checkbox:checked", { "page": "all" });
+                    rowcollection.each(function (index, elem) {
+                        var checkbox_value = $(elem).val();
+                        var ReasonValue = $("#Reason" + checkbox_value).val();
+                        //var ReasonText = $("#Reason" + checkbox_value).find('option:selected').text();
+                        //var CustomReason = $("#CustomReason" + checkbox_value ).val();
+                        //if (Action =='2')
+                            if (ReasonValue == null || ReasonValue == '' ) {
+                                hasReason = false;
+                            }
+                        var Items = {};
+                        Items.ProductId = checkbox_value;
+                        Items.Reason = ReasonValue;
+                        Items.CustomReason = ''; //CustomReason;
+                        productlist.push(Items);
+            });
+            if (productlist.length > 0 && hasReason != false) {
+                         var r = confirm("Are you Sure Want to Process?");
+                        if (r) {
+                            $('.loader').show();
+                                $.ajax({
+                                    url: "@Url.Action("OrderDeleteNewItems", "Order")",
+                                    type: "POST",
+                                    data: {
+                                        "Items": productlist
+                                        //"Action": vAction,
+                                    },
+                                    success: function (response) {
+                                        if (response) {
+                                            alert("Request Processed");
+                                            window.location = "@Url.Action("OrderDeleteNew", "Order")"
+                                        }
+                                    }
+                                });
+                            }
+                    }
+                    else {
+                        $('.loader').hide();
+                            alert("Please Select Reason the record to delete.");
+                    }
+                }
+
+        function updateDataTableSelectAllCtrl(Mtable){
+            var $table = Mtable.table().node();
+            var $chkbox_all = $('tbody input[type="checkbox"]', $table);
+            var $chkbox_checked = $('tbody input[type="checkbox"]:checked', $table);
+            var chkbox_select_all = $('thead input[name="select_all"]', $table).get(0);
+            var chkbox_select_all_display = $('input[name="select_all"]').get(0);
+
+            // If none of the checkboxes are checked
+            if ($chkbox_checked.length === 0) {
+                chkbox_select_all.checked = false;
+                chkbox_select_all_display.checked = false;
+                if ('indeterminate' in chkbox_select_all) {
+                    chkbox_select_all.indeterminate = false;
+                    chkbox_select_all_display.indeterminate = false;
+                }
+
+                // If all of the checkboxes are checked
+            } else if ($chkbox_checked.length === $chkbox_all.length) {
+                chkbox_select_all.checked = true;
+                chkbox_select_all_display.checked = true;
+                if ('indeterminate' in chkbox_select_all) {
+                    chkbox_select_all.indeterminate = false;
+                    chkbox_select_all_display.indeterminate = false;
+                }
+
+                // If some of the checkboxes are checked
+            } else {
+                chkbox_select_all.checked = false;
+                chkbox_select_all_display.checked = false;
+                if ('indeterminate' in chkbox_select_all) {
+                    chkbox_select_all.indeterminate = true;
+                    chkbox_select_all_display.indeterminate = true;
+                }
+            }
+        }
+    </script>
+</div>

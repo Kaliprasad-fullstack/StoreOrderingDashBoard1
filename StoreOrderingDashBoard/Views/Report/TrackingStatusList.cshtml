@@ -1,0 +1,605 @@
+﻿@using StoreOrderingDashBoard.Models;
+
+@{
+    ViewBag.Title = "TrackingStatusList";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<link href="~/Content/vendors/jquery-ui/jquery-ui.css" rel="stylesheet" />
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<script src="~/Content/vendors/jquery-ui/jquery-ui.js"></script>
+<script src="~/Content/vendors/jquery-ui/jquery-ui.min.js"></script>
+<link href="~/Content/vendors/nprogress/nprogress.css" rel="stylesheet">
+<script src="~/Content/vendors/nprogress/nprogress.js" type="text/javascript"></script>
+<script src="~/Content/vendors/jQuery-Smart-Wizard/js/jquery.smartWizard.js" type="text/javascript"></script>
+<script src="~/Content/vendors/bootstrap/dist/js/bootstrap.bundle.min.js" type="text/javascript"></script>
+<script src="~/Content/vendors/fastclick/lib/fastclick.js" type="text/javascript"></script>
+<script src="~/Content/vendors/datatables.net/js/jquery.dataTables.min.js"></script>
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Order Tracking Details </h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <br />
+                        <form id="TrackStatusList">
+                            <div class="row form-group">
+                                <div class="col-md-12">
+                                    <div class="col-md-4">
+                                        <label>Unique Reference ID<span class="required">*</span></label>
+                                        <input id="URefID" class="form-control" type="text" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label>Invoice No <span class="required">*</span></label>
+                                        <input id="InvoiceNo" class="form-control" type="text" />
+                                    </div>
+                                    <div class="col-md-4">
+                                        <label for="Items"></label>
+                                        <button class="btn btn-info" style="margin-bottom:-61px;" id="btnSearch" type="button" onclick="Search()">Search</button>
+                                    </div>
+                                </div><br />
+                                <div id="tb1" class="col-md-12">
+                                    <table id="tbl1" class="display table-bordered" cellspacing="0">
+                                       
+                                    </table>
+                                    <div class="col-md-12">
+                                        <br />
+                                        <button type="button" id="model" class="btn btn-primary" style="float:left" onclick="OpenModel()">VIEW POD IMAGE </button>
+                                    </div>
+                                </div>
+                                <div id="tb2" class="col-md-12">
+                                    <div class="modal-body" style="overflow-x:scroll">
+                                        <table id="tbl2" class="display table-bordered" cellspacing="0">
+                                           
+                                        </table>
+                                    </div>
+                                    <div class="col-md-12">
+                                        <br />
+                                        <button type="button" id="model" class="btn btn-primary" style="float:left" onclick="OpenModel()">VIEW POD IMAGE </button>
+                                    </div>
+                                </div>
+                                <div class="col-md-12" id="processflowURFID">
+                                    <div id="wizard" class="form_wizard wizard_horizontal">
+                                        <ul class="wizard_steps">
+                                            <li>
+                                                <a href="#step-1" id="1">
+                                                    <span class="step_no step_no1">Booked</span>
+                                                    <span id="bookdate" class="step_descr">
+                                                    </span><br />
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="#step-2" id="2">
+                                                    <span class="step_no step_no2">Dispatched</span>
+                                                    <span id="dispatchdate" class="step_descr">
+                                                    </span><br />
+                                                    <span id="Vno"></span><br />
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="#step-3" id="3">
+                                                    <span class="step_no step_no3">Delivered</span>
+                                                    <span id="delivereddate" class="step_descr">
+                                                    </span><br />
+                                                    <span id="Vno1"></span>&nbsp;
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="col-md-12" id="processflowInvoiceNo">
+                                    <div id="wizard" class="form_wizard wizard_horizontal">
+                                        <ul class="wizard_steps">
+                                            <li>
+                                                <a href="#step-1" id="1">
+                                                    <span class="step_no step_no1">Booked</span>
+                                                    <span id="bookdateInv" class="step_descr"></span><br />
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="#step-2" id="2">
+                                                    <span class="step_no step_no2">Dispatched</span>
+                                                    <span id="dispatchdateInv" class="step_descr"></span><br />
+                                                    <span id="VnoInv"></span><br />
+                                                    <span>SKUCount - <span id="skucnt"></span></span><br />
+                                                    <span>TotalQty - <span id="totalqty"></span></span>
+                                                </a>
+                                            </li>
+                                            <li>
+                                                <a href="#step-3" id="3">
+                                                    <span class="step_no step_no3">Delivered</span>
+                                                    <span id="delivereddateInv" class="step_descr"></span><br />
+                                                    <span id="status"></span>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </div>
+                                </div>
+                                <div class="modal fade" id="myModal" role="dialog" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                                                <h4 class="modal-title">POD Uploaded Images</h4>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="col-md-12 col-sm-12 col-xs-12">
+                                                    <div class="row" id="image">
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </form>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    $('#tb1').hide();
+    $('#tb2').hide();
+    $('#processflowURFID').hide();
+    $('#processflowInvoiceNo').hide();
+    var table;
+    function OpenModel() {
+           var uniqueReferenceID = $('#URefID').val();
+           var InvoiceNo = $('#InvoiceNo').val();
+        var custid = '@SessionValues.LoggedInCustId';
+
+           $('#image').html('');
+           $.ajax({
+            url: "@Url.Action("GetPODImages","Report")",
+            type: "POST",
+            sync: false,
+            data: { uniqueReferenceID: uniqueReferenceID, InvoiceNo: InvoiceNo,custid:custid },
+               success: function (response) {
+                   if (response.data != null && response.data != '') {
+                           $('#myModal').modal('show');
+                      for (var i = 0; i < response.data.length; i++) {
+                          var imagePath = "/PODImages/" + response.InvoicePath + "/" + response.data[i].ImgName;
+                           var board = document.createElement('div');
+                           board.className = "col-md-6";
+                           board.id = "div2";
+                           var board1 = document.createElement('div');
+                           board1.className = "thumbnail";
+                           board1.id = "div3";
+                           var imgdiv = document.createElement('div');
+                           imgdiv.className = "image view view-first";
+                           imgdiv.id = "imgshowdiv";
+                           var img = document.createElement('img');
+                           img.src = imagePath;
+                           img.width = 200;
+                           img.height = 120;
+                           imgdiv.append(img);
+                           var boardcaption = document.createElement('div');
+                           boardcaption.className = "caption";
+                           boardcaption.id = "imgname";
+                           boardcaption.append(response.data[i].ImgName);
+                           board.append(board1);
+                           board1.appendChild(imgdiv);
+                           board1.appendChild(boardcaption);
+                           document.getElementById('image').append(board);
+
+                       }
+
+                   }
+                   else {
+                        alert("Image not available");
+                   }
+
+            },
+            Error: function (response) {
+                alert("unable to load image.");
+            }
+            });
+    }
+    function ConvertJSONDatetoDate(date)
+    {
+        var nowDate = new Date(parseInt(date.substr(6)));
+                    var dd = nowDate.getDate();
+                    var mm = nowDate.getMonth()+1;
+                    var yy = nowDate.getFullYear();
+                    var hr = nowDate.getHours();
+                    var mi = nowDate.getMinutes();
+                    if (hr < 10) {
+                      hr = '0' + hr;
+                     }
+                      if (mi < 10) {
+                          mi = '0' + mi;
+                      }
+                   var time = hr + ":" + mi
+                    if (dd < 10) {
+                        dd = '0' + dd;
+                    }
+                    if (mm < 10) {
+                        mm = '0' + mm;
+        }
+
+        var result = '';
+        if (time == '00:00')
+            result = dd + "/" + mm + "/" + yy;
+        else
+            result = dd + "/" + mm + "/" + yy + " " + time;
+                    return result;
+    }
+    function convert(cdDt) {
+                       var date = new Date(cdDt),
+                        mnth = ("0" + (date.getMonth() + 1)).slice(-2),
+                         day = ("0" + date.getDate()).slice(-2);
+                        var hh = date.getHours();
+                        var Min = date.getMinutes();
+                        if (hh < 10) {
+                          hh = '0' + hh;
+                         }
+                          if (Min < 10) {
+                              Min = '0' + Min;
+                          }
+                        var time = hh + ":" + Min
+                        var str = [day, mnth, date.getFullYear()].join("/") + " " + time;
+                        return str;
+                    }
+    function Search()
+    {
+            $('#tb1').hide();
+            $('#tb2').hide();
+            $('#processflowURFID').hide();
+            $('#processflowInvoiceNo').hide();
+            var uniqueReferenceID = $('#URefID').val();
+            var InvoiceNo = $('#InvoiceNo').val();
+            var custid = '@SessionValues.LoggedInCustId';
+            $("#bookdate").html("");
+            $("#dispatchdate").html("");
+            $("#delivereddate").html("");
+            $("#tblcount").html("");
+            $('#Vno').html("");
+            $('#Vno1').html("");
+            $('#skucnt').html("");
+            $('#totalqty').html("");
+            $('#status').html("");
+
+            $("#1").removeClass("disabled").attr("href", "#step-1");
+            $("#2").removeClass("disabled").attr("href", "#step-2");
+            $("#3").removeClass("disabled").attr("href", "#step-3");
+
+            if (InvoiceNo.length != 0 & uniqueReferenceID.length != 0)
+            {
+                $('#processflowURFID').hide();
+                $('#processflowInvoiceNo').hide();
+                $.ajax({
+                        url: "@Url.Action("GetTrackingList","Report")",
+                        type: "POST",
+                        sync: false,
+                        data: { Action: 'URIDInvoiceNo', uniqueReferenceID: uniqueReferenceID, InvoiceNo: InvoiceNo,custid:custid  },
+                        success: function (response) {
+                            if (response.data != 0)
+                            {
+
+                                $('#tb2').show();
+                                var ItemArray = [];
+                                for (var i = 0; i < response.data.length; i++) {
+                                    var aaray = [];
+                                    aaray.push(response.data[i].uniqueReferenceID);
+                                    aaray.push(response.data[i].SKUCode);
+                                    aaray.push(response.data[i].SKUDesc);
+                                    aaray.push(response.data[i].StoreCode);
+                                    aaray.push(response.data[i].StoreName);
+                                    aaray.push(response.data[i].Invoice_Number);
+                                    aaray.push(response.data[i].Invoice_Quantity);
+                                    aaray.push(response.data[i].TrackingStatus);
+                                    ItemArray.push(aaray);
+                                }
+                                    $('#tbl2').DataTable({
+                                         destroy: true,
+                                    data: ItemArray,
+                                    columns: [
+                                        { title: "UniqueReferenceID" },
+                                        { title: "SKUCode" },
+                                        {title:"SKU Desc"},
+                                        { title: "StoreCode" },
+                                        { title: "StoreName" },
+                                        { title: "InvoiceNumber" },
+                                        { title: "InvoiceQuantity" },
+                                        { title: "Status" }
+                                    ]
+                                    });
+                                //--------------------------------------------
+                                $.ajax(
+                                    {
+                                    url: "@Url.Action("GetStatusList","Report")",
+                                    type: "POST",
+                                    sync: false,
+                                    data: {uniqueReferenceID: uniqueReferenceID, InvoiceNo: InvoiceNo,custid:custid },
+                                        success: function (response)
+                                        {
+                                            if (response.data != '')
+                                            {
+                                                debugger;
+                                                $('#processflowURFID').show();
+                                                if (response.data[0].Booked == '') {
+                                                    $("#bookdate").html("Pending");
+                                                    $('.step_no1').css('background-color', 'gray');
+                                                }
+                                                else {
+                                                    $("#bookdate").html(ConvertJSONDatetoDate(response.data[0].Booked));
+                                                    $('.step_no1').css('background-color','red');
+                                                }
+                                                if (response.data[0].Dispatch == '') {
+                                                    $('#dispatchdate').html("Pending");
+                                                    $('.step_no2').css('background-color', 'gray');
+                                                }
+                                                else {
+                                                    $('.step_no2').css('background-color', '#FFAA1D');
+                                                    $('#dispatchdate').html(response.data[0].Dispatch);
+                                                    $('#Vno').html(response.data[0].VehicleNo);
+                                                }
+                                                if (response.data[0].Delivered == '') {
+                                                    $('#delivereddate').html("Pending");
+                                                    $('.step_no3').css('background-color', 'gray');
+                                                }
+                                                else
+                                                {
+                                                    $('#delivereddate').html(response.data[0].Delivered);
+                                                    $('.step_no3').css('background-color', 'green');
+                                                    $('#Vno1').html(response.data[0].VehicleNo);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                $('#processflowInvoiceNo').hide();
+                                            }
+                                        },
+                                        Error: function (response) {
+                                            alert("unable to load.");
+                                        }
+                                    });
+                            
+                             //--------------------------------------------
+
+                            }
+                            else
+                            {
+                                 alert('Data not available');
+                            }
+                        },
+                        Error: function (response) {
+                            alert("unable to load .");
+                        }
+                       });
+            }
+            else
+            {
+                //URDID
+                if (uniqueReferenceID.length != 0 && InvoiceNo.length == 0)
+                {
+                    $('#processflowInvoiceNo').hide();
+                    $.ajax({
+                        url: "@Url.Action("GetTrackingList","Report")",
+                        type: "POST",
+                        sync: false,
+                        data: { Action: 'URID', uniqueReferenceID: uniqueReferenceID, InvoiceNo: InvoiceNo,custid:custid },
+                        success: function (response)
+                        {
+                            if (response.data != 0)
+                            {
+                                $('#tb1').show();
+                                var ItemArray = [];
+                                for (var i = 0; i < response.data.length; i++) {
+                                    var aaray = [];
+                                    aaray.push(response.data[i].uniqueReferenceID);
+                                    aaray.push(response.data[i].SKUCode);
+                                    aaray.push(response.data[i].SKUDesc);
+                                    aaray.push(response.data[i].StoreCode);
+                                    aaray.push(response.data[i].StoreName);
+                                    aaray.push(response.data[i].Invoice_Number);
+                                    aaray.push(response.data[i].Invoice_Quantity);
+                                    aaray.push(response.data[i].BookQty);
+                                    aaray.push(response.data[i].TrackingStatus);
+                                    ItemArray.push(aaray);
+                                }
+                                    $('#tbl1').DataTable({
+                                    destroy: true,
+                                    data: ItemArray,
+                                    columns: [
+                                        { title: "UniqueReferenceID" },
+                                        { title: "SKUCode" },
+                                        {title:"SKUDesc"},
+                                        { title: "StoreCode" },
+                                        { title: "StoreName" },
+                                        { title: "InvoiceNumber" },
+                                        { title: "InvoiceQuantity" },
+                                        { title: "BookQty" },
+                                        { title: "Status" }
+                                    ]
+                                    });
+
+                                $.ajax({
+                                    url: "@Url.Action("GetStatusList","Report")",
+                                    type: "POST",
+                                    sync: false,
+                                    data: {uniqueReferenceID: uniqueReferenceID, InvoiceNo: InvoiceNo,custid:custid },
+                                        success: function (response)
+                                        {
+                                            if (response.data != '')
+                                            {
+                                                debugger;
+                                                $('#processflowURFID').show();
+                                                if (response.data[0].Booked == '') {
+                                                    $("#bookdate").html("Pending");
+                                                    $('.step_no1').css('background-color', 'gray');
+                                                }
+                                                else {
+                                                    $("#bookdate").html(ConvertJSONDatetoDate(response.data[0].Booked));
+                                                    $('.step_no1').css('background-color','red');
+                                                }
+                                                if (response.data[0].Dispatch == '') {
+                                                    $('#dispatchdate').html("Pending");
+                                                    $('.step_no2').css('background-color', 'gray');
+                                                }
+                                                else {
+                                                    $('.step_no2').css('background-color', '#FFAA1D');
+                                                    $('#dispatchdate').html(response.data[0].Dispatch);
+                                                    $('#Vno').html(response.data[0].VehicleNo);
+                                                }
+                                                if (response.data[0].Delivered == '') {
+                                                    $('#delivereddate').html("Pending");
+                                                    $('.step_no3').css('background-color', 'gray');
+                                                }
+                                                else
+                                                {
+                                                    $('#delivereddate').html(response.data[0].Delivered);
+                                                    $('.step_no3').css('background-color', 'green');
+                                                    $('#Vno1').html(response.data[0].VehicleNo);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                $('#processflowInvoiceNo').hide();
+                                            }
+                                        },
+                                        Error: function (response) {
+                                            alert("unable to load.");
+                                        }
+                                    });
+                            }
+                            else {
+                                alert('Data not available');
+                            }
+
+                        },
+                        Error: function (response) {
+                            alert("unable to load .");
+                        }
+                    });
+                }
+                else
+                {
+                  $('#tb1').hide();
+                }
+
+                //INVOICE
+                if (InvoiceNo.length != 0 && uniqueReferenceID.length == 0)
+                {
+                    $.ajax({
+                            url: "@Url.Action("GetTrackingList","Report")",
+                            type: "POST",
+                            sync: false,
+                            data: { Action: 'InvoiceNo', uniqueReferenceID: uniqueReferenceID, InvoiceNo: InvoiceNo,custid:custid  },
+                        success: function (response) {
+                            if (response.data != 0 && response.data != undefined)
+                            {
+                                $('#tb2').show();
+                                var ItemArray = [];
+                                for (var i = 0; i < response.data.length; i++) {
+                                    var aaray = [];
+                                    aaray.push(response.data[i].uniqueReferenceID);
+                                    aaray.push(response.data[i].SKUCode);
+                                    aaray.push(response.data[i].SKUDesc);
+                                    aaray.push(response.data[i].StoreCode);
+                                    aaray.push(response.data[i].StoreName);
+                                    aaray.push(response.data[i].Invoice_Number);
+                                    aaray.push(response.data[i].Invoice_Quantity);
+                                    aaray.push(response.data[i].TrackingStatus);
+                                    ItemArray.push(aaray);
+                                }
+                                $('#tbl2').DataTable({
+                                        destroy: true,
+                                        data: ItemArray,
+                                        columns: [
+                                            { title: "UniqueReferenceID" },
+                                            { title: "SKUCode" },
+                                            {title: "SKUDesc"},
+                                            { title: "StoreCode" },
+                                            { title: "StoreName" },
+                                            { title: "InvoiceNumber" },
+                                            { title: "InvoiceQuantity" },
+                                            { title: "Status" }
+                                        ]
+                                    });
+                                $.ajax({
+                                    url: "@Url.Action("GetStatusList","Report")",
+                                    type: "POST",
+                                    sync: false,
+                                    data: {uniqueReferenceID: uniqueReferenceID, InvoiceNo: InvoiceNo,custid:custid },
+                                    success: function (response)
+                                        {
+                                            if (response.data != '')
+                                            {
+                                                 $('#processflowInvoiceNo').show();
+                                                 if (response.data[0].Booked == '') {
+                                                     $("#bookdateInv").html("Pending");
+                                                     $('.step_no1').css('background-color', 'gray');
+                                                 }
+                                                 else
+                                                 {
+                                                     $("#bookdateInv").html(ConvertJSONDatetoDate(response.data[0].Booked));
+                                                    $('.step_no1').css('background-color','red');
+                                                 }
+                                                if (response.data[0].Dispatch == '')
+                                                {
+                                                 $('#dispatchdateInv').html("Pending");
+                                                 $('.step_no2').css('background-color', 'gray');
+                                                }
+                                                 else
+                                                {
+                                                 $('.step_no2').css('background-color', '#FFAA1D');
+                                                    $('#dispatchdateInv').html(response.data[0].Dispatch);
+                                                 $('#VnoInv').html(response.data[0].VehicleNo);
+                                                 $('#skucnt').html(response.data[0].SKUCnt);
+                                                 $('#totalqty').html(response.data[0].TotalQty);
+                                                }
+                                                if (response.data[0].Delivered == '') {
+                                                    $('#delivereddateInv').html("Pending");
+                                                    $('.step_no3').css('background-color', 'gray');
+                                                }
+                                                 else
+                                                {
+                                                    $('#delivereddateInv').html((response.data[0].Delivered));
+
+                                                     $('.step_no3').css('background-color', 'green');
+                                                    $('#status').html(response.data[0].Status);
+                                                }
+                                            }
+                                            else
+                                            {
+                                                 $('#processflowURFID').hide();
+                                            }
+                                        },
+                                    Error: function (response) {
+                                        alert("unable to load list.");
+                                    }
+                                    });
+                                }
+                                else
+                                {
+                                    alert(' Custom Data not available');
+                                }
+                            },
+                            Error: function (response) {
+                                alert("unable to load list.");
+                            }
+                    });
+                }
+                else
+                {
+                  $('#tb2').hide();
+                }
+
+            }
+    }
+
+
+</script>
+

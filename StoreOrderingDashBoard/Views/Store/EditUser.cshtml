@@ -1,0 +1,86 @@
+﻿@using DAL
+@model Users
+@{
+    ViewBag.Title = "EditUser";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Edit Store User @*<small>@Model.Name</small>*@</h3>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <br />
+                        @Html.ValidationSummary(false, "", new { @class = "text-danger" })
+                        <form id="demo-form2" data-parsley-validate class="form-horizontal form-label-left" action="@Url.Action("EditUser","Store")" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" id="Id" name="Id" value="@Model.Id" style="display:none" />
+                            <input type="hidden" id="Department" name="Department" value="Dc Manager" style="display:none" />
+                            <input type="hidden" id="StoreId" name="StoreId" value="@Model.StoreId" style="display:none" />
+                            <input type="hidden" id="StoreName" name="StoreName" value="@Model.StoreName" style="display:none" />
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="Name">
+                                    Name <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="Name" name="Name" class="form-control" required="required" value="@Model.Name" />
+                                    @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="EmailAddress">
+                                    Email Address <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="email" id="EmailAddress" name="EmailAddress" class="form-control" required="required" value="@Model.EmailAddress" />
+                                    @Html.ValidationMessageFor(model => model.EmailAddress, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="EmailAddress">
+                                    Password <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    <input type="text" id="Password" name="Password" class="form-control" required="required" value="@Model.Password" />
+                                    @Html.ValidationMessageFor(model => model.Password, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="LocationId">
+                                    Location <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.DropDownListFor(model => model.Locations.LocationId, new SelectList(ViewBag.Locations, "Value", "Text",Model.Locations.LocationId), "Please select Location", new { @class = "form-control", required = "required" })
+                                    @Html.ValidationMessageFor(model => model.LocationId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label class="control-label col-md-3 col-sm-3 col-xs-12" for="LocationId">
+                                    Chr-Mkr <span class="required">*</span>
+                                </label>
+                                <div class="col-md-6 col-sm-6 col-xs-12">
+                                    @Html.DropDownListFor(model => model.ChrMkrFlag, new SelectList(ViewBag.ChrMkrList, "Value", "Text"), "Please select", new { @class = "form-control", required = "required" })
+                                    @Html.ValidationMessageFor(model => model.LocationId, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="ln_solid"></div>
+                            <div class="form-group">
+                                <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                                    <a class="btn btn-link" href="@Url.Action("StoreUsers","Store",new { StoreId = Model.StoreId })">Back to UserList</a>
+                                    <button class="btn btn-primary" type="reset">Reset</button>
+                                    <button type="submit" class="btn btn-success" onsubmit="">Submit</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

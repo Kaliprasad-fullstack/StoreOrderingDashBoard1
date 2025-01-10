@@ -1,0 +1,60 @@
+﻿@using DAL
+@{
+    ViewBag.Title = "ItemList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_title">
+                    <h2>Order Detail</h2>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+
+                    <table id="datatable-buttons" class="table table-striped table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Product Id</th>
+                                <th>Item Code</th>
+                                <th>Item Description</th>
+                                @*<th>PackingDescription</th>*@
+                                <th>Category</th>
+                                <th>UOM</th>
+                                <th>Max Order Limit</th>
+                                <th>Quantity</th>
+
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            @if (ViewBag.Itemlist != null)
+                            {
+                                foreach (OrderDetail detail in ViewBag.Itemlist)
+                                {
+                                    <tr>
+                                        <td>@detail.Item.Id</td>
+                                        <td>@detail.Item.SKUCode</td>
+                                        <td>@detail.Item.SKUName</td>
+                                        <td>@detail.Item.Category.CaseConversion</td>
+                                        <td>@detail.Item.UOMmaster.UnitofMasureDescription</td>
+                                        <td>@detail.Item.MaximumOrderLimit</td>
+                                        <td>@detail.Quantity</td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    <script>
+        $(".left_col").hide();
+        $(".nav_menu").hide();
+    </script>
+</div>

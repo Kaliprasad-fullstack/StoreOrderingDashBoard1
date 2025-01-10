@@ -1,0 +1,62 @@
+﻿
+@{
+    ViewBag.Title = "UploadOrderExcel";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    int? RowInserted = ViewBag.RowsInserted != null ? (int)ViewBag.RowsInserted : 0;
+    int? RowsCount = ViewBag.RowsCount != null ? ViewBag.RowsCount : null;
+}
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <div class="row">
+        <div class="clearfix"></div>
+        <div class="row">
+
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        <h2>Upload Inward File</h2>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div class="x_content">
+                        @using (Html.BeginForm("UploadInward", "Order", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                        {
+                            @Html.AntiForgeryToken()
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="form-group form-inline">
+                                        <label class="control-label" for="FileUpload1">
+                                            Select File <span class="required">*</span>
+                                        </label>
+                                        <input type="file" accept="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" id="file" name="file" class="form-control" required="" />
+                                    </div>
+                                </div>
+                                <div class="col-md-3 pull-right">
+                                    <input class="search btn btn-success btn-sm" type="submit" value="Submit" />
+                                </div>
+                            </div>
+                            if (RowsCount != null && RowsCount.Value > 0)
+                            {
+                                <div class="row">
+                                    <div class="col-sm-12 te">
+                                        Rows inserted :- @RowInserted / @RowsCount
+                                    </div>
+                                </div>
+                                if (RowsCount == RowInserted)
+                                {
+                                <script>
+                                    $(document).ready(function () {
+                                            window.location = '@Url.Action("UploadedFiles", "Order")';
+                                    });
+                                </script>
+                                }
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+            @Html.ValidationSummary(true, "Errors:", new { @class = "alert text-danger" })
+        </div>
+    </div>
+</div>
+

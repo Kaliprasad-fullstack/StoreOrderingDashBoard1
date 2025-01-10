@@ -1,0 +1,192 @@
+﻿
+@{
+    ViewBag.Title = "UploadedFiles";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<div class="right_col" role="main">
+    <!-- top tiles -->
+    <div class="page-title">
+        <div class="title_left">
+            <h3>Uploaded Files @*<small>Some examples to get you started</small>*@</h3>
+        </div>
+    </div>
+    <!-- /top tiles -->
+    @*<div class="row">
+            <div class="col-md-6">
+                <div class="form-group form-inline">
+                    <label class="control-label" for="FileUpload1">
+                        Select File <span class="required">*</span>
+                    </label>
+                    <input type="date" id="UploadedDatefile" name="UploadedDatefile" class="form-control" required="" />
+                </div>
+            </div>
+            <div class="col-md-3 pull-right">
+                <input class="search btn btn-success btn-sm" type="submit" id="UploadedDatefileSearch" value="Submit" />
+            </div>
+        </div>*@
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <table id="example" class="display" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th>File Name</th>
+                                <th>Uploaded Date</th>
+                                <th>File Type</th>
+                                <th>Status</th>
+                                <th>Error Log</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<script>
+    function LoadTable() {
+        //var Token = $('input[name="__RequestVerificationToken"]', form).val();
+        var UploadedDatefile = $('#UploadedDatefile').val();
+        table.destroy();
+        table = $("#example").DataTable({
+                        "ajax": {
+                            "url": '@Url.Action("GetUploadedFileDetails", "Order")',
+                            "type": "POST",
+                            "dataType": "JSON",
+                            "data": {
+                                "FileType": FileType,
+                            },
+                            },
+                        "ordering": false,
+                        "columns": [
+                            {
+                                "data": "File Name", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p id="' + row.Id + '">' + row.User_FileName+ '</p>';
+                                }
+                            },
+                            {
+                                "data": "Uploaded Date", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p>' + ConvertJSONDate(row.Upload_Date) + '</p>';
+                                }
+                            },
+                            {
+                                "data": "File Type", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p id="' + row.Id + '">' + row.FileType + '</p>';
+                                }
+                            },
+                            {
+                                "data": "Status", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p id="' + row.Id + '">' + row.Status + '</p>';
+                                }
+                            },
+                            {
+                                "data": "Error Log", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.Errors!=0)
+                                              //return '<a target="_blank" href="@Url.Action("ErrorLog","Order")?FileId=' + row.Id + '" ><img src="/images/Text-Icon.png" style="height:20px; width:auto;" title="download error log"></a>';
+                                        return '<a target="_blank" href="@Url.Action("ErrorLog","Order")?FileId=' + row.Id + '&FileType=' + row.FileType + '" ><img src="/images/Text-Icon.png" style="height:20px; width:auto;" title="download error log"></a>';
+                                    else
+                                        return '';
+                                }
+                            }
+                        ],
+                        "paging": true,
+                        "searching": true
+                    });
+    }
+    var table;
+    function ConvertJSONDate(date) {
+        var nowDate = new Date(parseInt(date.substr(6)));
+        var dd = nowDate.getDate();
+        var MM = nowDate.getMonth() + 1;
+        var yy = nowDate.getFullYear();
+        if (dd < 10) {
+            dd = '0' + dd;
+        }
+        if (MM < 10) {
+            MM = '0' + MM;
+        }
+        var HH = nowDate.getHours();
+        if (HH < 10) {
+            HH = '0' + HH;
+        }
+        var mm = nowDate.getMinutes();
+        if (mm < 10) {
+            mm = '0' + mm;
+        }
+        var result = dd + "/" + MM + "/" + yy + " " + HH + ":" + mm;
+        return result;
+    }
+     function show_image(src, width, height, alt) {
+        var img = document.createElement("img");
+        img.src = src;
+        img.width = width;
+        img.height = height;
+        img.alt = alt;
+        document.body.appendChild(img);
+    }
+    $(document).ready(function () {
+        FileType = [];
+        FileType.push("ORDER")
+        table = $("#example").DataTable({
+                        "ajax": {
+                            "url": '@Url.Action("GetUploadedFileDetails", "Order")',
+                            "type": "POST",
+                            "dataType": "JSON",
+                            "data": {
+                                "FileType": FileType,
+                            },
+            },            
+                        "ordering": false,
+                        "columns": [
+                            {
+                                "data": "File Name", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p id="' + row.Id + '">' + row.User_FileName+ '</p>';
+                                }
+                            },
+                            {
+                                "data": "Uploaded Date", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p>' + ConvertJSONDate(row.Upload_Date)+ '</p>';
+                                }
+                            },
+                            {
+                                "data": "File Type", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p id="' + row.Id + '">' + row.FileType + '</p>';
+                                }
+                            },
+                            {
+                                "data": "Status", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    return '<p id="' + row.Id + '">' + row.Status + '</p>';
+                                }
+                            },
+                            {
+                                "data": "Error Log", "autoWidth": true,
+                                render: function (data, type, row, meta) {
+                                    if (row.Errors != 0)
+                                        return '<a target="_blank" href="@Url.Action("ErrorLog","Order")?FileId=' + row.Id + '&FileType=' + row.FileType + '" ><img src="/images/Text-Icon.png" style="height:20px; width:auto;" title="download error log"></a>';
+                                    else
+                                      return '';
+                                }
+                            }
+                        ],
+                        "paging": true,
+                        "searching": true
+                    });
+        window.setInterval(function () {
+            LoadTable()
+        }, 30000);
+    });
+</script>
+

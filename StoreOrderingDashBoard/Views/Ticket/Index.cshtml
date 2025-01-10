@@ -1,0 +1,345 @@
+﻿@model List<TicketDetails>
+@using DAL
+@using BAL
+@using System.Globalization
+@{
+    ViewBag.Title = "Ticket List";
+    if (StoreOrderingDashBoard.Models.SessionValues.RoleId == 2)
+    {
+        Layout = "~/Views/Shared/_AdminLayout.cshtml";
+    }
+    else
+    {
+        Layout = "~/Views/Shared/_Layout.cshtml";
+    }
+}
+<link rel="stylesheet" href="https://cdn.datatables.net/2.0.6/css/dataTables.dataTables.css" />
+<link rel="stylesheet" href="https://cdn.datatables.net/buttons/3.0.2/css/buttons.dataTables.css" />
+
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+
+<div class="right_col" role="main">
+    <div class="row">
+        @if (TempData.ContainsKey("SUCCESS"))
+        {
+            <div class="col-md-12">
+                <div class="alert alert-success alert-dismissible " role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                    <strong></strong> @TempData["SUCCESS"].ToString()
+                </div>
+            </div>
+        }
+        @if (TempData.ContainsKey("ERROR"))
+        {
+            <div class="col-md-12">
+                <div class="alert alert-warning alert-dismissible " role="alert">
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">×</span>
+                    </button>
+                    <strong></strong> @TempData["ERROR"].ToString()
+                </div>
+            </div>
+        }
+
+        <div class="page-title">
+            <div class="title_left">
+                <h3>Ticket List @*<small>Some examples to get you started</small>*@</h3>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_content">
+                        <br />
+                        <form id="_validateXTMkey" action="@Url.Action("Index","Ticket")" method="post">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    @Html.AntiForgeryToken()
+                                    <label for="SelectedstoreIds">FromDate <span class="required">*</span></label>
+                                    @(Html.TextBox("FromDate", "", new { @class = "form-control date", type = "text" }))
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="Categories">To date<span class="required">*</span></label>
+                                    @(Html.TextBox("ToDate", "", new { @class = "form-control date", type = "text" }))
+                                </div>
+                                <div class="col-md-4">
+                                    <label for="Items">Ticket Type <span class="required">*</span></label>
+                                    @(Html.ListBox("TicketTypeIds", new MultiSelectList(ViewBag.TicketTypes, "TicketTypeId", "TicketTypeName"), new { @class = "form-control", multiple = "multiple" }))
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-4">                                 
+                                    <label for="SelectedstoreIds">Status <span class="required">*</span></label>
+                                    @(Html.ListBox("TicketStatus", new MultiSelectList(ViewBag.Status, "Value", "Text"), new { @class = "form-control", multiple = "multiple" }))
+                                </div>
+
+                                @if (StoreOrderingDashBoard.Models.SessionValues.RoleId == 2)
+                                {
+                                    <div class="col-md-4">
+                                        @*@Html.AntiForgeryToken()*@
+                                        <label for="SelectedstoreIds">StoreCode <span class="required">*</span></label>
+                                        @(Html.ListBox("SelectedstoreIds", new MultiSelectList(ViewBag.Stores, "Id", "StoreCode"), new { @class = "form-control", multiple = "multiple" }))
+                                    </div>
+                                }
+                                <div class="col-md-4">
+                                    <label for="Categories">Order Number<span class="required">*</span></label>
+                                    @(Html.TextBox("OrderNumber", "", new { @class = "form-control" }))
+                                </div>
+
+                            </div>
+                            <div class="ln_solid"></div>
+                            <div class="form-group row">
+                                <div class="col-md-12">
+                                    <button class="btn btn-primary" type="submit">Search</button>
+                                    <button class="btn btn-success" type="submit" formaction="@Url.Action("Export","Ticket")" name="Flag" value="R" >Excel</button>
+                                </div>
+                            </div>
+                            <div class="form-group row">
+                                <div class="col-md-12">
+                                    @Html.ValidationSummary()
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+        <div class="row">
+            <div class="col-md-12 col-sm-12 col-xs-12">
+                <div class="x_panel">
+                    <div class="x_title">
+                        @*<h2>Default Example <small>Stores</small></h2>*@
+                        <ul class="nav navbar-right panel_toolbox">
+                            <li>
+                                <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                            </li>
+                        </ul>
+                        <div class="clearfix"></div>
+                    </div>
+                    <div>
+
+                        <div class="x_content">
+
+
+                            <table id="ticketlist" class="table table-striped table-bordered dataTable no-footer dtr-inline" role="grid" aria-describedby="datatable_info">
+                                <thead>
+                                    <tr role="row">
+                                        <th class="sorting_asc" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-sort="ascending" aria-label="TicketNo: activate to sort column descending" style="width: 110px;">Ticket No</th>
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="CreatedDate: activate to sort column ascending" style="width: 100px;">Ticket Raised Date</th>
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Createdtime: activate to sort column ascending" style="width: 100px;">Time</th>
+
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="TicketType: activate to sort column ascending" style="width: 100px;">Ticket Type</th>
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Description: activate to sort column ascending" style="width: 100px;">Description</th>
+                                        @if (StoreOrderingDashBoard.Models.SessionValues.RoleId == 2)
+                                        {
+                                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Customer: activate to sort column ascending" style="width: 110px;"> Customer</th>
+                                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Store: activate to sort column ascending" style="width: 110px;"> StoreCode</th>
+                                            <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Store: activate to sort column ascending" style="width: 110px;"> Store</th>
+                                        }
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Ticket Raised By: activate to sort column ascending" style="width: 100px;">Ticket Raised By</th>
+                                        <th class="sorting_asc" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-sort="ascending" aria-label="OrderNo: activate to sort column descending" style="width: 110px;">Order No</th>
+                                        <th class="sorting_asc" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-sort="ascending" aria-label="Contact No: activate to sort column descending" style="width: 110px;">Contact No</th>
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="ticketStatus: activate to sort column ascending" style="width: 110px;"> Status</th>
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Ticket Pending/Resolved (Days): activate to sort column ascending" style="width: 110px;"> Ticket Pending/Resolved (Days)</th>
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Remark: activate to sort column ascending" style="width: 110px;"> Remark</th>
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Ticket Images: activate to sort column ascending" style="width: 110px;"> Ticket Images</th>
+
+                                        @*<th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="ticketStatus: activate to sort column ascending" style="width: 110px;"> Status click</th>*@
+                                        <th class="sorting" tabindex="0" aria-controls="datatable" rowspan="1" colspan="1" aria-label="Action: activate to sort column ascending" style="width: 110px;"> Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (TicketDetails d in Model)
+                                    {
+                                        <tr>
+                                            <th>@d.TicketId</th>
+                                            <th>@d.CreatedDate.Value.ToString("dd-MMM-yyyy") </th>
+                                            <th>@d.CreatedDate.Value.ToString("hh:mm tt") </th>
+                                            <th>@d.TicketType </th>
+                                            <th>@d.Description</th>
+                                            @if (StoreOrderingDashBoard.Models.SessionValues.RoleId == 2)
+                                            {
+                                                <th>@d.CustomerName</th>
+                                                <th>@d.StoreCode</th>
+                                                <th>@d.StoreName</th>
+                                            }
+                                            <th>@d.TicketRaisedBy</th>
+                                            <th>@d.OrderNo</th>
+                                            <th>@d.ContactNo</th>
+                                            <th>@d.TicketStatus</th>
+                                            <th>@d.TicketPendingResolveDays</th>
+                                            <th>@d.AdminRemark</th>
+                                            <th>
+                                                @if (d.TicketImages != null && d.TicketImages.Count > 0)
+                                                {
+                                                    foreach (TicketImages img in d.TicketImages)
+                                                    {
+                                                        @*<a href="@Url.Action("DownloadTicketImages","Ticket", new { ImageFile=img.ImagePath, TicketId=img.TicketId })">
+                                                                <img style="width:2rem; height:2rem;" src="@Url.Action("DownloadTicketImages","Ticket", new { ImageFile=img.ImagePath, TicketId=img.TicketId })" />
+                                                            </a>*@
+                                                        <img id="@("MD-" + img.Id)" onclick="ViewImage('@("MD-" + img.Id)',@img.Id)" style="width:2rem; height:2rem;" src="@Url.Action("DownloadTicketImages","Ticket", new { ImageFile=img.ImagePath, TicketId=img.TicketId })" />
+                                                    }
+                                                }
+
+                                            </th>
+                                            @*<th>
+                                                    @Html.ActionLink("Accept", "AcceptTicket", new { @TicketId = d.TicketId}, new { @class = "btn btn-success" })
+                                                  <br/>
+                                                    @Html.ActionLink("Reject", "RejectTicket", new { @TicketId = d.TicketId }, new { @class = "btn btn-danger" })
+                                                </th>*@
+
+                                            <th>
+                                                @Html.ActionLink("Edit", "EditTicket", "Ticket", new { @TicketId = d.TicketId }, new { @class = "btn btn-primary dataTable-btn" })
+                                                &nbsp;&nbsp;
+                                                @*@Html.ActionLink("Delete", "DeleteTicket", "Ticket", new { @TicketId = d.TicketId }, new { @class = "btn btn-danger dataTable-btn" })*@
+
+                                            </th>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <div class="modal fade" id="Image_Model" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <!-- Modal content-->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">Image Details </h4>
+                </div>
+                <div class="modal-body">
+                    <div id="partial" style="min-height:130px"></div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    <script>
+        function ViewImage(imgid, Id) {
+            LoaderDiv = '<div class="loader">';
+            $('#partial').html(LoaderDiv);
+            $('input[name="HdnDelImageId"]').val(Id);
+            $("#Image_Model").modal('show');
+            let imgurl = $("#" + imgid).attr('src');
+            LoaderDiv = '<img style="width:100%; height:100%;" src="' + imgurl + '"/>'
+            $('#partial').html(LoaderDiv);
+        }
+       function exportt(){
+           var FromDate = $("#FromDate").val() === "" ? null : $("#FromDate").val();
+           var ToDate = $("#ToDate").val() === "" ?null: $("#ToDate").val();
+           var TicketTypeIds = $("#TicketTypeIds").val()===""?[]:$("#TicketTypeIds").val();
+           var TicketStatus = $("#TicketStatus").val() === "" ? [] : $("#TicketStatus").val();
+           var SelectedstoreIds = $("#SelectedstoreIds").val()===""?[]:$("#SelectedstoreIds").val();
+            var OrderNumber = $("#OrderNumber").val();
+            var token = $("input[name='__RequestVerificationToken']").val();
+
+            $.ajax({
+                url: '@Url.Action("Export","Ticket")',
+                type: 'POST',
+                data: {
+                    'FromDate': FromDate,
+                    'ToDate': ToDate,
+                    'TicketTypeIds': TicketTypeIds,
+                    'TicketStatus': TicketStatus,
+                    'SelectedstoreIds': SelectedstoreIds,
+                    'OrderNumber': OrderNumber,
+                    '__RequestVerificationToken': token
+                },
+                contentType: 'application/json',
+                success: function (response) {
+                    if (response.IsCreated) {
+
+                    }
+                    else {
+                        alert(response.ErrorMessage);
+                    }
+                },
+                error: function () {
+                    alert("error");
+                }
+            });
+        }
+        $(document).ready(function () {
+            $(document).ready(function () {
+                $('#ticketlist').DataTable({
+                    responsive:true,
+                    dom: 'Bfrtip',
+                    buttons: [
+                        'copyHtml5',
+                        'excelHtml5',
+                        'csvHtml5',
+                        'pdfHtml5'
+                    ]
+                });
+            });
+            $('#TicketTypeIds').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedstoreIds').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#TicketStatus').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('.date').datetimepicker({ 'format': 'DD-MMM-YYYY' });
+
+
+        //$('.date').daterangepicker({
+        //    singleDatePicker: true,
+        //    singleClasses: "picker_1"
+        //}, function (start, end, label) {
+        //    console.log(start.toISOString(), end.toISOString(), label);
+        //}
+        });
+    function Delete(Id) {
+
+
+        var a = confirm("Are you sure want to delete UOM?");
+        @*if (a) {
+                $.ajax({
+                    url: '@Url.Action("DeleteUOM", "UOM")',
+                    type: "post",
+                    datatype: "json",
+                    data: {
+                        "id": Id
+                    },
+                    success: function (response) {
+                        if (response == "true" || response==true) {
+                            location.reload();
+                        }
+                    },
+            })
+
+
+        }
+        else {
+
+        }*@
+                   }
+    </script>
+</div>
+

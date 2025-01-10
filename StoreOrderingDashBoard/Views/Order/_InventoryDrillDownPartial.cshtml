@@ -1,0 +1,74 @@
+﻿@using System.Globalization
+@using DAL
+<div class="col-md-12 col-sm-12 col-xs-12">
+    <div class="x_panel">
+        <div class="x_content">
+
+            <table id="tbInventoryPopUP" class="table table-striped table-bordered">
+                <thead>
+                    <tr>
+                        <th>SKU Code</th>
+                        <th>Store Name</th>
+                        <th>DC Name</th>
+                        <th>Ordered Quantity</th>
+                        <th>Available Stock</th>
+                       
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (ViewBag.InventoryDrillDown != null)
+                    {
+                        int i = 1;
+                        foreach (ExcelOrder Inv in ViewBag.InventoryDrillDown)
+                        {
+                            <tr>
+                                <td>@Inv.Item_Code  - @Inv.Item_Desc</td>
+                                <td>@Inv.Store_Name</td>
+                                <td>@Inv.DCName</td>
+                                <td>@Inv.Ordered_Qty</td>
+                                <td>@Inv.InventoryAvailableQty</td>
+                                
+                            </tr>
+
+                            i++;
+                        }
+                    }
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+    <script>
+        $(document).ready(function () {
+            $(".loader").hide();
+            //t = $('#example').DataTable();
+            $("#tbInventoryPopUP").DataTable({
+                dom: "Blfrtip",
+                buttons: [
+                    {
+                        extend: "copy",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "csv",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "excel",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "pdfHtml5",
+                        className: "btn-sm"
+                    },
+                    {
+                        extend: "print",
+                        className: "btn-sm"
+                    },
+                ],
+                responsive: false
+            });
+        });
+    </script>
+</div>
+

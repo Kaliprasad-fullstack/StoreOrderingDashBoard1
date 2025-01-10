@@ -1,0 +1,193 @@
+﻿@{
+    Layout = null;
+    int attempt = ViewData["Attempt"]==null?0:Convert.ToInt32(ViewData["Attempt"].ToString());
+    int noofattempt = StoreOrderingDashBoard.Models.SessionValues.StoreCount;
+    int remainingAttempts = attempt - noofattempt;
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>LogIn</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <!-- Meta, title, CSS, favicons, etc. -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    @*<title>Gentelella Alela! | </title>*@
+    <!-- Bootstrap -->
+    <link href="~/Content/vendors/bootstrap/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="~/Content/vendors/font-awesome/css/font-awesome.min.css" rel="stylesheet">
+    <!-- NProgress -->
+    <link href="~/Content/vendors/nprogress/nprogress.css" rel="stylesheet">
+    <!-- Animate.css -->
+    <link href="~/Content/vendors/animate.css/animate.min.css" rel="stylesheet">
+    <!-- Custom Theme Style -->
+    <link href="~/Content/build/css/custom.css" rel="stylesheet">
+    <script src="~/Scripts/jquery-1.10.2.min.js"></script>
+    @*<link href="https://fonts.googleapis.com/css?family=Roboto" rel="stylesheet" type="text/css">
+        <script src="https://apis.google.com/js/api:client.js"></script>
+        <script src="https://apis.google.com/js/platform.js?onload=init" async defer></script>*@
+    @*<script>
+        var googleUser = {};
+            var startAppA = function () {
+        gapi.load('auth2', function() {
+        //Retrieve the singleton for the GoogleAuth library and set up the client.
+        auth2 = gapi.auth2.init({
+            client_id: '93784689389-vqlsqck6b1rujurd1n6n8b9au16tm3iu.apps.googleusercontent.com',
+            secret_key: 'HV9bmC2y5G0PvzeRbbCwigus',
+        cookiepolicy: 'single_host_origin',
+        });
+        attachSignin(document.getElementById('googleplus'));
+        });
+        };
+
+        function attachSignin(element) {
+        auth2.attachClickHandler(element, {}, function(googleUser) {
+        debugger;
+        $(".se-pre-con").show();
+        console.log(googleUser);
+        var profiles = googleUser.getBasicProfile();
+            var ReturnUrl = 'http://localhost:60914/Home/Index';
+        //Crate A Bunch Of Object for Search
+        var objData = {
+            Email: profiles.U3,
+        LastName: profiles.ig,
+            ProfileURL: profiles.Paa
+            };
+            debugger;
+        $.ajax({
+        type: "POST",
+        url: '@Url.Action("ReturnURL", "Home")',
+        data: objData,
+        datatype: "json",
+            success: function (data) {
+                if (data) {
+                    window.location.href = '@Url.Action("Index", "Home")'
+                }
+                else {
+                    alert("User is not registered");
+                }
+        }
+        });
+        $(".se-pre-con").hide();
+        }, function(error) {
+        alert(JSON.stringify());
+        });
+        } </script>*@
+    <script>
+        $(document).ready(function () {
+            $("form").attr('autocomplete', 'off');
+
+            $("input").attr('autocomplete', 'off');
+        });
+
+        if (self == top) { vartheBody = document.getElementsByTagName('body')[0]; vartheBody.style.display = "block"; }
+        else { top.location = self.location; }
+    </script>
+</head>
+<body class="login">
+    <div>
+        <a class="hiddenanchor" id="signup"></a>
+        <a class="hiddenanchor" id="signin"></a>
+        <div class="login_wrapper">
+            <div class="animate form login_form">
+                <section class="login_content">
+                    <form action="@Url.Action("Login","Store")" method="post">
+                        @Html.AntiForgeryToken()
+                        <h1>Store Login</h1>
+                        @if (ViewBag.Password == "true")
+                        {
+                            if ((noofattempt == attempt) || (noofattempt > attempt))
+                            {
+                                <div style="color:red">User is Disabled Or not registered.</div>
+                            }
+                            else
+                            {
+                                <div style="color:red">Invalid User Credentials. Attempts Remaining: @remainingAttempts</div>
+                            }
+                        }
+                        @if (ViewBag.Error != null && ViewBag.Error != "")
+                        {
+                            <div style="color:red">@ViewBag.Error</div>
+                        }
+                        @if (ViewBag.IsSessionExpired != null)
+                        {
+                            <div style="color:red">Session is expired due to the system was Ideal for 30 Min.</div>
+                        }
+                        @if (ViewBag.Message != null)
+                        {
+                            <div style="color:#2eb31e">@ViewBag.Message</div>
+                        }
+                        <div>
+                            <input type="text" class="form-control" id="Username" name="Username" placeholder="EmailAddress" required="" />
+                        </div>
+                        <div>
+                            <input type="password" class="form-control" id="Password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" title="Must contain at least one number and one uppercase and lowercase letter, and at least 8 or more characters" name="Password" placeholder="Password" required="" />
+                        </div>
+                        <div>
+                            <div class="loader"></div>
+                            <input class="btn btn-default submit" value="Log In" type="submit" />
+                            @*<input class="btn btn-default submit" id="googleplus" value="Login with Gmail" type="button" onclick="startAppA()" />*@
+                            <a class="reset_pass" onclick='Forget()'>Forgot password?</a>
+                        </div>
+                        <div class="clearfix"></div>
+                        <div class="separator">
+                            @*<p class="change_link">
+                New to site?
+                <a href="#signup" class="to_register"> Create Account </a>
+            </p>*@
+                            <div class="clearfix"></div>
+                            <br />
+                            <div>
+                                @*<h1>
+                                <img src="~/images/foodland transparent logo v1.png" />
+                                Quick Order<br />
+                THINK FOOD THINK FOODLAND
+                            </h1>*@
+                                <img src="~/images/OrderXPro-1.png" style="height:99px; margin-bottom:5px;" />
+                                @*<p>Copyright @(DateTime.Now.Year - 1) - @DateTime.Now.Year © Radhakrishna Foodland Pvt Ltd.<br /> All Rights Reserved.(RFPL IT Team)</p>*@
+                            </div>
+                        </div>
+                    </form>
+                </section>
+            </div>
+        </div>
+        <script>
+            $(document).ready(function () {
+                $(".loader").hide();
+            });
+            function Forget() {
+                var user = $("#Username").val();
+                if (user != "") {
+                    $(".loader").show();
+                     $.ajax({
+                                    url: "@Url.Action("ForgotPassword", "Store")",
+                                    type: "POST",
+                                    data: {
+                                        "Username": user
+                                    },
+                                    success: function (response) {
+                                        if (response.Status) {
+                                            $(".loader").hide();
+                                            alert("Please Check Your Email Inbox");
+                                            window.location = "@Url.Action("OTP","Store")?id=" + response.UserId;
+                                        }
+                                        else {
+                                            alert("User is not register please contact your IT Team");
+                                            $(".loader").hide();
+                                        }
+                                    }
+                                });
+                }
+                else {
+                    alert("Please Enter Username");
+                }
+            }
+        </script>
+    </div>
+</body>
+</html>

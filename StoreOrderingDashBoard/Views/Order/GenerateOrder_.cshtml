@@ -1,0 +1,1132 @@
+﻿@{
+    ViewBag.Title = "GenerateOrder";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+<script src="~/Scripts/jquery-1.10.2.min.js"></script>
+<style>
+    table.dataTable.select tbody tr,
+    table.dataTable thead th:first-child {
+        cursor: pointer;
+    }
+
+    .toolbar {
+        float: left;
+        margin-left: 10px;
+    }
+</style>
+<div class="right_col" role="main">
+    @*<div class="page-title">
+        <div class="title_left">
+            
+        </div>
+        <div class="title_right">
+            <ul class="nav navbar-right panel_toolbox">
+                <li>
+                    <a class="collapse-link" id="Filtercollapse"><i id="SearchForm_I" class="fa fa-chevron-down"></i></a>
+                </li>
+            </ul>
+        </div>
+    </div>*@
+    <div class="row">
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel" >
+                <div class="x_title">
+                    <h3>Generate Order</h3>
+                    <ul class="nav navbar-right panel_toolbox">
+                        <li class="pull-right">
+                            <a class="collapse-link"><i class="fa fa-chevron-up"></i></a>
+                        </li>
+                    </ul>
+                    <div class="clearfix"></div>
+                </div>
+                <div class="x_content">
+                    <form id="SearchForm">
+                        @Html.AntiForgeryToken()
+                        <div class="row">
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <label for="FromDate">From Date</label>
+                                <input type="date" value="" class="form-control" name="FromDate" id="FromDate" />
+                                <p class="text text-danger" id="FromDateError"></p>
+                            </div>
+                            <div class="col-md-6 col-sm-6 col-xs-12">
+                                <label for="ToDate">To Date</label>
+                                <input type="date" value="" class="form-control" name="ToDate" id="ToDate" />
+                                <p class="text text-danger" id="ToDateError"></p>
+                            </div>
+                            @*<div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>Ageing</label>
+                                <select class="form-control" id="SelectedAgeing">
+                                    <option value="0">&lt; 7</option>
+                                    <option value="1">&gt; 7</option>
+                                </select>
+                                <p class="text text-danger" id="SelectedAgeingError"></p>
+                            </div>*@
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>City</label>
+                                @Html.ListBox("SelectedLocations", (MultiSelectList)ViewBag.Locations, new { size = 4, @class = "form-control" })
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>DC</label>
+                                @Html.ListBox("SelectedDC", (MultiSelectList)ViewBag.DCs, new { size = 4, @class = "form-control" })
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>StoreCode</label>
+                                @Html.ListBox("SelectedStores", (MultiSelectList)ViewBag.Stores, new { size = 4, @class = "form-control" })
+                                <p class="text text-danger" style="margin-top:5px;" id="SelectedStoresError"></p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>Item Type</label>
+                                @Html.ListBox("SelectedTypes", (MultiSelectList)ViewBag.ItemTypes, new { size = 4, @class = "form-control" })
+                                <p class="text text-danger" style="margin-top:5px;" id="SelectedTypesError"></p>
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>Item Category</label>
+                                @Html.ListBox("SelectedCategories", (MultiSelectList)ViewBag.ItemCategories, new { size = 4, @class = "form-control" })
+                                <p class="text text-danger" style="margin-top:5px;" id="SelectedCategoriesError"></p>
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-12">
+                                <label>SKU Code</label>
+                                @Html.ListBox("SelectedSKUs", (MultiSelectList)ViewBag.Items, new { size = 4, @class = "form-control" })
+                                <p class="text text-danger" style="margin-top:5px;" id="SelectedSKUsError"></p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <div class="form-group text-right">
+                                    @*<button class="btn btn-warning pull-left btn-sm" id="" style="margin-bottom:0px;" type="button" onclick="GetSelectedDataCount()">View Selected Order Count</button>*@
+                                    <button class="search btn btn-success btn-sm" id="SearchBtn" style="margin-bottom:0px;" type="button">Search</button>
+                                    <hr />
+                                    <input class="btn btn-primary btn-sm pull-right" id="SaveOrderBtn" type="button" onclick="GetSelectedRows()" value="Process Order" />
+                                    <input class="btn btn-info btn-sm pull-left" id="btnSummerize View" type="button" onclick="SummerizedView()" value="View Summary" />
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-12 col-sm-12 col-xs-12">
+            <div class="x_panel">
+                <div class="x_content">
+                    <div class="loader"></div>
+                    <table id="example" class="display" cellspacing="0" width="100%">
+                        <thead>
+                            <tr>
+                                <th>
+                                    <input name="select_all" value="1" type="checkbox">
+                                </th>
+                                <th>StoreOrderDate</th>
+                                <th>Store Code</th>
+                                <th>SKU Code</th>
+                                <th>Priority</th>
+                                <th>Threshold Quantity</th>
+                                <th>Requested Quantity</th>
+                                <th>DC</th>
+                                <th>Uploaded Date</th>
+                                <th>Uploaded By</th>
+                            </tr>
+                        </thead>
+                    </table>
+                    <div class="row">
+                        <div class="col-md-12">                     
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="modal fade " id="ViewModal" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal">&times;</button>
+                    <h4 class="modal-title">View</h4>
+                </div>
+                <div class="modal-body" style="overflow-x:scroll">
+                    <table id="ModalOrderSheet" class="table table-striped nowrap table-responsive" style="width:100%">
+                        <thead>
+                            <tr>
+                                <th>StoreOrderDate</th>
+                                <th>Store Code</th>
+                                <th>SKU Code</th>
+                                <th>Priority</th>
+                                <th>Threshold Quantity</th>
+                                <th>Requested Quantity</th>
+                                <th>DC</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-default" data-dismiss="modal">Edit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+                function SummerizedView(){
+                    var FromDate = $("#FromDate").val();
+                    var ToDate = $("#ToDate").val();
+                    var Filtered = 0;
+                    if (FromDate != '' && ToDate != '') {
+                        Filtered = 1;
+                    }
+                    window.location = '@Url.Action("GenerateCSV", "Order")?FromDate=' + '&ToDate=' + '&IsRedirected=1&URL=/Order/GenerateOrder?Redirect=1&Filtered=' + Filtered;
+                }
+        function BindDCDropdown(row) {
+            var $SelectedValue = false;
+                    var $select = $("<select></select>", {
+                        "id": "DC"+row.Id + "start",
+                        "value": row.DCId,
+                        "class": "form-control",
+                        "style":"WIDTH:150px"
+                    });
+                    var StoreDClist = StoreItemDclist.find(function (element) {
+                        return element.StoreId === row.StoreId && element.ItemTypeId === row.ItemTypeId;
+                    });
+                    if (StoreDClist != null && StoreDClist != undefined && StoreItemDclist != [] && StoreDClist != '')
+                    {
+                        //var firstDC = StoreDClist[0];
+                        //$.each(StoreItemDclist, function (key, value) {
+                        //    if (value.StoreId === row.StoreId && value.ItemTypeId === row.ItemTypeId) {
+                        //        var $option = $("<option></option>", {
+                        //            "text": value.DcName,
+                        //            "value": value.DCId
+                        //        });
+                        //        if (firstDC)
+                        //        if (row.DCId === value.DCId) {
+                        //            $option.attr("selected", "selected")
+                        //        }
+                                
+                        //        $select.append($option);
+                        //        $select.append($option);
+                        //    }
+                        //});
+                        $.each(DropDownList, function (k, v) {
+                            var $option = $("<option></option>", {
+                                "text": v.Name,
+                                "value": v.Id
+                            });
+                            if (StoreDClist.DCId === v.Id && $SelectedValue === false) {
+                                $option.attr("selected", "selected");
+                                $SelectedValue = true;
+                            }
+                            else if (StoreDClist===undefined && row.DCId === v.Id && $SelectedValue === false) {
+                                $option.attr("selected", "selected")
+                                $SelectedValue = true;
+                            }
+                            $select.append($option);
+                        });
+                    }
+                    else
+                    {
+                        $.each(DropDownList, function (k, v) {
+                            var $option = $("<option></option>", {
+                                "text": v.Name,
+                                "value": v.Id
+                            });
+                            if (row.DCId === v.Id) {
+                                $option.attr("selected", "selected")
+                            }
+                            $select.append($option);
+                        });
+                    }
+                    return $select.prop("outerHTML");
+        }
+        function ConvertJSONDatetoDate(date) {
+            var nowDate = new Date(parseInt(date.substr(6)));
+            var dd = nowDate.getDate();
+            var mm = nowDate.getMonth() + 1;
+            var yy = nowDate.getFullYear();
+            var hr = nowDate.getHours();
+            var mi = nowDate.getMinutes();
+            if (hr < 10) {
+                hr = '0' + hr;
+            }
+            if (mi < 10) {
+                mi = '0' + mi;
+            }
+            var time = hr + ":" + mi
+            if (dd < 10) {
+                dd = '0' + dd;
+            }
+            if (mm < 10) {
+                mm = '0' + mm;
+            }
+
+            var result = '';
+            if (time == '00:00')
+                result = dd + "/" + mm + "/" + yy;
+            else
+                result = dd + "/" + mm + "/" + yy + " " + time;
+            return result;
+        }
+        function ConvertJSONDate(date) {
+            var nowDate = new Date(parseInt(date.substr(6)));
+            return nowDate;
+        }
+        function updateDataTableSelectAllCtrl(table) {
+            var $table = table.table().node();
+            var $chkbox_all = $('tbody input[type="checkbox"]', $table);
+            var $chkbox_checked = $('tbody input[type="checkbox"]:checked', $table);
+            var chkbox_select_all = $('thead input[name="select_all"]', $table).get(0);
+
+            // If none of the checkboxes are checked
+            if ($chkbox_checked.length === 0) {
+                chkbox_select_all.checked = false;
+                if ('indeterminate' in chkbox_select_all) {
+                    chkbox_select_all.indeterminate = false;
+                }
+
+                // If all of the checkboxes are checked
+            } else if ($chkbox_checked.length === $chkbox_all.length) {
+                chkbox_select_all.checked = true;
+                if ('indeterminate' in chkbox_select_all) {
+                    chkbox_select_all.indeterminate = false;
+                }
+
+                // If some of the checkboxes are checked
+            } else {
+                chkbox_select_all.checked = true;
+                if ('indeterminate' in chkbox_select_all) {
+                    chkbox_select_all.indeterminate = true;
+                }
+            }
+            //var items = $.map(table.rows('.selected').data(), function (item) {
+            //    return table.$('input[id="Quantity' + item.Id + '"]').val()
+            //});
+            //var SumItems = items.reduce(function (a, b) {
+            //    return parseInt(a) + parseInt(b);$(this).closest('tr');
+            //}, 0);
+            //$("#SelectedRowsCount").html(items.length);
+            //$("#SelectedRowsQuantity").html(SumItems);
+        }        
+
+        function GetSelectedDataCount() {
+            //var rows = $(table.$('input[type="checkbox"]:checked').map(function () {
+            //    var Id=table.row($(this).closest('tr')).data().Id;
+            //    return  table.$('input[id="Quantity' + Id + '"]').val()
+            //}));
+
+            var items = $.map(table.rows('.selected').data(), function (item) {
+                //return table.$('input[id="Quantity' + item.Id + '"]').val()
+                return item.Ordered_Qty;
+            });
+            var SumItems = items.reduce(function (a, b) {
+                return parseInt(a) + parseInt(b);
+            }, 0);
+            $("div.toolbar").html('<b>TOTAL ROW COUNT: ' + table.rows().count() + ',   SELECTED ROWS: ' + items.length + ',   SELECTED QUANTITY: ' + SumItems + ' </b>');
+        }
+        function changebackground(data) {
+            //if (window.row === null || window.row == undefined) {
+            //    window.row = data;
+            //    return window.RowColor;
+            //}
+            //if (window.row.Store_Order_Date === data.Store_Order_Date && window.row.Store_Code === data.Store_Code) {
+            //    return window.RowColor;
+            //}
+            //else {
+            //    window.row = data;
+            //    return "";
+            //}
+            const found = window.TableRow.some(el => el.Store_Order_Date === data.Store_Order_Date && el.Store_Code === data.Store_Code);
+            if (found) {
+                var Value = window.TableRow.find(function (element) {
+                    return element.Store_Order_Date === data.Store_Order_Date && element.Store_Code === data.Store_Code;
+                });
+                if (Value.RowColor === RowColor1) {
+                    changecolor = 2;
+                }
+                if (Value.RowColor === RowColor2) {
+                    changecolor = 1;
+                }
+                return Value.RowColor;
+            }
+            else {
+                var arr = {}
+                arr.Store_Code = data.Store_Code;
+                arr.Store_Order_Date = data.Store_Order_Date;
+                arr.RowColor = changecolor === 1 ? RowColor1 : RowColor2;
+                window.TableRow.push(arr);
+                if (changecolor === 1) {
+                    changecolor = 2;
+                }
+                else {
+                    changecolor = 1;
+                }
+                return arr.RowColor;
+            }
+        }
+                var table;
+                var MTable;
+                var changecolor = 1;
+                var rows_selected = [];
+                var firstCall = true;
+        var DropDownList = [];
+        var StoreItemDclist = [];
+                window.RowColor1 = "#9FF176";
+                window.RowColor2 = "#F1F176";
+        window.TableRow = [];
+        var isSearch = 0;
+        $(document).ready(function () {
+            $('#SelectedLocations').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedDC').multiselect({
+                includeSelectAllOption: true,
+                enableCaseInsensitiveFiltering: true,
+                buttonWidth: '100%',
+                maxHeight: 150,
+                enableFiltering: true
+            });
+            $('#SelectedStores').multiselect({
+                        includeSelectAllOption: true,
+                        enableCaseInsensitiveFiltering: true,
+                        buttonWidth: '100%',
+                        maxHeight: 150,
+                        enableFiltering: true
+                    });
+            $('#SelectedTypes').multiselect({
+                        includeSelectAllOption: true,
+                        enableCaseInsensitiveFiltering: true,
+                        buttonWidth: '100%',
+                        maxHeight: 150,
+                        enableFiltering: true
+                    });
+            $('#SelectedCategories').multiselect({
+                        includeSelectAllOption: true,
+                        enableCaseInsensitiveFiltering: true,
+                        buttonWidth: '100%',
+                        maxHeight: 150,
+                        enableFiltering: true
+                    });
+            $('#SelectedSKUs').multiselect({
+                        includeSelectAllOption: true,
+                        enableCaseInsensitiveFiltering: true,
+                        buttonWidth: '100%',
+                        maxHeight: 150,
+                        enableFiltering: true
+            });
+            $("#SelectedLocations").change(function () {
+                var SelectedLocations = $(this).val()
+                $.ajax({
+                    url: '@Url.Action("GetWareHouseDCForLocations", "Order")',
+                    type: 'POST',
+                    dataType: "JSON",
+                    data: {
+                        "SelectedLocations": SelectedLocations
+                    },
+                    success: function (result) {
+                        $("#SelectedDC").html("");
+                        var markup = "";
+                        for (var x = 0; x < result.data.length; x++) {
+                            markup += "<option value=" + result.data[x].Id + ">" + result.data[x].Name + "</option>";
+                        }
+                        $("#SelectedDC").html(markup);
+                        $("#SelectedDC").multiselect('destroy');
+                        $('#SelectedDC').multiselect({
+                            includeSelectAllOption: true,
+                            enableCaseInsensitiveFiltering: true,
+                            buttonWidth: '100%',
+                            maxHeight: 150,
+                            enableFiltering: true
+                        });
+                        $("#SelectedDC").trigger("change");
+                    },
+                    error: function (reponse) {
+                        alert("error : " + reponse)
+                    },
+                });
+            });
+            $("#SelectedDC").change(function () {
+                var SelectedWareHouseDCs = $(this).val()
+                $.ajax({
+                    url: '@Url.Action("GetStoresForWareHouse", "Order")',
+                    type: 'POST',
+                    dataType: "JSON",
+                    data: {
+                        "SelectedWareHouseDCs": SelectedWareHouseDCs
+                    },
+                    success: function (result) {
+                        $("#SelectedStores").html("");
+                        var markup = "";
+                        for (var x = 0; x < result.data.length; x++) {
+                            markup += "<option value=" + result.data[x].Id + ">" + result.data[x].StoreCode + "</option>";
+                        }
+                        $("#SelectedStores").html(markup);
+                        $("#SelectedStores").multiselect('destroy');
+                        $('#SelectedStores').multiselect({
+                            includeSelectAllOption: true,
+                            enableCaseInsensitiveFiltering: true,
+                            buttonWidth: '100%',
+                            maxHeight: 150,
+                            enableFiltering: true
+                        });
+                    },
+                    error: function (reponse) {
+                        alert("error : " + reponse)
+                    },
+                });
+            });
+            $("#SelectedTypes").change(function () {
+                var SelectedItemTypes = $(this).val()
+                $.ajax({
+                    url: '@Url.Action("GetCatgoriesForItemTypes", "Order")',
+                    type: 'POST',
+                    dataType: "JSON",
+                    data: {
+                        "SelectedItemTypes": SelectedItemTypes
+                    },
+                    success: function (result) {
+                        $("#SelectedCategories").html("");
+                        var markup = "";
+                        for (var x = 0; x < result.data.length; x++) {
+                            markup += "<option value=" + result.data[x].Id + ">" + result.data[x].CategoryName + "</option>";
+                        }
+                        $("#SelectedCategories").html(markup);
+                        $("#SelectedCategories").multiselect('destroy');
+                        $('#SelectedCategories').multiselect({
+                            includeSelectAllOption: true,
+                            enableCaseInsensitiveFiltering: true,
+                            buttonWidth: '100%',
+                            maxHeight: 150,
+                            enableFiltering: true
+                        });
+                        $("#SelectedCategories").trigger("change");
+                    },
+                    error: function (reponse) {
+                        alert("error : " + reponse)
+                    },
+                });
+            });
+            $("#SelectedCategories").change(function () {
+                var SelectedCategories = $(this).val();
+                var SelectedTypes = $("#SelectedTypes").val();
+                $.ajax({
+                    url: '@Url.Action("GetItemsForSKUCategory", "Order")',
+                    type: 'POST',
+                    dataType: "JSON",
+                    data: {
+                        "SelectedCategories": SelectedCategories,
+                        "SelectedTypes": SelectedTypes
+                    },
+                    success: function (result) {
+                                $("#SelectedSKUs").html("");
+                                var markup = "";
+                                for (var x = 0; x < result.data.length; x++) {
+                                    markup += "<option value=" + result.data[x].Id + ">" + result.data[x].SKUCode + "</option>";
+                                }
+                                $("#SelectedSKUs").html(markup);
+                                $("#SelectedSKUs").multiselect('destroy');
+                                $('#SelectedSKUs').multiselect({
+                                    includeSelectAllOption: true,
+                                    enableCaseInsensitiveFiltering: true,
+                                    buttonWidth: '100%',
+                                    maxHeight: 150,
+                                    enableFiltering: true
+                                });
+                            },
+                    error: function (reponse) {
+                                alert("error : " + reponse)
+                            },
+                });
+            });                                       
+                    var rows_selected = [];
+                    $.ajax({
+                        url: "@Url.Action("GetWareHousesStoreItem", "WareHouse")",
+                        type: "GET",
+                        async: false,
+                        success: function (response) {
+                            StoreItemDclist = JSON.parse(JSON.stringify(response.data));
+                            console.log(StoreItemDclist);
+                        },
+                        Error: function (respo) {
+                            alert("UNABLE TO LOAD LIST.");
+                        }
+                    });
+                    MTable = $("#ModalOrderSheet").DataTable({
+                        fixedHeader: true,
+                    });
+                    $.ajax({
+                        url: "@Url.Action("GetWareHouses","WareHouse")",
+                        type: "GET",
+                        async: false,
+                        success: function (response) {
+                            DropDownList = JSON.parse(JSON.stringify(response.data));
+                            console.log(DropDownList);
+                        },
+                        Error: function (respo) {
+                            alert("UNABLE TO LOAD LIST.");
+                        }
+                    });
+
+            var form = $('#SearchForm');
+            var Token = $('input[name="__RequestVerificationToken"]', form).val();
+            var FromDate = $("#FromDate").val();
+            var ToDate = $("#ToDate").val();
+            var SelectedLocations = $('#SelectedLocations').val();
+            var SelectedDCs = $('#SelectedDC').val();
+            var SelectedStores = $('#SelectedStores').val();
+            var SelectedTypes = $('#SelectedTypes').val();
+            var SelectedCategories = $('#SelectedCategories').val();
+            var SelectedSKUs = $('#SelectedSKUs').val();
+            var SelectedAgeing = 0;// $("#SelectedAgeing").val();                    
+            var FirstCall = 0;
+            var Redirect = '@ViewBag.Redirect';
+            //if (Data != null && Data != undefined && Data.firstCall != undefined && Data.firstCall != null) {
+            //    FirstCall = Data.firstCall;
+                    //}
+            var Filter = {}
+                    Filter.FromDate = FromDate;
+                    Filter.ToDate = ToDate;
+                    Filter.SelectedStores = SelectedStores;
+                    Filter.SelectedSKUs = SelectedSKUs;
+                    Filter.SelectedDCs = SelectedDCs;
+                    Filter.SelectedAgeing = SelectedAgeing;
+                    Filter.firstCall = FirstCall;
+                    isSearch = Redirect;
+                    table = $("#example").DataTable({
+                        fixedHeader: true,
+                        "scrollY": '100vh',
+                        "scrollCollapse": true,
+                        dom: 'l<"toolbar">frtip',
+                            "searching": false,
+                            "ajax": {
+                                    "url": '@Url.Action("GetUploadedStoreItems", "Order")',
+                                    "type": "Post",
+                                    "dataType": "JSON",
+                                    "data": {
+                                        "FromDate": FromDate,
+                                        "ToDate": ToDate,
+                                        "__RequestVerificationToken": Token,
+                                        "SelectedLocations": SelectedLocations,
+                                        "SelectedDCs": SelectedDCs,
+                                        "SelectedStores": SelectedStores,
+                                        "SelectedTypes": SelectedTypes,
+                                        "SelectedCategories": SelectedCategories,
+                                        "SelectedSKUs": SelectedSKUs,                                        
+                                        "SelectedAgeing": SelectedAgeing,
+                                        "isSearch": isSearch,
+                                        "FirstCall": FirstCall
+                                    }
+                            },
+                            "columnDefs": [
+                                { width: 150, targets: 6 }
+                            ],
+                                "columns": [
+                                    {
+                                        "data": "", "autoWidth": true
+                                    },
+                                    {
+                                        "data": "StoreOrderDate", "autoWidth": false,
+                                        render: function (data, type, row, meta) {
+                                            return '<p id="' + row.Id + '">' + ConvertJSONDatetoDate(row.Store_Order_Date) + '</p>';
+                                        }
+                                    },
+                                    {
+                                        "data": "StoreCode", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p id="' + row.Id + '">' + row.Store_Code + (row.Store_Name != null ? " : " + row.Store_Name : "") + '</p>';
+                                        }
+                                    },
+                                    {
+                                        "data": "SKU Code", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p>' + row.Item_Code + " : " + row.Item_Desc + '</p>';
+                                        }
+                                    },
+                                    //{
+                                    //    "data": "UOM", "autoWidth": true,
+                                    //    render: function (data, type, row, meta) {
+                                    //        return '<p>' + row.UOM + '</p>';
+                                    //    }
+                                    //},
+                                    {
+                                        "data": "Priority", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p>' + (row.Priority != null ? row.Priority:"" )+ '</p>';
+                                        }
+                                    },
+                                    {
+                                        "data": "Threshold Quantity", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p>' + row.Threshold_Qty + '</p>';
+                                        }
+                                    },
+                                    {
+                                        "data": "Requested Quantity", "autoWidth": false,
+                                        render: function (data, type, row, meta) {
+                                            return '<input type="number" value="' + row.Ordered_Qty + '" style="width:80px" class="form-control" id="Quantity' + row.Id + '" onchange="ValidateQuantity(' + row.Id + ')" />';
+                                        }
+                                    },
+                                    {
+                                        "data": "DC", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return BindDCDropdown(row);
+                                        }
+                                    },
+                                    {
+                                        "data": "Uploaded Date", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p>' + ConvertJSONDatetoDate(row.Upload_Date) + '</p>'
+                                        }
+                                    },
+                                    {
+                                        "data": "Uploaded By", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p>' + row.Uplaoded_By + '</p>'
+                                        }
+                                    }
+                                ],
+                                "paging": false,
+                                "searching": false,
+                                "columnDefs": [{
+                                    'targets': 0,
+                                    'searchable': false,
+                                    'orderable': false,
+                                    'width': '1%',
+                                    'className': 'dt-body-center',
+                                    'render': function (data, type, full, meta) {
+                                        return '<input type="checkbox">';
+                                    }
+                                }],
+                                "select": {
+                                    'style': 'multi'
+                                },
+                                "initComplete": function (settings, json) {
+                                window.TableRow = [];
+                                    $("div.toolbar").html('<b>TOTAL ROW COUNT: ' + table.rows().count()+'</b>');
+                                    firstCall = false;
+                                    table.rows().eq(0).each(function (index) {
+                                        var row = table.row(index);
+                                        var data = row.data();
+                                        if (data.Checked) {
+                                            var rowId = data.Id;
+                                            rows_selected.push(rowId);
+                                        }
+                                    });
+                                    //console.log(rows_selected);
+                                },
+                                "rowCallback": function (row, data, dataIndex) {
+                                    // Get row ID
+                                    var rowId = data.Id;
+                                    if (data.Checked && firstCall === true) {
+                                        rows_selected.push(rowId);
+                                        $(row).find('input[type="checkbox"]').prop('checked', true);
+                                        $(row).addClass('selected');
+                                    }
+                                    // If row ID is in the list of selected row IDs
+                                    if ($.inArray(rowId, rows_selected) !== -1) {
+                                        $(row).find('input[type="checkbox"]').prop('checked', true);
+                                        $(row).addClass('selected');
+                                    }
+                                    updateDataTableSelectAllCtrl(table);
+                                },
+                            "createdRow": function (row, data, index) {
+
+                            //var rowId = data.Id;
+                            //if (data.Checked && firstCall === true) {
+                            //    rows_selected.push(rowId);
+                            //    $(row).find('input[type="checkbox"]').prop('checked', true);
+                            //    $(row).addClass('selected');
+                            //}
+                            //// If row ID is in the list of selected row IDs
+                            //if ($.inArray(rowId, rows_selected) !== -1) {
+                            //    $(row).find('input[type="checkbox"]').prop('checked', true);
+                            //    $(row).addClass('selected');
+                            //}
+                            //updateDataTableSelectAllCtrl(table);
+                                    $(row).children(1, 2).css({
+                                        background: changebackground(data)
+                                    });
+                                }
+                            });
+                            $('#example tbody').on('click', 'input[type="checkbox"]', function (e) {
+                                var $row = $(this).closest('tr');
+                                var data = table.row($row).data();
+                                var rowId = data.Id;
+                                var index = $.inArray(rowId, rows_selected);
+                                if (this.checked && index === -1) {
+                                    rows_selected.push(rowId);
+                                } else if (!this.checked && index !== -1) {
+                                    rows_selected.splice(index, 1);
+                                }
+                                if (this.checked) {
+                                    $row.addClass('selected');
+                                } else {
+                                    $row.removeClass('selected');
+                                }
+                                updateDataTableSelectAllCtrl(table);
+                                GetSelectedDataCount();
+                                e.stopPropagation();
+            });
+            $('#example tbody').on('focusout', 'input[type="number"]', function (e) {
+                var $row = $(this).closest('tr');
+                var data = table.row($row).data();
+                var RowId = data.Id;
+                var Qunatity = $("#Quantity" + RowId).val();
+                if (!(Qunatity > 0)) {
+                    alert("Order Quantity Cannot be zero");
+                    $("#Quantity" + RowId).val(data.Ordered_Qty);
+                }
+                else{
+                    data.Ordered_Qty = Qunatity;
+                    GetSelectedDataCount();
+                }             
+            });
+                            // Handle click on "Select all" control
+                            $('thead input[name="select_all"]', table.table().container()).on('click', function (e) {
+                                if (this.checked) {
+                                    //$('#example tbody input[type="checkbox"]:not(:checked)').trigger('click');
+                                    $('#example tbody').find('td input:checkbox').prop('checked', this.checked);
+                                    $('#example tbody').find('tr').addClass('selected');
+                                    GetSelectedDataCount();
+                                } else {
+                                    //$('#example tbody input[type="checkbox"]:checked').trigger('click');
+                                    $('#example tbody').find('td input:checkbox').prop('checked', this.checked);
+                                    $('#example tbody').find('tr').removeClass('selected');
+                                    rows_selected = [];
+                                    GetSelectedDataCount();
+                                }
+                                // Prevent click event from propagating to parent
+                                e.stopPropagation();
+                    });
+                    $('#select_all').trigger('click');
+                    $(".loader").hide();
+            $('#SearchBtn').on('click', function (e) {
+                var SelectedLocations = $("#SelectedLocations").val();
+                SelectedLocations = SelectedLocations != null ? SelectedLocations : "";
+                var SelectedDC = $("#SelectedDC").val();
+                SelectedDC = SelectedDC != null ? SelectedDC : "";
+                var SelectedStores = $('#SelectedStores').val();
+                SelectedStores = SelectedStores != null ? SelectedStores : "";                        
+
+                var SelectedTypes = $('#SelectedTypes').val();
+                SelectedTypes = SelectedTypes != null ? SelectedTypes : "";
+                var SelectedCategories = $('#SelectedCategories').val();
+                SelectedCategories = SelectedCategories != null ? SelectedCategories : "";
+                var SelectedSKUs = $('#SelectedSKUs').val();
+                SelectedSKUs = SelectedSKUs != null ? SelectedSKUs : "";
+
+                var FromDate = $("#FromDate").val();
+                var ToDate = $("#ToDate").val();
+                var SelectedAgeing = 0;// $("#SelectedAgeing").val();
+                var Filter = {}
+                Filter.FromDate = FromDate;
+                Filter.ToDate = ToDate;
+                Filter.SelectedStores = SelectedStores;
+                Filter.SelectedSKUs = SelectedSKUs;
+                Filter.SelectedCategories = SelectedCategories;
+                Filter.SelectedDC = SelectedDC;
+                Filter.SelectedAgeing = SelectedAgeing;
+                Filter.firstCall = FirstCall;
+                var form = $('#SearchForm');
+                var HasError = false;
+                if (HasError === false)
+                {
+                    var Token = $('input[name="__RequestVerificationToken"]', form).val();
+                    table.destroy();
+                    rows_selected = [];
+                    firstCall = true;
+                    isSearch = 1;
+                    table = $('#example').DataTable({
+                        "ajax": {
+                            "url": '@Url.Action("GetUploadedStoreItems", "Order")',
+                            "type": "Post",
+                            "dataType": "JSON",
+                            "data": {
+                                "FromDate": FromDate,
+                                "ToDate": ToDate,
+                                "__RequestVerificationToken": Token,
+                                "SelectedLocations": SelectedLocations,
+                                "SelectedDCs": SelectedDC,
+                                "SelectedStores": SelectedStores,
+                                "SelectedTypes": SelectedTypes,
+                                "SelectedCategories": SelectedCategories,
+                                "SelectedSKUs": SelectedSKUs,                                        
+                                "SelectedAgeing": SelectedAgeing,
+                                "isSearch": isSearch,
+                                "FirstCall": FirstCall
+                            }
+                        },
+                        dom: 'l<"toolbar">frtip',
+                        "columnDefs": [
+                                    { width: 200, targets: 6 }
+                                ],
+                                "columns": [
+                                    {
+                                        "data": "", "autoWidth": true
+                                    },
+                                    {
+                                        "data": "StoreOrderDate", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p id="' + row.Id + '">' + ConvertJSONDatetoDate(row.Store_Order_Date) + '</p>';
+                                        }
+                                    },
+                                    {
+                                        "data": "StoreCode", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p id="' + row.Id + '">' + row.Store_Code + (row.Store_Name != null ? " : " + row.Store_Name : "") + '</p>';
+                                        }
+                                    },
+                                    {
+                                        "data": "SKU Code", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p>' + row.Item_Code + " : " + row.Item_Desc + '</p>';
+                                        }
+                                    },
+                                    {
+                                        "data": "Priority", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p>' + (row.Priority != null ? row.Priority : "") + '</p>';
+                                        }
+                                    },
+                                    {
+                                        "data": "Threshold Quantity", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p>' + row.Threshold_Qty + '</p>';
+                                        }
+                                    },
+                                    {
+                                        "data": "Requested Quantity", "autoWidth": false,
+                                        render: function (data, type, row, meta) {
+                                            return '<input type="number" value="' + row.Ordered_Qty + '"style="width:80px" class="form-control"  onchange="ValidateQuantity(' + row.Ordered_Qty + ')" id="Quantity' + row.Id + '" />';
+                                            //return "<button class='btn btn-info datatable-btn' type='button' onclick='ResetPassword(" + row.Id + ",\"" + row.EmailAddress +"\")'>Reset Password</button>";
+                                        }
+                                    },
+                                    {
+                                        "data": "DC", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return BindDCDropdown(row);
+                                            //return '<select id="DC' + row.Id + '"></select>';
+                                        }
+                                    },
+                                    {
+                                        "data": "Uploaded Date", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p>' + ConvertJSONDatetoDate(row.Upload_Date) + '</p>'
+                                        }
+                                    },
+                                    {
+                                        "data": "Uploaded By", "autoWidth": true,
+                                        render: function (data, type, row, meta) {
+                                            return '<p>' + row.Uplaoded_By + '</p>'
+                                        }
+                                    }
+                                ],
+                                "scrollY": '100vh',
+                                "scrollCollapse": true,
+                                "paging": false,
+                                "searching": false,
+                                "columnDefs": [{
+                                    'targets': 0,
+                                    'searchable': false,
+                                    'orderable': false,
+                                    'width': '1%',
+                                    'className': 'dt-body-center',
+                                    'render': function (data, type, full, meta) {
+                                        return '<input type="checkbox">';
+                                    }
+                                }],
+                                "select": {
+                                    'style': 'multi'
+                                },
+                                "initComplete": function (settings, json) {
+                                    window.TableRow = [];
+                                    firstCall = false;
+                                    $("div.toolbar").html('<b>TOTAL ROW COUNT: ' + table.rows().count()+'</b>');
+                                    table.rows().eq(0).each(function (index) {
+                                        var row = table.row(index);
+                                        var data = row.data();
+                                        if (data.Checked) {
+                                            var rowId = data.Id;
+                                            rows_selected.push(rowId);
+                                        }
+                                    });
+                                    console.log(rows_selected);
+                                },
+                                "rowCallback": function (row, data, dataIndex) {
+                                    // Get row ID
+                                    var rowId = data.Id;
+                                    if (data.Checked && firstCall === true) {
+                                        rows_selected.push(rowId);
+                                        $(row).find('input[type="checkbox"]').prop('checked', true);
+                                        $(row).addClass('selected');
+                                    }
+                                    // If row ID is in the list of selected row IDs
+                                    if ($.inArray(rowId, rows_selected) !== -1) {
+                                        $(row).find('input[type="checkbox"]').prop('checked', true);
+                                        $(row).addClass('selected');
+                                    }
+                                    updateDataTableSelectAllCtrl(table);
+                                },
+                                "createdRow": function (row, data, index) {
+                                    var rowId = data.Id;
+                                    if (data.Checked && firstCall === true) {
+                                        rows_selected.push(rowId);
+                                        $(row).find('input[type="checkbox"]').prop('checked', true);
+                                        $(row).addClass('selected');
+                                    }
+                                    // If row ID is in the list of selected row IDs
+                                    if ($.inArray(rowId, rows_selected) !== -1) {
+                                        $(row).find('input[type="checkbox"]').prop('checked', true);
+                                        $(row).addClass('selected');
+                                    }
+                                    updateDataTableSelectAllCtrl(table);
+                                    $(row).children(1, 2).css({
+                                        background: changebackground(data)
+                                    });
+                                }
+                            });
+                            $('#example tbody').on('click', 'input[type="checkbox"]', function (e) {
+                                var $row = $(this).closest('tr');
+                                var data = table.row($row).data();
+                                var rowId = data.Id;
+                                var index = $.inArray(rowId, rows_selected);
+                                if (this.checked && index === -1) {
+                                    rows_selected.push(rowId);
+                                } else if (!this.checked && index !== -1) {
+                                    rows_selected.splice(index, 1);
+                                }
+                                if (this.checked) {
+                                    $row.addClass('selected');
+                                } else {
+                                    $row.removeClass('selected');
+                                }
+                                updateDataTableSelectAllCtrl(table);
+                                e.stopPropagation();
+                            });
+                            // Handle click on "Select all" control
+                            $('thead input[name="select_all"]', table.table().container()).on('click', function (e) {
+                                if (this.checked) {
+                                    //$('#example tbody input[type="checkbox"]:not(:checked)').trigger('click');
+                                    $('#example tbody').find('td input:checkbox').prop('checked', this.checked);
+                                } else {
+                                    //$('#example tbody input[type="checkbox"]:checked').trigger('click');
+                                    $('#example tbody').find('td input:checkbox').prop('checked', this.checked);
+                                }
+                                // Prevent click event from propagating to parent
+                                e.stopPropagation();
+                            });
+                }
+            });          
+        });
+        function GetSelectedRows() {
+            //var rows = $(table.$('input[type="checkbox"]:checked').map(function () {
+            //    return table.row($(this).closest('tr')).data();
+            //}));
+            var items = $.map(table.rows('.selected').data(), function (item) {
+                //var Ordered_Qty = table.$('input[id="Quantity' + item.Id + '"]').val();
+                var Ordered_Qty = item.Ordered_Qty;
+                if (Ordered_Qty != 0 && Ordered_Qty!=null)
+                        return {
+                            Id: item.Id,
+                            //Store_Order_Date: ConvertJSONDate(item.Store_Order_Date),
+                            Store_Code: item.Store_Code,
+                            Store_Name: item.Store_Name,
+                            Item_Code: item.Item_Code,
+                            Item_Desc: item.Item_Desc,
+                            UOM: item.Item_Desc,
+                            Priority: item.Priority,
+                            Ordered_Qty: Ordered_Qty,
+                            Threshold_Qty: item.Threshold_Qty,
+                            DCId: table.$('select[id="DC' + item.Id + 'start"]').val(),
+                        };
+                    });
+                    console.log(items);
+                    if (items.length > 0) {
+                        $('.loader').show();
+                        var FromDate = $("#FromDate").val();
+                        var ToDate = $("#ToDate").val();
+                        var form = $('#SearchForm');
+                        var SelectedLocations = $('#SelectedLocations').val();
+                        var SelectedDCs = $('#SelectedDC').val();
+                        var SelectedStores = $('#SelectedStores').val();
+                        var SelectedTypes = $('#SelectedTypes').val();
+                        var SelectedCategories = $('#SelectedCategories').val();
+                        var SelectedSKUs = $('#SelectedSKUs').val();                       
+                        var SelectedAgeing = 0;// $("#SelectedAgeing").val();
+
+                        var Token = $('input[name="__RequestVerificationToken"]', form).val();
+                        $('#SaveOrderBtn').prop('disabled', true);
+                        $.ajax({
+                            url: "@Url.Action("SaveUploadedFile", "Order")",
+                            type: "POST",
+                            data: {
+                                "excelOrders": items,
+                                "FromDate": FromDate,
+                                "ToDate": ToDate,
+                                "__RequestVerificationToken": Token,
+
+                                "SelectedLocations": SelectedLocations,
+                                "SelectedDCs": SelectedDCs,
+                                "SelectedStores": SelectedStores,
+
+                                "SelectedTypes": SelectedTypes,
+                                "SelectedCategories": SelectedCategories,
+                                "SelectedSKUs": SelectedSKUs,
+                                
+                                "SelectedAgeing": SelectedAgeing,
+                                "isSearch": isSearch
+                            },
+                            success: function (response) {
+                                if (response.data) {
+                                    $('#SaveOrderBtn').prop('disabled', false);
+                                    $('.loader').hide();
+                                    alert("ORDER UPLOADED SUCCESSFULLY");
+                                    //window.location = '@Url.Action("GenerateCSV", "Order")?startDate=' + FromDate + '&endDate=' + ToDate +'&IsRedirected=1&URL=/Order/GenerateOrder';
+                                }
+                                else {
+                                    $('#SaveOrderBtn').prop('disabled', false);
+                                    $('.loader').hide();
+                                    alert("UNABLE TO UPLOAD ORDER");
+                                }
+                            },
+                            Error: function (respo) {
+                                $('#SaveOrderBtn').prop('disabled', false);
+                                $('.loader').hide();
+                                alert("UNABLE TO UPLOAD ORDER");
+                            }
+                        });
+                    }
+                    else {
+                        alert("PLEASE SELECT STORE ORDER");
+                    }
+        }
+
+        $('#FromDate').change(function (e) {
+            var FromDate = $("#FromDate").val();
+            var date1 = new Date(FromDate);
+            date1.setDate(date1.getDate() + 0);
+            $("#ToDate").val(FormatDate(date1));
+        })
+        function FormatDate(date) {
+            month = '' + (date.getMonth() + 1),
+                day = '' + date.getDate(),
+                year = date.getFullYear();
+
+            if (month.length < 2)
+                month = '0' + month;
+            if (day.length < 2)
+                day = '0' + day;
+            return [year, month, day].join('-');
+        }
+
+        //function ValidateQuantity(RowId) {
+        //    $(this).closest('tr');
+        //    var Qunatity = $("#Quantity" + RowId).val();
+        //    if (!(Qunatity > 0)) {
+        //        alert("Order Quantity Cannot be zero");
+        //    }            
+        //}
+    </script>
+</div>
